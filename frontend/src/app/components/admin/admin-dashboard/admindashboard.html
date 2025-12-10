@@ -1,0 +1,91 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="header-icon">🛡️</div>
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p>Welcome, {{ userProfile.name }}</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn" (click)="('profile')">Profile</button>
+      <button class="btn" (click)="onLogout()">Logout</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Stats Cards -->
+    <section class="stats-cards">
+      <div class="card">
+        <div class="card-header">
+          <span>Total Employees</span>
+          <span>👥</span>
+        </div>
+        <div class="card-content">
+          <h2>{{ analytics.totalEmployees }}</h2>
+          <p>Active employees</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span>Present Today</span>
+          <span>📅</span>
+        </div>
+        <div class="card-content">
+          <h2>{{ analytics.presentToday }}</h2>
+          <p>{{ analytics.attendanceRate }}% attendance</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span>Pending Leaves</span>
+          <span>✅</span>
+        </div>
+        <div class="card-content">
+          <h2>{{ analytics.pendingLeaves }}</h2>
+          <p>Awaiting approval</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span>Approved Leaves</span>
+          <span>✅</span>
+        </div>
+        <div class="card-content">
+          <h2>{{ analytics.approvedLeaves }}</h2>
+          <p>This month</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Management Tools -->
+    <section class="management-tools">
+      <h2>Management Tools</h2>
+      <div class="tools-grid">
+        <div *ngFor="let item of menuItems" class="tool-card" (click)="(item.page)">
+          <div class="tool-icon">{{ item.icon }}</div>
+          <p>{{ item.label }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- System Info -->
+    <section class="system-info">
+      <div class="info-card">
+        <h3>Quick Stats</h3>
+        <p>Attendance Rate: {{ analytics.attendanceRate }}%</p>
+        <p>Leave Approval Rate: {{ analytics.leaveApprovalRate }}%</p>
+      </div>
+
+      <div class="info-card">
+        <h3>System Info</h3>
+        <p>Admin Account: {{ userProfile.email }}</p>
+        <p>Last Login: {{ userProfile.lastLogin }}</p>
+      </div>
+    </section>
+  </main>
+</div>

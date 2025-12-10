@@ -1,0 +1,88 @@
+<div class="dashboard-container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-icon">🏠</div>
+      <div>
+        <h1>Welcome back, {{ userProfile.name }}</h1>
+        <p>{{ userProfile.position }}</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn" (click)="onLogout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- STATS CARDS -->
+    <div class="stats-cards">
+      <div class="card">
+        <div class="card-header">Leave Balance 📅</div>
+        <div class="card-content">
+          <h2>{{ stats.leaveBalance }} days</h2>
+          <p>Available leave days</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Attendance ✔️</div>
+        <div class="card-content">
+          <h2>{{ stats.attendance }} days</h2>
+          <p>This month</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Today's Status ⏱️</div>
+        <div class="card-content">
+          <h2>{{ todayAttendance.checkOut ? 'Checked Out' : 'Checked In' }}</h2>
+          <p>{{ todayAttendance.checkIn | date:'shortTime' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANAGEMENT TOOLS -->
+    <div class="management-tools">
+      <h2>Quick Actions</h2>
+      <div class="tools-grid">
+        <div class="tool-card" (click)="('attendance')">
+          <div class="tool-icon">⏱️</div>
+          Attendance
+        </div>
+        <div class="tool-card" (click)="('leave')">
+          <div class="tool-icon">📅</div>
+          Leave & WFH
+        </div>
+        <div class="tool-card" (click)="('payslips')">
+          <div class="tool-icon">📄</div>
+          Payslips
+        </div>
+        <div class="tool-card" (click)="('holidays')">
+          <div class="tool-icon">🎉</div>
+          Holidays
+        </div>
+        <div class="tool-card" (click)="('notifications')">
+          <div class="tool-icon">🔔</div>
+          Notifications
+        </div>
+        <div class="tool-card" (click)="('profile')">
+          <div class="tool-icon">👤</div>
+          Profile
+        </div>
+      </div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="system-info">
+      <div class="info-card" *ngFor="let ann of announcements">
+        <h3>{{ ann.title }}</h3>
+        <p>{{ ann.content }}</p>
+        <small>{{ ann.createdAt | date:'shortDate' }}</small>
+      </div>
+    </div>
+
+  </div>
+</div>
