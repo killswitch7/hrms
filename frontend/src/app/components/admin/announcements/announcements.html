@@ -1,0 +1,7 @@
+<h2>Announcements</h2>
+
+<div class="announcement" *ngFor="let a of announcements">
+  <h3>{{ a.title }}</h3>
+  <p>{{ a.content }}</p>
+  <small>{{ a.createdAt | date:'short' }}</small>
+</div>

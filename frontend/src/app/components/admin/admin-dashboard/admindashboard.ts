@@ -42,6 +42,11 @@ export class AdminDashboard {
     private authService: AuthService
   ) {}
 
+  // used by the tool cards and Profile button
+  navigateTo(page: string) {
+    this.router.navigate([page]);
+  }
+
   onLogout() {
     console.log('Logging out from admin...');
     this.authService.clearSession();

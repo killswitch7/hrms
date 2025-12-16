@@ -1,4 +1,3 @@
-// src/app/components/auth/login/login.ts
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -36,10 +35,8 @@ export class Login {
       next: (res: LoginResponse) => {
         this.loading = false;
 
-        // Save session
         this.authService.saveSession(res.token, res.user.role, res.user.email);
 
-        // Navigate based on role and replace history
         if (res.user.role === 'admin') {
           this.router.navigate(['/admin-dashboard'], { replaceUrl: true });
         } else {

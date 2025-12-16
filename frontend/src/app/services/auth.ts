@@ -1,4 +1,3 @@
-// src/app/services/auth.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -32,7 +31,7 @@ export class AuthService {
     });
   }
 
-  // ---------- SAFE LOCALSTORAGE ACCESS ----------
+  // Safe localStorage access (prevents getItem not a function error)
   private getStorage(): Storage | null {
     const ls = (globalThis as any).localStorage;
     if (!ls || typeof ls.getItem !== 'function' || typeof ls.setItem !== 'function') {

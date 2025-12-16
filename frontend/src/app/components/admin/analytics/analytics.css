@@ -1,0 +1,23 @@
+.metrics {
+  list-style: none;
+  padding: 0;
+  margin-top: 16px;
+}
+
+.metrics li {
+  display: flex;
+  justify-content: space-between;
+  background: white;
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.08);
+  margin-bottom: 8px;
+}
+
+.name {
+  font-weight: 500;
+}
+
+.value {
+  color: #111827;
+}

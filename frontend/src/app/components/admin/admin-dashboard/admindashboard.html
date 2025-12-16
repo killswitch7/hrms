@@ -9,7 +9,8 @@
       </div>
     </div>
     <div class="header-right">
-      <button class="btn" (click)="('profile')">Profile</button>
+      <!-- use navigateTo() here -->
+      <button class="btn" (click)="navigateTo('/admin-dashboard')">Profile</button>
       <button class="btn" (click)="onLogout()">Logout</button>
     </div>
   </header>
@@ -66,7 +67,12 @@
     <section class="management-tools">
       <h2>Management Tools</h2>
       <div class="tools-grid">
-        <div *ngFor="let item of menuItems" class="tool-card" (click)="(item.page)">
+        <!-- use navigateTo(item.page) here -->
+        <div
+          *ngFor="let item of menuItems"
+          class="tool-card"
+          (click)="navigateTo(item.page)"
+        >
           <div class="tool-icon">{{ item.icon }}</div>
           <p>{{ item.label }}</p>
         </div>

@@ -1,1 +1,22 @@
-<p>payroll works!</p>
+<h2>Payroll</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Employee</th>
+      <th>Month</th>
+      <th>Basic</th>
+      <th>Allowance</th>
+      <th>Net</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let p of payrolls">
+      <td>{{ p.employee }}</td>
+      <td>{{ p.month }}</td>
+      <td>{{ p.basic }}</td>
+      <td>{{ p.allowance }}</td>
+      <td>{{ p.net }}</td>
+    </tr>
+  </tbody>
+</table>

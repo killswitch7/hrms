@@ -61,4 +61,7 @@ export class Dashboard {
     this.authService.clearSession();
     this.router.navigate(['/login'], { replaceUrl: true });
   }
+    navigateTo(page: string) {
+    this.router.navigate([page]);
+  }
 }

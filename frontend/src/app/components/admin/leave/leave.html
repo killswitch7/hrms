@@ -1,1 +1,22 @@
-<p>leave works!</p>
+<h2>Leave Approvals</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Employee</th>
+      <th>Type</th>
+      <th>From</th>
+      <th>To</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let req of requests">
+      <td>{{ req.employee }}</td>
+      <td>{{ req.type }}</td>
+      <td>{{ req.from | date:'shortDate' }}</td>
+      <td>{{ req.to | date:'shortDate' }}</td>
+      <td>{{ req.status }}</td>
+    </tr>
+  </tbody>
+</table>
