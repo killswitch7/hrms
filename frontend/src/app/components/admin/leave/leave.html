@@ -1,22 +1,121 @@
-<h2>Leave Approvals</h2>
+<div class="leave-approvals-container">
+  <h1>Leave & WFH Approvals</h1>
 
-<table class="table">
-  <thead>
-    <tr>
-      <th>Employee</th>
-      <th>Type</th>
-      <th>From</th>
-      <th>To</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let req of requests">
-      <td>{{ req.employee }}</td>
-      <td>{{ req.type }}</td>
-      <td>{{ req.from | date:'shortDate' }}</td>
-      <td>{{ req.to | date:'shortDate' }}</td>
-      <td>{{ req.status }}</td>
-    </tr>
-  </tbody>
-</table>
+  <!-- TABS -->
+  <div class="tabs">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'leave'"
+      (click)="setTab('leave')"
+    >
+      Leave Requests
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'wfh'"
+      (click)="setTab('wfh')"
+    >
+      WFH Requests
+    </button>
+  </div>
+
+  <!-- LEAVE TAB -->
+  <div *ngIf="activeTab === 'leave'">
+    <h2>Pending Leave Requests</h2>
+
+    <p class="error" *ngIf="errorLeave">{{ errorLeave }}</p>
+
+    <div *ngIf="loadingLeave">Loading leave requests...</div>
+
+    <table *ngIf="!loadingLeave && leaveRequests.length" class="table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Type</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>Requested On</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let req of leaveRequests">
+          <td>
+            {{ req.employee?.firstName }} {{ req.employee?.lastName }}
+            <br />
+            <small>{{ req.employee?.email }}</small>
+          </td>
+          <td>{{ req.type }}</td>
+          <td>{{ req.from | date: 'mediumDate' }}</td>
+          <td>{{ req.to | date: 'mediumDate' }}</td>
+          <td>{{ req.reason || '-' }}</td>
+          <td>
+            <span class="status" [ngClass]="req.status?.toLowerCase()">
+              {{ req.status }}
+            </span>
+          </td>
+          <td>{{ req.createdAt | date: 'short' }}</td>
+          <td>
+            <button class="btn approve" (click)="approveLeave(req)">Approve</button>
+            <button class="btn reject" (click)="rejectLeave(req)">Reject</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!loadingLeave && !leaveRequests.length">
+      <p>No pending leave requests.</p>
+    </div>
+  </div>
+
+  <!-- WFH TAB -->
+  <div *ngIf="activeTab === 'wfh'">
+    <h2>Pending WFH Requests</h2>
+
+    <p class="error" *ngIf="errorWfh">{{ errorWfh }}</p>
+
+    <div *ngIf="loadingWfh">Loading WFH requests...</div>
+
+    <table *ngIf="!loadingWfh && wfhRequests.length" class="table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>Requested On</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let req of wfhRequests">
+          <td>
+            {{ req.employee?.firstName }} {{ req.employee?.lastName }}
+            <br />
+            <small>{{ req.employee?.email }}</small>
+          </td>
+          <td>{{ req.from | date: 'mediumDate' }}</td>
+          <td>{{ req.to | date: 'mediumDate' }}</td>
+          <td>{{ req.reason || '-' }}</td>
+          <td>
+            <span class="status" [ngClass]="req.status?.toLowerCase()">
+              {{ req.status }}
+            </span>
+          </td>
+          <td>{{ req.createdAt | date: 'short' }}</td>
+          <td>
+            <button class="btn approve" (click)="approveWfh(req)">Approve</button>
+            <button class="btn reject" (click)="rejectWfh(req)">Reject</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!loadingWfh && !wfhRequests.length">
+      <p>No pending WFH requests.</p>
+    </div>
+  </div>
+</div>

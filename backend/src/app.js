@@ -1,56 +1,49 @@
 // backend/src/app.js
 const express = require('express');
-require('dotenv').config();
-
+const cors = require('cors');
 const connectDB = require('./config/db');
-const authRoute = require('./routes/auth');
-const adminRoute = require('./routes/admin');
-const employeeRoute = require('./routes/employee');
+
+// Route files
+const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
+const employeeRoutes = require('./routes/employee');
 
 const app = express();
 
-// Connect DB
+// ---------- CONNECT TO MONGODB ----------
 connectDB();
 
-// Logger
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  next();
-});
+// ---------- GLOBAL MIDDLEWARE ----------
+app.use(
+  cors({
+    origin: 'http://localhost:4200', // your Angular frontend
+    credentials: true,
+  })
+);
 
-// CORS for Angular at http://localhost:4200
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-  );
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+app.use(express.json()); // parse JSON body
 
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
-  }
-
-  next();
-});
-
-// Body parser
-app.use(express.json());
-
-// Routes
-app.use('/api/auth', authRoute);
-app.use('/api/admin', adminRoute);
-app.use('/api/employee', employeeRoute);
-
-// Test route
+// ---------- ROOT TEST ROUTE ----------
 app.get('/', (req, res) => {
-  res.send('HRMS Backend is running');
+  res.send('HRMS backend is running');
 });
 
-// 404
+// ---------- API ROUTES ----------
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/employee', employeeRoutes);
+
+// ---------- 404 HANDLER ----------
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
+});
+
+// ---------- ERROR HANDLER ----------
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res
+    .status(err.status || 500)
+    .json({ message: err.message || 'Server error' });
 });
 
 module.exports = app;

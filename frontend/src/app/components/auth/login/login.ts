@@ -1,15 +1,14 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
 
-import { AuthService, LoginResponse } from '../../../services/auth';
+import { AuthService } from '../../../services/auth';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './login.html',
   styleUrls: ['./login.css'],
 })
@@ -19,7 +18,10 @@ export class Login {
   error: string = '';
   loading: boolean = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   onLogin() {
     this.error = '';
@@ -32,9 +34,10 @@ export class Login {
     this.loading = true;
 
     this.authService.login(this.email, this.password).subscribe({
-      next: (res: LoginResponse) => {
+      next: (res) => {
         this.loading = false;
 
+        // saveSession is already called inside login(), but this is safe too:
         this.authService.saveSession(res.token, res.user.role, res.user.email);
 
         if (res.user.role === 'admin') {
@@ -45,7 +48,9 @@ export class Login {
       },
       error: (err) => {
         this.loading = false;
-        this.error = err.error?.message || 'Login failed. Please try again.';
+        this.error =
+          err.error?.message || 'Login failed. Please check your credentials.';
+        console.error('Login error:', err);
       },
     });
   }

@@ -88,3 +88,8 @@ th {
   text-align: left;
   background: #f3f4f6;
 }
+.grid-two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+}

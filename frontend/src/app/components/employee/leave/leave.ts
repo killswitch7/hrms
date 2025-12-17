@@ -1,57 +1,163 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+// frontend/src/app/components/employee/leave/leave.ts
+import { Component, OnInit } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+
+import { LeaveService, LeaveRequest, WfhRequest } from '../../../services/leave';
 
 @Component({
   selector: 'app-employee-leave',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
+  providers: [DatePipe],
   templateUrl: './leave.html',
   styleUrls: ['./leave.css'],
 })
-export class Leave {
-  leaveBalance = 10;
+export class Leave implements OnInit {
+  // ---------- LEAVE FORM ----------
+  leaveType: string = 'Annual';
+  leaveFromDate: string = '';
+  leaveToDate: string = '';
+  leaveReason: string = '';
 
-  newRequest = {
-    type: 'Annual',
-    from: '',
-    to: '',
-    reason: '',
-  };
+  leaveRequests: LeaveRequest[] = [];
+  loadingLeave: boolean = false;
+  errorLeave: string = '';
+  successLeave: string = '';
 
-  requests = [
-    {
-      type: 'Sick',
-      from: new Date(Date.now() - 5 * 86400000),
-      to: new Date(Date.now() - 4 * 86400000),
-      status: 'Approved',
-    },
-    {
-      type: 'Annual',
-      from: new Date(Date.now() + 7 * 86400000),
-      to: new Date(Date.now() + 9 * 86400000),
-      status: 'Pending',
-    },
-  ];
+  // ---------- WFH FORM ----------
+  wfhFromDate: string = '';
+  wfhToDate: string = '';
+  wfhReason: string = '';
 
-  submitRequest() {
-    if (!this.newRequest.from || !this.newRequest.to || !this.newRequest.reason) {
-      alert('Please fill all fields');
+  wfhRequests: WfhRequest[] = [];
+  loadingWfh: boolean = false;
+  errorWfh: string = '';
+  successWfh: string = '';
+
+  constructor(private leaveService: LeaveService) {}
+
+  ngOnInit() {
+    this.loadMyLeaveRequests();
+    this.loadMyWfhRequests();
+  }
+
+  // ---------- LOADERS ----------
+
+  loadMyLeaveRequests() {
+    this.loadingLeave = true;
+    this.errorLeave = '';
+
+    this.leaveService.getMyLeaveRequests().subscribe({
+      next: (res) => {
+        this.leaveRequests = res.data || [];
+        this.loadingLeave = false;
+      },
+      error: (err) => {
+        console.error('Error loading leave requests:', err);
+        this.errorLeave = err.error?.message || 'Failed to load leave requests.';
+        this.loadingLeave = false;
+      },
+    });
+  }
+
+  loadMyWfhRequests() {
+    this.loadingWfh = true;
+    this.errorWfh = '';
+
+    this.leaveService.getMyWfhRequests().subscribe({
+      next: (res) => {
+        this.wfhRequests = res.data || [];
+        this.loadingWfh = false;
+      },
+      error: (err) => {
+        console.error('Error loading WFH requests:', err);
+        this.errorWfh = err.error?.message || 'Failed to load WFH requests.';
+        this.loadingWfh = false;
+      },
+    });
+  }
+
+  // ---------- SUBMIT LEAVE ----------
+
+  submitLeave() {
+    this.errorLeave = '';
+    this.successLeave = '';
+
+    if (!this.leaveFromDate || !this.leaveToDate) {
+      this.errorLeave = 'Please select both from and to dates for leave.';
       return;
     }
 
-    this.requests.unshift({
-      type: this.newRequest.type,
-      from: new Date(this.newRequest.from),
-      to: new Date(this.newRequest.to),
-      status: 'Pending',
-    });
+    this.loadingLeave = true;
 
-    this.newRequest = {
-      type: 'Annual',
-      from: '',
-      to: '',
-      reason: '',
-    };
+    this.leaveService
+      .createLeave({
+        from: this.leaveFromDate,
+        to: this.leaveToDate,
+        type: this.leaveType,
+        reason: this.leaveReason,
+      })
+      .subscribe({
+        next: (res) => {
+          this.loadingLeave = false;
+          this.successLeave = res.message || 'Leave request submitted';
+
+          // Reset form
+          this.leaveFromDate = '';
+          this.leaveToDate = '';
+          this.leaveReason = '';
+          this.leaveType = 'Annual';
+
+          // Reload list
+          this.loadMyLeaveRequests();
+        },
+        error: (err) => {
+          this.loadingLeave = false;
+          console.error('Error submitting leave:', err);
+          this.errorLeave = err.error?.message || 'Failed to submit leave request.';
+        },
+      });
+  }
+
+  // ---------- SUBMIT WFH ----------
+
+  submitWfh() {
+    this.errorWfh = '';
+    this.successWfh = '';
+
+    if (!this.wfhFromDate || !this.wfhToDate) {
+      this.errorWfh = 'Please select both from and to dates for WFH.';
+      return;
+    }
+
+    this.loadingWfh = true;
+
+    this.leaveService
+      .createWfh({
+        from: this.wfhFromDate,
+        to: this.wfhToDate,
+        reason: this.wfhReason,
+      })
+      .subscribe({
+        next: (res) => {
+          this.loadingWfh = false;
+          this.successWfh = res.message || 'WFH request submitted';
+
+          // Reset form
+          this.wfhFromDate = '';
+          this.wfhToDate = '';
+          this.wfhReason = '';
+
+          // Reload list
+          this.loadMyWfhRequests();
+        },
+        error: (err) => {
+          this.loadingWfh = false;
+          console.error('Error submitting WFH:', err);
+          this.errorWfh = err.error?.message || 'Failed to submit WFH request.';
+        },
+      });
   }
 }
