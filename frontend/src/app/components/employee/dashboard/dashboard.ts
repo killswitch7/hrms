@@ -1,4 +1,3 @@
-// src/app/components/employee/dashboard.ts
 import { Component } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -51,17 +50,26 @@ export class Dashboard {
     },
   ];
 
+  // routes match what we configured above
+  quickActions = [
+    { icon: '⏱️', label: 'My Attendance', page: '/employee-attendance' },
+    { icon: '🎉', label: 'Holidays', page: '/employee-holidays' },
+    { icon: '📝', label: 'Leave', page: '/employee-leave' },
+    { icon: '💰', label: 'Payslip', page: '/employee-payslip' },
+  ];
+
   constructor(
     private router: Router,
     private authService: AuthService
   ) {}
 
+  navigateTo(page: string) {
+    this.router.navigate([page]);
+  }
+
   onLogout() {
     console.log('Logout clicked, clearing session and redirecting to login');
     this.authService.clearSession();
     this.router.navigate(['/login'], { replaceUrl: true });
-  }
-    navigateTo(page: string) {
-    this.router.navigate([page]);
   }
 }

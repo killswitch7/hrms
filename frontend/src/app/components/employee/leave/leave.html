@@ -1,1 +1,64 @@
-<p>leave works!</p>
+<h2>Leave & WFH</h2>
+
+<section class="summary">
+  <div class="summary-card">
+    <h3>Leave Balance</h3>
+    <p class="big">{{ leaveBalance }} days</p>
+    <p>Remaining this year</p>
+  </div>
+</section>
+
+<section class="apply">
+  <h3>Apply for Leave</h3>
+
+  <form (ngSubmit)="submitRequest()" #leaveForm="ngForm" class="form">
+    <div class="form-row">
+      <label>Type</label>
+      <select [(ngModel)]="newRequest.type" name="type">
+        <option value="Annual">Annual Leave</option>
+        <option value="Sick">Sick Leave</option>
+        <option value="WFH">Work From Home</option>
+        <option value="Casual">Casual Leave</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label>From</label>
+      <input type="date" [(ngModel)]="newRequest.from" name="from" required />
+    </div>
+
+    <div class="form-row">
+      <label>To</label>
+      <input type="date" [(ngModel)]="newRequest.to" name="to" required />
+    </div>
+
+    <div class="form-row">
+      <label>Reason</label>
+      <textarea [(ngModel)]="newRequest.reason" name="reason" rows="3" required></textarea>
+    </div>
+
+    <button type="submit" class="btn">Submit Request</button>
+  </form>
+</section>
+
+<section class="history">
+  <h3>My Requests</h3>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of requests">
+        <td>{{ r.type }}</td>
+        <td>{{ r.from | date:'shortDate' }}</td>
+        <td>{{ r.to | date:'shortDate' }}</td>
+        <td>{{ r.status }}</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

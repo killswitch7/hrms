@@ -1,1 +1,41 @@
-<p>attendance works!</p>
+<h2>My Attendance</h2>
+
+<section class="today-card">
+  <h3>Today</h3>
+  <p class="status">
+    Status:
+    <span [class.present]="todayAttendance.status === 'Present'"
+          [class.absent]="todayAttendance.status === 'Absent'">
+      {{ todayAttendance.status }}
+    </span>
+  </p>
+  <p>Check-in: {{ todayAttendance.checkIn | date:'shortTime' }}</p>
+  <p>Check-out:
+    <ng-container *ngIf="todayAttendance.checkOut; else notOut">
+      {{ todayAttendance.checkOut | date:'shortTime' }}
+    </ng-container>
+    <ng-template #notOut>Not checked out yet</ng-template>
+  </p>
+</section>
+
+<section class="history">
+  <h3>Monthly Attendance</h3>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Check-in</th>
+        <th>Check-out</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of records">
+        <td>{{ r.date | date:'shortDate' }}</td>
+        <td>{{ r.status }}</td>
+        <td>{{ r.checkIn }}</td>
+        <td>{{ r.checkOut }}</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

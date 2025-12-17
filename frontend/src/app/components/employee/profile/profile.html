@@ -1,1 +1,32 @@
-<p>profile works!</p>
+<h2>My Profile</h2>
+
+<div class="profile-card">
+  <div class="row">
+    <label>Name</label>
+    <span>{{ profile.name }}</span>
+  </div>
+  <div class="row">
+    <label>Email</label>
+    <span>{{ profile.email }}</span>
+  </div>
+  <div class="row">
+    <label>Employee ID</label>
+    <span>{{ profile.employeeId }}</span>
+  </div>
+  <div class="row">
+    <label>Position</label>
+    <span>{{ profile.position }}</span>
+  </div>
+  <div class="row">
+    <label>Department</label>
+    <span>{{ profile.department }}</span>
+  </div>
+  <div class="row">
+    <label>Reporting Manager</label>
+    <span>{{ profile.reportingManager }}</span>
+  </div>
+  <div class="row">
+    <label>Join Date</label>
+    <span>{{ profile.joinDate | date:'longDate' }}</span>
+  </div>
+</div>

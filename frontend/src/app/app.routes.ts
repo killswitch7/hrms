@@ -8,36 +8,44 @@ import { Dashboard } from './components/employee/dashboard/dashboard';
 // Admin feature pages
 import { Employees } from './components/admin/employees/employees';
 import { AdminAttendance } from './components/admin/attendance/attendance';
-// NOTE: folder is "leave", not "leave-approvals"
-import { Leave } from './components/admin/leave/leave';
+import { Leave as AdminLeave } from './components/admin/leave/leave';
 import { Payroll } from './components/admin/payroll/payroll';
-
-// If you generated these with CLI: ng g c components/admin/announcements --standalone
-// class name will be AnnouncementsComponent, file *.component.ts
 import { Announcements } from './components/admin/announcements/announcements';
 import { Analytics } from './components/admin/analytics/analytics';
+
+// Employee feature pages 
+import { Attendance } from './components/employee/attendance/attendance';
+import { Holidays } from './components/employee/holidays/holidays';
+import { Leave as EmployeeLeave } from './components/employee/leave/leave';
+import { Payslip } from './components/employee/payslip/payslip';
+import { Profile } from './components/employee/profile/profile';
+import { Notifications } from './components/employee/notifications/notifications';
+
 
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
 
 export const routes: Routes = [
+  // Auth
   {
     path: 'login',
     component: Login,
     canActivate: [loginGuard],
   },
+
+  // Dashboards
   {
     path: 'admin-dashboard',
     component: AdminDashboard,
     canActivate: [authGuard],
   },
   {
-    path: 'dashboard',
+    path: 'dashboard',          // employee main dashboard
     component: Dashboard,
     canActivate: [authGuard],
   },
 
-  // Admin feature routes
+  // -------- Admin feature routes --------
   {
     path: 'employees',
     component: Employees,
@@ -49,8 +57,8 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: 'leave-approvals',          // URL path
-    component: Leave,                 // component in src/app/components/admin/leave/leave.ts
+    path: 'leave-approvals',
+    component: AdminLeave,
     canActivate: [authGuard],
   },
   {
@@ -69,6 +77,40 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
 
+  // -------- Employee feature routes --------
+  {
+    path: 'employee-attendance',
+    component: Attendance,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee-holidays',
+    component: Holidays,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee-leave',
+    component: EmployeeLeave,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee-payslip',
+    component: Payslip,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee-profile',
+    component: Profile,
+    canActivate: [authGuard],
+  },
+    {
+    path: 'employee-notifications',
+    component: Notifications,
+    canActivate: [authGuard],
+  },
+
+
+  // Defaults
   {
     path: '',
     pathMatch: 'full',

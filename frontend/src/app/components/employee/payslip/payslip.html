@@ -1,1 +1,26 @@
-<p>payslip works!</p>
+<h2>My Payslips</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Month</th>
+      <th>Basic</th>
+      <th>Allowance</th>
+      <th>Deductions</th>
+      <th>Net Pay</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let p of payslips">
+      <td>{{ p.month }}</td>
+      <td>{{ p.basic }}</td>
+      <td>{{ p.allowance }}</td>
+      <td>{{ p.deductions }}</td>
+      <td>{{ p.net }}</td>
+      <td>
+        <button class="btn" disabled>Download</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

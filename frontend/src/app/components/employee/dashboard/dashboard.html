@@ -10,6 +10,8 @@
       </div>
     </div>
     <div class="header-right">
+      <!-- Go to profile page -->
+      <button class="btn" (click)="navigateTo('/employee-profile')">Profile</button>
       <button class="btn" (click)="onLogout()">Logout</button>
     </div>
   </div>
@@ -48,27 +50,27 @@
     <div class="management-tools">
       <h2>Quick Actions</h2>
       <div class="tools-grid">
-        <div class="tool-card" (click)="('attendance')">
+        <div class="tool-card" (click)="navigateTo('/employee-attendance')">
           <div class="tool-icon">⏱️</div>
           Attendance
         </div>
-        <div class="tool-card" (click)="('leave')">
+        <div class="tool-card" (click)="navigateTo('/employee-leave')">
           <div class="tool-icon">📅</div>
           Leave & WFH
         </div>
-        <div class="tool-card" (click)="('payslips')">
+        <div class="tool-card" (click)="navigateTo('/employee-payslip')">
           <div class="tool-icon">📄</div>
           Payslips
         </div>
-        <div class="tool-card" (click)="('holidays')">
+        <div class="tool-card" (click)="navigateTo('/employee-holidays')">
           <div class="tool-icon">🎉</div>
           Holidays
         </div>
-        <div class="tool-card" (click)="('notifications')">
+        <div class="tool-card" (click)="navigateTo('/employee-notifications')">
           <div class="tool-icon">🔔</div>
           Notifications
         </div>
-        <div class="tool-card" (click)="('profile')">
+        <div class="tool-card" (click)="navigateTo('/employee-profile')">
           <div class="tool-icon">👤</div>
           Profile
         </div>

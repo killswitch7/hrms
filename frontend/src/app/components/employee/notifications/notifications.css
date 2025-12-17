@@ -1,0 +1,54 @@
+.actions {
+  margin: 8px 0 12px;
+}
+
+.btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  background: #111827;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notification-card {
+  background: white;
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.08);
+  font-size: 14px;
+}
+
+.notification-card.unread {
+  border-left: 4px solid #2563eb;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.badge {
+  background: #2563eb;
+  color: white;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.message {
+  margin: 0 0 4px;
+}
+
+.time {
+  color: #9ca3af;
+}
