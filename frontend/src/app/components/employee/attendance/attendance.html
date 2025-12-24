@@ -1,41 +1,77 @@
-<h2>My Attendance</h2>
+<div class="attendance-container">
+  <h1>My Attendance</h1>
 
-<section class="today-card">
-  <h3>Today</h3>
-  <p class="status">
-    Status:
-    <span [class.present]="todayAttendance.status === 'Present'"
-          [class.absent]="todayAttendance.status === 'Absent'">
-      {{ todayAttendance.status }}
-    </span>
-  </p>
-  <p>Check-in: {{ todayAttendance.checkIn | date:'shortTime' }}</p>
-  <p>Check-out:
-    <ng-container *ngIf="todayAttendance.checkOut; else notOut">
-      {{ todayAttendance.checkOut | date:'shortTime' }}
-    </ng-container>
-    <ng-template #notOut>Not checked out yet</ng-template>
-  </p>
-</section>
+  <!-- TODAY CARD -->
+  <div class="card today-card">
+    <h2>Today: {{ todayString }}</h2>
 
-<section class="history">
-  <h3>Monthly Attendance</h3>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Status</th>
-        <th>Check-in</th>
-        <th>Check-out</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let r of records">
-        <td>{{ r.date | date:'shortDate' }}</td>
-        <td>{{ r.status }}</td>
-        <td>{{ r.checkIn }}</td>
-        <td>{{ r.checkOut }}</td>
-      </tr>
-    </tbody>
-  </table>
-</section>
+    <p *ngIf="todayRecord">
+      Check-in:
+      <strong>{{ todayRecord.checkIn | date: 'shortTime' }}</strong>
+      <br />
+      Check-out:
+      <strong>
+        {{ todayRecord.checkOut ? (todayRecord.checkOut | date: 'shortTime') : '-' }}
+      </strong>
+    </p>
+
+    <p *ngIf="!todayRecord">
+      No attendance record for today yet.
+    </p>
+
+    <div class="actions">
+      <button
+        type="button"
+        class="btn"
+        (click)="onCheckIn()"
+        [disabled]="loading || hasCheckedInToday"
+      >
+        {{ hasCheckedInToday ? 'Already Checked In' : 'Check In' }}
+      </button>
+
+      <button
+        type="button"
+        class="btn secondary"
+        (click)="onCheckOut()"
+        [disabled]="loading || !hasCheckedInToday || hasCheckedOutToday"
+      >
+        {{ hasCheckedOutToday ? 'Already Checked Out' : 'Check Out' }}
+      </button>
+    </div>
+
+    <p class="error" *ngIf="error">{{ error }}</p>
+    <p class="success" *ngIf="success">{{ success }}</p>
+  </div>
+
+  <!-- HISTORY CARD -->
+  <div class="card history-card">
+    <h2>Last 30 Days</h2>
+
+    <div *ngIf="loading && !records.length">
+      Loading attendance...
+    </div>
+
+    <div *ngIf="!loading && !records.length">
+      <p>No attendance records found.</p>
+    </div>
+
+    <table *ngIf="records.length" class="attendance-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Check-In</th>
+          <th>Check-Out</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of records">
+          <td>{{ r.date | date: 'mediumDate' }}</td>
+          <td>{{ r.checkIn ? (r.checkIn | date: 'shortTime') : '-' }}</td>
+          <td>{{ r.checkOut ? (r.checkOut | date: 'shortTime') : '-' }}</td>
+          <td>{{ r.status || 'Present' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -5,6 +5,7 @@ const router = express.Router();
 const { protect, requireRole } = require('../middleware/auth');
 const LeaveRequest = require('../models/LeaveRequest');
 const Employee = require('../models/Employee');
+const Attendance = require('../models/Attendance');
 
 // All admin routes require admin user
 router.use(protect);
@@ -15,7 +16,7 @@ router.get('/ping', (req, res) => {
   return res.json({ message: 'Admin routes working', user: req.user.email });
 });
 
-// ---------- Helper to populate employee info ----------
+// ---------- Helper for leave/WFH ----------
 function baseLeaveQuery(extraFilter = {}) {
   return LeaveRequest.find(extraFilter)
     .populate('employee', 'employeeId firstName lastName email')
@@ -29,7 +30,7 @@ router.get('/leave-requests', async (req, res) => {
   try {
     const { status } = req.query;
 
-    const filter = { type: { $ne: 'WFH' } }; // exclude WFH
+    const filter = { type: { $ne: 'WFH' } };
     if (status) {
       filter.status = status;
     }
@@ -54,7 +55,9 @@ router.patch('/leave-requests/:id/approve', async (req, res) => {
     }
 
     if (request.type === 'WFH') {
-      return res.status(400).json({ message: 'This is a WFH request, use /wfh-requests endpoints' });
+      return res
+        .status(400)
+        .json({ message: 'This is a WFH request, use /wfh-requests endpoints' });
     }
 
     request.status = 'Approved';
@@ -81,7 +84,9 @@ router.patch('/leave-requests/:id/reject', async (req, res) => {
     }
 
     if (request.type === 'WFH') {
-      return res.status(400).json({ message: 'This is a WFH request, use /wfh-requests endpoints' });
+      return res
+        .status(400)
+        .json({ message: 'This is a WFH request, use /wfh-requests endpoints' });
     }
 
     request.status = 'Rejected';
@@ -168,6 +173,58 @@ router.patch('/wfh-requests/:id/reject', async (req, res) => {
     res.json({ message: 'WFH request rejected', data: request });
   } catch (err) {
     console.error('Error rejecting WFH request:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ---------- ATTENDANCE LOGS (ADMIN VIEW) ----------
+
+// GET /api/admin/attendance?from=YYYY-MM-DD&to=YYYY-MM-DD&employeeId=EMP-123
+router.get('/attendance', async (req, res) => {
+  try {
+    let { from, to, employeeId } = req.query;
+
+    let fromDate, toDate;
+    const normalizeDate = (d) => {
+      const x = new Date(d);
+      x.setHours(0, 0, 0, 0);
+      return x;
+    };
+
+    if (from) {
+      fromDate = normalizeDate(new Date(from));
+    } else {
+      fromDate = normalizeDate(new Date());
+      fromDate.setDate(fromDate.getDate() - 30);
+    }
+
+    if (to) {
+      toDate = normalizeDate(new Date(to));
+      toDate.setHours(23, 59, 59, 999);
+    } else {
+      toDate = normalizeDate(new Date());
+      toDate.setHours(23, 59, 59, 999);
+    }
+
+    const query = {
+      date: { $gte: fromDate, $lte: toDate },
+    };
+
+    if (employeeId) {
+      const emp = await Employee.findOne({ employeeId });
+      if (!emp) {
+        return res.status(404).json({ message: 'Employee not found for given employeeId' });
+      }
+      query.employee = emp._id;
+    }
+
+    const records = await Attendance.find(query)
+      .populate('employee', 'employeeId firstName lastName email')
+      .sort({ date: -1 });
+
+    res.json({ data: records });
+  } catch (err) {
+    console.error('Error fetching attendance logs (admin):', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
