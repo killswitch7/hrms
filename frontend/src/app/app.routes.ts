@@ -1,4 +1,4 @@
-// src/app/app.routes.ts
+// frontend/src/app/app.routes.ts
 import { Routes } from '@angular/router';
 
 // Auth + dashboards
@@ -9,10 +9,11 @@ import { Dashboard } from './components/employee/dashboard/dashboard';
 // Admin feature pages
 import { Employees } from './components/admin/employees/employees';
 import { AdminAttendance } from './components/admin/attendance/attendance';
-import { LeaveApprovals } from './components/admin/leave/leave';
+import { LeaveApprovals as AdminLeave } from './components/admin/leave/leave';
 import { Payroll } from './components/admin/payroll/payroll';
 import { Announcements } from './components/admin/announcements/announcements';
 import { Analytics } from './components/admin/analytics/analytics';
+import { RegisterEmployee } from './components/admin/register-employee/register-employee';
 
 // Employee feature pages
 import { Attendance } from './components/employee/attendance/attendance';
@@ -20,22 +21,19 @@ import { Holidays } from './components/employee/holidays/holidays';
 import { Leave as EmployeeLeave } from './components/employee/leave/leave';
 import { Payslip } from './components/employee/payslip/payslip';
 import { Profile } from './components/employee/profile/profile';
-// If you already created Notifications component, keep this import;
-// if not, comment it out to avoid errors.
-import { Notifications } from './components/employee/notifications/notifications';
 
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
 
 export const routes: Routes = [
-  // -------- Auth --------
+  // Auth
   {
     path: 'login',
     component: Login,
     canActivate: [loginGuard],
   },
 
-  // -------- Dashboards --------
+  // Dashboards
   {
     path: 'admin-dashboard',
     component: AdminDashboard,
@@ -47,7 +45,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
 
-  // -------- Admin routes --------
+  // Admin feature routes
   {
     path: 'employees',
     component: Employees,
@@ -60,7 +58,7 @@ export const routes: Routes = [
   },
   {
     path: 'leave-approvals',
-    component: LeaveApprovals,
+    component: AdminLeave,
     canActivate: [authGuard],
   },
   {
@@ -79,7 +77,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
 
-  // -------- Employee routes --------
+  // NEW: Admin Register Employee
+  {
+    path: 'register-employee',
+    component: RegisterEmployee,
+    canActivate: [authGuard],
+  },
+
+  // Employee feature routes
   {
     path: 'employee-attendance',
     component: Attendance,
@@ -105,14 +110,8 @@ export const routes: Routes = [
     component: Profile,
     canActivate: [authGuard],
   },
-  // Uncomment this route only if you have a Notifications component created
-  {
-    path: 'employee-notifications',
-    component: Notifications,
-    canActivate: [authGuard],
-  },
 
-  // -------- Defaults --------
+  // Defaults
   {
     path: '',
     pathMatch: 'full',

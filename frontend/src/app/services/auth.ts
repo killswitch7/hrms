@@ -25,7 +25,6 @@ export class AuthService {
 
   private apiUrl = 'http://localhost:5001/api';
 
-  // ---------- PLATFORM HELPERS (for SSR safety) ----------
 
   private isBrowser(): boolean {
     return typeof window !== 'undefined';

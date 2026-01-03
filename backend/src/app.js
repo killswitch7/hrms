@@ -3,47 +3,35 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
-// Route files
-const authRoutes = require('./routes/auth');
-const adminRoutes = require('./routes/admin');
-const employeeRoutes = require('./routes/employee');
+const authRoute = require('./routes/auth');
+const adminRoute = require('./routes/admin');
+const employeeRoute = require('./routes/employee');
 
 const app = express();
 
-// ---------- CONNECT TO MONGODB ----------
+// Connect DB
 connectDB();
 
-// ---------- GLOBAL MIDDLEWARE ----------
+// Body parser
+app.use(express.json());
+
+// CORS
 app.use(
   cors({
-    origin: 'http://localhost:4200', // your Angular frontend
+    origin: 'http://localhost:4200',
     credentials: true,
   })
 );
 
-app.use(express.json()); // parse JSON body
+// Routes
+app.use('/api/auth', authRoute);
+app.use('/api/admin', adminRoute);      // <-- IMPORTANT
+app.use('/api/employee', employeeRoute);
 
-// ---------- ROOT TEST ROUTE ----------
-app.get('/', (req, res) => {
-  res.send('HRMS backend is running');
-});
+// Test route
+app.get('/', (req, res) => res.send('HRMS Backend is running'));
 
-// ---------- API ROUTES ----------
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/employee', employeeRoutes);
-
-// ---------- 404 HANDLER ----------
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
-
-// ---------- ERROR HANDLER ----------
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res
-    .status(err.status || 500)
-    .json({ message: err.message || 'Server error' });
-});
+// 404
+app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
 
 module.exports = app;

@@ -11,7 +11,7 @@ export interface LeaveRequest {
   to: string | Date;
   reason?: string;
   status?: LeaveStatus;
-  type?: string;       // 'Annual' | 'Sick' | 'Casual' | 'Other' | 'WFH'
+  type?: string;      
   createdAt?: string;
   employee?: {
     employeeId?: string;

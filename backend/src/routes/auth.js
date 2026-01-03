@@ -1,121 +1,102 @@
-// src/routes/auth.js
+// backend/src/routes/auth.js
 const express = require('express');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
 const User = require('../models/User');
-const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 
-// helper to sign JWT
-const signToken = (user) => {
-  const payload = {
-    id: user._id,
-    role: user.role,
-    email: user.email,
-  };
-
-  return jwt.sign(
-    payload,
-    process.env.JWT_SECRET || 'secret123',
-    { expiresIn: '7d' }
-  );
-};
-
-// POST /api/auth/register
+/**
+ * POST /api/auth/register
+ * Use this mainly to create the first admin (via Postman)
+ * Body: { name, email, password, role? }
+ */
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { name, email, password, role } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+    if (!name || !email || !password) {
+      return res
+        .status(400)
+        .json({ message: 'Name, email and password are required.' });
     }
 
-    const existing = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase();
+
+    const existing = await User.findOne({ email: normalizedEmail });
     if (existing) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(409).json({ message: 'User already exists' });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashed = await bcrypt.hash(password, salt);
-
-    const user = await User.create({
-      email,
-      password: hashed,
-      role: role || 'employee',
+    const user = new User({
+      name,
+      email: normalizedEmail,
+      password,           // will be hashed in pre-save hook
+      role: role || 'admin',
     });
 
-    const token = signToken(user);
+    await user.save();
 
-    res.status(201).json({
-      message: 'User registered successfully',
-      token,
+    return res.status(201).json({
+      message: 'User registered',
       user: {
         id: user._id,
+        name: user.name,
         email: user.email,
         role: user.role,
       },
     });
   } catch (err) {
-    console.error('Register error:', err.message);
+    console.error('Register error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// POST /api/auth/login
+/**
+ * POST /api/auth/login
+ * Body: { email, password }
+ */
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+      return res
+        .status(400)
+        .json({ message: 'Email and password are required.' });
     }
 
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase();
+
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password || '');
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = signToken(user);
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET || 'secret123',
+      { expiresIn: '8h' }
+    );
 
-    res.json({
+    const userSafe = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
+
+    return res.json({
       message: 'Login successful',
       token,
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-      },
+      user: userSafe,
     });
   } catch (err) {
-    console.error('Login error:', err.message);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// GET /api/auth/me  (get current logged-in user)
-router.get('/me', protect, async (req, res) => {
-  try {
-    // protect already set req.user
-    if (!req.user) {
-      return res.status(401).json({ message: 'Not authorized' });
-    }
-
-    res.json({
-      user: {
-        id: req.user._id,
-        email: req.user.email,
-        role: req.user.role,
-      },
-    });
-  } catch (err) {
-    console.error('Me error:', err.message);
+    console.error('Login error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });

@@ -3,229 +3,98 @@ const express = require('express');
 const router = express.Router();
 
 const { protect, requireRole } = require('../middleware/auth');
-const LeaveRequest = require('../models/LeaveRequest');
+const User = require('../models/User');
 const Employee = require('../models/Employee');
-const Attendance = require('../models/Attendance');
 
-// All admin routes require admin user
-router.use(protect);
-router.use(requireRole('admin'));
-
-// Simple test route
+/**
+ * Quick test route
+ * GET /api/admin/ping
+ */
 router.get('/ping', (req, res) => {
-  return res.json({ message: 'Admin routes working', user: req.user.email });
+  res.json({ message: 'Admin route working' });
 });
 
-// ---------- Helper for leave/WFH ----------
-function baseLeaveQuery(extraFilter = {}) {
-  return LeaveRequest.find(extraFilter)
-    .populate('employee', 'employeeId firstName lastName email')
-    .sort({ createdAt: -1 });
-}
-
-// ---------- LEAVE REQUESTS (non-WFH) ----------
-
-// GET /api/admin/leave-requests?status=Pending
-router.get('/leave-requests', async (req, res) => {
+/**
+ * POST /api/admin/employees
+ * Admin creates a new employee (User + Employee)
+ * Body from frontend:
+ * { name, email, password, department, position }
+ */
+router.post('/employees', protect, requireRole('admin'), async (req, res) => {
   try {
-    const { status } = req.query;
+    const { name, email, password, department, position } = req.body;
 
-    const filter = { type: { $ne: 'WFH' } };
-    if (status) {
-      filter.status = status;
-    }
-
-    const requests = await baseLeaveQuery(filter);
-
-    res.json({ data: requests });
-  } catch (err) {
-    console.error('Error fetching leave requests (admin):', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// PATCH /api/admin/leave-requests/:id/approve
-router.patch('/leave-requests/:id/approve', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const request = await LeaveRequest.findById(id);
-    if (!request) {
-      return res.status(404).json({ message: 'Leave request not found' });
-    }
-
-    if (request.type === 'WFH') {
+    if (!name || !email || !password) {
       return res
         .status(400)
-        .json({ message: 'This is a WFH request, use /wfh-requests endpoints' });
+        .json({ message: 'Name, email and password are required.' });
     }
 
-    request.status = 'Approved';
-    request.approvedBy = req.user._id;
-    request.approvedAt = new Date();
+    const normalizedEmail = email.toLowerCase();
 
-    await request.save();
-
-    res.json({ message: 'Leave request approved', data: request });
-  } catch (err) {
-    console.error('Error approving leave request:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// PATCH /api/admin/leave-requests/:id/reject
-router.patch('/leave-requests/:id/reject', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const request = await LeaveRequest.findById(id);
-    if (!request) {
-      return res.status(404).json({ message: 'Leave request not found' });
-    }
-
-    if (request.type === 'WFH') {
+    // 1) Check if user exists
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser) {
       return res
-        .status(400)
-        .json({ message: 'This is a WFH request, use /wfh-requests endpoints' });
+        .status(409)
+        .json({ message: 'A user with this email already exists.' });
     }
 
-    request.status = 'Rejected';
-    request.approvedBy = req.user._id;
-    request.approvedAt = new Date();
+    // 2) Create User for login
+    const user = new User({
+      name,
+      email: normalizedEmail,
+      password,          // hashed by User pre-save hook
+      role: 'employee',  // 🔴 force employee role
+    });
 
-    await request.save();
+    await user.save();
 
-    res.json({ message: 'Leave request rejected', data: request });
-  } catch (err) {
-    console.error('Error rejecting leave request:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+    // 3) Create Employee profile (match your existing schema)
+    const employee = new Employee({
+      user: user._id,
+      employeeId: `EMP-${Date.now()}`,
+      firstName: name,
+      lastName: '',
+      email: normalizedEmail,
+      department: department || '',
+      position: position || '',
+      status: 'active',
+      // any other defaults defined in Employee schema
+    });
 
-// ---------- WFH REQUESTS ----------
+    await employee.save();
 
-// GET /api/admin/wfh-requests?status=Pending
-router.get('/wfh-requests', async (req, res) => {
-  try {
-    const { status } = req.query;
-
-    const filter = { type: 'WFH' };
-    if (status) {
-      filter.status = status;
-    }
-
-    const requests = await baseLeaveQuery(filter);
-
-    res.json({ data: requests });
-  } catch (err) {
-    console.error('Error fetching WFH requests (admin):', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// PATCH /api/admin/wfh-requests/:id/approve
-router.patch('/wfh-requests/:id/approve', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const request = await LeaveRequest.findById(id);
-    if (!request) {
-      return res.status(404).json({ message: 'WFH request not found' });
-    }
-
-    if (request.type !== 'WFH') {
-      return res.status(400).json({ message: 'This is not a WFH request' });
-    }
-
-    request.status = 'Approved';
-    request.approvedBy = req.user._id;
-    request.approvedAt = new Date();
-
-    await request.save();
-
-    res.json({ message: 'WFH request approved', data: request });
-  } catch (err) {
-    console.error('Error approving WFH request:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// PATCH /api/admin/wfh-requests/:id/reject
-router.patch('/wfh-requests/:id/reject', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const request = await LeaveRequest.findById(id);
-    if (!request) {
-      return res.status(404).json({ message: 'WFH request not found' });
-    }
-
-    if (request.type !== 'WFH') {
-      return res.status(400).json({ message: 'This is not a WFH request' });
-    }
-
-    request.status = 'Rejected';
-    request.approvedBy = req.user._id;
-    request.approvedAt = new Date();
-
-    await request.save();
-
-    res.json({ message: 'WFH request rejected', data: request });
-  } catch (err) {
-    console.error('Error rejecting WFH request:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// ---------- ATTENDANCE LOGS (ADMIN VIEW) ----------
-
-// GET /api/admin/attendance?from=YYYY-MM-DD&to=YYYY-MM-DD&employeeId=EMP-123
-router.get('/attendance', async (req, res) => {
-  try {
-    let { from, to, employeeId } = req.query;
-
-    let fromDate, toDate;
-    const normalizeDate = (d) => {
-      const x = new Date(d);
-      x.setHours(0, 0, 0, 0);
-      return x;
+    const userSafe = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
     };
 
-    if (from) {
-      fromDate = normalizeDate(new Date(from));
-    } else {
-      fromDate = normalizeDate(new Date());
-      fromDate.setDate(fromDate.getDate() - 30);
-    }
-
-    if (to) {
-      toDate = normalizeDate(new Date(to));
-      toDate.setHours(23, 59, 59, 999);
-    } else {
-      toDate = normalizeDate(new Date());
-      toDate.setHours(23, 59, 59, 999);
-    }
-
-    const query = {
-      date: { $gte: fromDate, $lte: toDate },
-    };
-
-    if (employeeId) {
-      const emp = await Employee.findOne({ employeeId });
-      if (!emp) {
-        return res.status(404).json({ message: 'Employee not found for given employeeId' });
-      }
-      query.employee = emp._id;
-    }
-
-    const records = await Attendance.find(query)
-      .populate('employee', 'employeeId firstName lastName email')
-      .sort({ date: -1 });
-
-    res.json({ data: records });
+    return res.status(201).json({
+      message: 'Employee registered successfully',
+      user: userSafe,
+      employee,
+    });
   } catch (err) {
-    console.error('Error fetching attendance logs (admin):', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Create employee error:', err);
+
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({
+        message: 'Validation failed',
+        details: err.errors,
+      });
+    }
+
+    if (err.code === 11000) {
+      return res.status(409).json({
+        message: 'Duplicate key error',
+        key: err.keyValue,
+      });
+    }
+
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 

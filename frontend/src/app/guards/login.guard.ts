@@ -7,7 +7,7 @@ export const loginGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (!auth.isLoggedIn()) {
-    return true; // allow /login
+    return true; 
   }
 
   const role = auth.getRole();
