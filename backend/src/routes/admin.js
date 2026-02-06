@@ -5,6 +5,8 @@ const router = express.Router();
 const { protect, requireRole } = require('../middleware/auth');
 const User = require('../models/User');
 const Employee = require('../models/Employee');
+const LeaveRequest = require('../models/LeaveRequest');
+const Attendance = require('../models/Attendance');
 
 /**
  * Quick test route
@@ -95,6 +97,170 @@ router.post('/employees', protect, requireRole('admin'), async (req, res) => {
     }
 
     return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * ---------- ATTENDANCE (ADMIN) ----------
+ */
+// GET /api/admin/attendance?from=YYYY-MM-DD&to=YYYY-MM-DD&employeeId=EMP-123
+router.get('/attendance', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { from, to, employeeId } = req.query;
+
+    const filter = {};
+
+    if (from || to) {
+      filter.date = {};
+      if (from) filter.date.$gte = new Date(from);
+      if (to) {
+        const toDate = new Date(to);
+        toDate.setHours(23, 59, 59, 999);
+        filter.date.$lte = toDate;
+      }
+    }
+
+    if (employeeId) {
+      const employee = await Employee.findOne({ employeeId });
+      if (!employee) {
+        return res.json({ data: [] });
+      }
+      filter.employee = employee._id;
+    }
+
+    const records = await Attendance.find(filter)
+      .populate('employee', 'employeeId firstName lastName email')
+      .sort({ date: -1 });
+
+    res.json({ data: records });
+  } catch (err) {
+    console.error('Error fetching attendance (admin):', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * ---------- LEAVE & WFH APPROVALS ----------
+ * Admin only
+ */
+
+// GET /api/admin/leave-requests?status=Pending
+router.get('/leave-requests', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { status } = req.query;
+    const filter = { type: { $ne: 'WFH' } };
+    if (status) filter.status = status;
+
+    const requests = await LeaveRequest.find(filter)
+      .populate('employee', 'employeeId firstName lastName email')
+      .sort({ createdAt: -1 });
+
+    res.json({ data: requests });
+  } catch (err) {
+    console.error('Error fetching leave requests (admin):', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /api/admin/wfh-requests?status=Pending
+router.get('/wfh-requests', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { status } = req.query;
+    const filter = { type: 'WFH' };
+    if (status) filter.status = status;
+
+    const requests = await LeaveRequest.find(filter)
+      .populate('employee', 'employeeId firstName lastName email')
+      .sort({ createdAt: -1 });
+
+    res.json({ data: requests });
+  } catch (err) {
+    console.error('Error fetching WFH requests (admin):', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PATCH /api/admin/leave-requests/:id/approve
+router.patch('/leave-requests/:id/approve', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await LeaveRequest.findOneAndUpdate(
+      { _id: id, type: { $ne: 'WFH' } },
+      { status: 'Approved', approvedBy: req.user._id, approvedAt: new Date() },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Leave request not found' });
+    }
+
+    res.json({ message: 'Leave approved', data: updated });
+  } catch (err) {
+    console.error('Error approving leave:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PATCH /api/admin/leave-requests/:id/reject
+router.patch('/leave-requests/:id/reject', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await LeaveRequest.findOneAndUpdate(
+      { _id: id, type: { $ne: 'WFH' } },
+      { status: 'Rejected', approvedBy: req.user._id, approvedAt: new Date() },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Leave request not found' });
+    }
+
+    res.json({ message: 'Leave rejected', data: updated });
+  } catch (err) {
+    console.error('Error rejecting leave:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PATCH /api/admin/wfh-requests/:id/approve
+router.patch('/wfh-requests/:id/approve', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await LeaveRequest.findOneAndUpdate(
+      { _id: id, type: 'WFH' },
+      { status: 'Approved', approvedBy: req.user._id, approvedAt: new Date() },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'WFH request not found' });
+    }
+
+    res.json({ message: 'WFH approved', data: updated });
+  } catch (err) {
+    console.error('Error approving WFH:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PATCH /api/admin/wfh-requests/:id/reject
+router.patch('/wfh-requests/:id/reject', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await LeaveRequest.findOneAndUpdate(
+      { _id: id, type: 'WFH' },
+      { status: 'Rejected', approvedBy: req.user._id, approvedAt: new Date() },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'WFH request not found' });
+    }
+
+    res.json({ message: 'WFH rejected', data: updated });
+  } catch (err) {
+    console.error('Error rejecting WFH:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

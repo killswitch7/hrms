@@ -15,13 +15,39 @@ connectDB();
 // Body parser
 app.use(express.json());
 
+// Avoid 304s for API responses (Angular treats non-2xx as error)
+app.disable('etag');
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 // CORS
+const allowedOrigins = [
+  'http://localhost:4200',
+  'http://localhost:58831',
+  'http://127.0.0.1:4200',
+  'http://127.0.0.1:58831',
+];
+
 app.use(
   cors({
-    origin: 'http://localhost:4200',
+    origin: (origin, cb) => {
+      // allow non-browser tools (no Origin)
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      // allow any localhost port for dev
+      if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+        return cb(null, true);
+      }
+      return cb(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
   })
 );
+
+// Handle preflight requests for all routes
+app.options(/.*/, cors());
 
 // Routes
 app.use('/api/auth', authRoute);
