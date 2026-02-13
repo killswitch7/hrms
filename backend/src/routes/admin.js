@@ -101,6 +101,79 @@ router.post('/employees', protect, requireRole('admin'), async (req, res) => {
 });
 
 /**
+ * ---------- DASHBOARD SUMMARY (ADMIN) ----------
+ * GET /api/admin/dashboard-summary
+ */
+router.get('/dashboard-summary', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date(startOfToday);
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const [totalEmployees, presentDocs, pendingLeaves, approvedThisMonth, leaveOutcomeStats] =
+      await Promise.all([
+        Employee.countDocuments({ status: 'active' }),
+        Attendance.distinct('employee', {
+          date: { $gte: startOfToday, $lte: endOfToday },
+          status: { $in: ['Present', 'WFH'] },
+        }),
+        LeaveRequest.countDocuments({ status: 'Pending' }),
+        LeaveRequest.countDocuments({
+          status: 'Approved',
+          approvedAt: { $gte: startOfMonth },
+        }),
+        LeaveRequest.aggregate([
+          {
+            $match: {
+              status: { $in: ['Approved', 'Rejected'] },
+            },
+          },
+          {
+            $group: {
+              _id: '$status',
+              count: { $sum: 1 },
+            },
+          },
+        ]),
+      ]);
+
+    const presentToday = presentDocs.length;
+    const attendanceRate =
+      totalEmployees > 0 ? Math.round((presentToday / totalEmployees) * 100) : 0;
+
+    const approvedCount =
+      leaveOutcomeStats.find((x) => x._id === 'Approved')?.count || 0;
+    const rejectedCount =
+      leaveOutcomeStats.find((x) => x._id === 'Rejected')?.count || 0;
+    const leaveApprovalRate =
+      approvedCount + rejectedCount > 0
+        ? Math.round((approvedCount / (approvedCount + rejectedCount)) * 100)
+        : 0;
+
+    res.json({
+      data: {
+        totalEmployees,
+        presentToday,
+        pendingLeaves,
+        approvedLeaves: approvedThisMonth,
+        attendanceRate,
+        leaveApprovalRate,
+        generatedAt: new Date(),
+      },
+    });
+  } catch (err) {
+    console.error('Error fetching dashboard summary:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
  * ---------- ATTENDANCE (ADMIN) ----------
  */
 // GET /api/admin/attendance?from=YYYY-MM-DD&to=YYYY-MM-DD&employeeId=EMP-123

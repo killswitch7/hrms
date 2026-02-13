@@ -9,12 +9,16 @@
       </div>
     </div>
     <div class="header-right">
+      <button class="btn" (click)="loadDashboardSummary()">Refresh</button>
       <button class="btn" (click)="goTo('/employees')">Employees</button>
       <button class="btn" (click)="onLogout()">Logout</button>
     </div>
   </header>
 
   <main class="main-content">
+    <p class="loading" *ngIf="loading">Loading dashboard metrics...</p>
+    <p class="error" *ngIf="error">{{ error }}</p>
+
     <!-- Stats Cards -->
     <section class="stats-cards">
       <div class="card">
@@ -89,6 +93,7 @@
         <h3>System Info</h3>
         <p>Admin Account: {{ userProfile.email }}</p>
         <p>Last Login: {{ userProfile.lastLogin }}</p>
+        <p>Last Sync: {{ analytics.generatedAt | date: 'short' }}</p>
       </div>
     </section>
   </main>
