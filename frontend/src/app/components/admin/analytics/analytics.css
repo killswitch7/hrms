@@ -1,23 +1,36 @@
-.metrics {
-  list-style: none;
-  padding: 0;
-  margin-top: 16px;
+.page-shell {
+  max-width: 960px;
+  margin: 28px auto;
+  padding: 0 16px 24px;
 }
 
-.metrics li {
+.metrics {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.metric {
   display: flex;
   justify-content: space-between;
-  background: white;
-  padding: 10px 12px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(15,23,42,0.08);
-  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #d7e3f3;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  padding: 14px;
+  border-radius: 14px;
 }
 
 .name {
-  font-weight: 500;
+  font-weight: 600;
+  color: #334155;
 }
 
 .value {
-  color: #111827;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.error {
+  color: #b91c1c;
 }

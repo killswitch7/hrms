@@ -1,7 +1,39 @@
-<h2>Announcements</h2>
+<div class="page-shell">
+  <h2>Announcements</h2>
+  <p class="error" *ngIf="error">{{ error }}</p>
 
-<div class="announcement" *ngFor="let a of announcements">
-  <h3>{{ a.title }}</h3>
-  <p>{{ a.content }}</p>
-  <small>{{ a.createdAt | date:'short' }}</small>
+  <section class="panel">
+    <h3>Create Announcement</h3>
+    <div class="form-grid">
+      <input type="text" [(ngModel)]="title" placeholder="Title" />
+      <select [(ngModel)]="type">
+        <option value="General">General</option>
+        <option value="HR">HR</option>
+        <option value="Holiday">Holiday</option>
+        <option value="System">System</option>
+      </select>
+      <select [(ngModel)]="audience">
+        <option value="All">All</option>
+        <option value="Employees">Employees</option>
+        <option value="Admins">Admins</option>
+      </select>
+      <textarea [(ngModel)]="content" rows="3" placeholder="Announcement content"></textarea>
+    </div>
+    <button class="btn primary" (click)="createAnnouncement()" [disabled]="loading">
+      Publish
+    </button>
+  </section>
+
+  <section class="panel">
+    <p *ngIf="loading">Loading announcements...</p>
+    <div class="announcement" *ngFor="let a of announcements">
+      <div>
+        <h3>{{ a.title }}</h3>
+        <p>{{ a.content }}</p>
+        <small>{{ a.type }} · {{ a.audience }} · {{ a.createdAt | date:'short' }}</small>
+      </div>
+      <button class="btn danger" (click)="deleteAnnouncement(a._id)">Delete</button>
+    </div>
+    <p *ngIf="!loading && !announcements.length">No announcements found.</p>
+  </section>
 </div>

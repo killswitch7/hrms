@@ -1,20 +1,98 @@
-<h2>Employees</h2>
+<div class="page-shell">
+  <header class="page-header">
+    <div>
+      <h1>Employee Management</h1>
+      <p>Search, edit and manage employee records.</p>
+    </div>
+    <button class="btn primary" (click)="goToRegister()">+ Register Employee</button>
+  </header>
 
-<table class="table">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Position</th>
-      <th>Department</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let emp of employees">
-      <td>{{ emp.name }}</td>
-      <td>{{ emp.position }}</td>
-      <td>{{ emp.department }}</td>
-      <td>{{ emp.status }}</td>
-    </tr>
-  </tbody>
-</table>
+  <section class="panel">
+    <div class="filter-row">
+      <input
+        type="text"
+        [(ngModel)]="search"
+        placeholder="Search by ID, name, email, department..."
+      />
+      <select [(ngModel)]="statusFilter">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+      <button class="btn primary" (click)="applyFilters()">Apply</button>
+      <button class="btn ghost" (click)="clearFilters()">Clear</button>
+    </div>
+  </section>
+
+  <section class="panel" *ngIf="editId">
+    <h2>Edit Employee</h2>
+    <div class="edit-grid">
+      <input type="text" [(ngModel)]="editForm.name" placeholder="Full name" />
+      <input type="email" [(ngModel)]="editForm.email" placeholder="Email" />
+      <input type="text" [(ngModel)]="editForm.phone" placeholder="Phone" />
+      <input type="text" [(ngModel)]="editForm.department" placeholder="Department" />
+      <input type="text" [(ngModel)]="editForm.designation" placeholder="Designation" />
+      <input type="number" [(ngModel)]="editForm.baseSalary" placeholder="Base salary" />
+      <select [(ngModel)]="editForm.status">
+        <option value="active">active</option>
+        <option value="inactive">inactive</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button class="btn primary" (click)="saveEdit()">Save</button>
+      <button class="btn ghost" (click)="cancelEdit()">Cancel</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <p class="success" *ngIf="success">{{ success }}</p>
+    <p class="error" *ngIf="error">{{ error }}</p>
+    <p *ngIf="loading">Loading employees...</p>
+
+    <div class="table-wrap" *ngIf="!loading">
+      <table *ngIf="employees.length; else emptyState">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Department</th>
+            <th>Designation</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let emp of employees">
+            <td>
+              <strong>{{ emp.firstName }} {{ emp.lastName }}</strong>
+              <div>{{ emp.email }}</div>
+              <small>{{ emp.employeeId }}</small>
+            </td>
+            <td>{{ emp.department || '-' }}</td>
+            <td>{{ emp.designation || '-' }}</td>
+            <td>
+              <span class="status" [class.active]="emp.status === 'active'" [class.inactive]="emp.status === 'inactive'">
+                {{ emp.status }}
+              </span>
+            </td>
+            <td>{{ emp.joinDate | date:'mediumDate' }}</td>
+            <td class="actions">
+              <button class="btn ghost" (click)="startEdit(emp)">Edit</button>
+              <button class="btn danger" (click)="deleteEmployee(emp)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #emptyState>
+      <p>No employees found.</p>
+    </ng-template>
+
+    <div class="pagination">
+      <button class="btn ghost" (click)="prevPage()" [disabled]="page <= 1">Previous</button>
+      <span>Page {{ page }} · Total {{ total }}</span>
+      <button class="btn ghost" (click)="nextPage()" [disabled]="page * limit >= total">Next</button>
+    </div>
+  </section>
+</div>

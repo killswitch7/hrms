@@ -5,7 +5,7 @@
 }
 
 .profile-card {
-  max-width: 860px;
+  max-width: 760px;
   margin: 0 auto;
   padding: 20px;
   display: grid;
@@ -29,7 +29,7 @@
   display: grid;
   place-items: center;
   color: #fff;
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  background: linear-gradient(135deg, #1d4ed8, #4338ca);
 }
 
 .avatar-wrap img {

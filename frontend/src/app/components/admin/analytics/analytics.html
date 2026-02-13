@@ -1,8 +1,36 @@
-<h2>Analytics</h2>
+<div class="page-shell">
+  <h2>Analytics</h2>
+  <p class="error" *ngIf="error">{{ error }}</p>
+  <p *ngIf="loading">Loading analytics...</p>
 
-<ul class="metrics">
-  <li *ngFor="let m of metrics">
-    <span class="name">{{ m.name }}</span>
-    <span class="value">{{ m.value }}</span>
-  </li>
-</ul>
+  <div class="metrics" *ngIf="!loading && data">
+    <div class="metric">
+      <span class="name">Active Employees</span>
+      <span class="value">{{ data.activeEmployees }}</span>
+    </div>
+    <div class="metric">
+      <span class="name">Total Employees</span>
+      <span class="value">{{ data.totalEmployees }}</span>
+    </div>
+    <div class="metric">
+      <span class="name">Present Today</span>
+      <span class="value">{{ data.presentToday }}</span>
+    </div>
+    <div class="metric">
+      <span class="name">Attendance Rate</span>
+      <span class="value">{{ data.attendanceRate }}%</span>
+    </div>
+    <div class="metric">
+      <span class="name">Pending Leaves</span>
+      <span class="value">{{ data.leave.pending }}</span>
+    </div>
+    <div class="metric">
+      <span class="name">Approved Leaves</span>
+      <span class="value">{{ data.leave.approved }}</span>
+    </div>
+    <div class="metric">
+      <span class="name">Rejected Leaves</span>
+      <span class="value">{{ data.leave.rejected }}</span>
+    </div>
+  </div>
+</div>

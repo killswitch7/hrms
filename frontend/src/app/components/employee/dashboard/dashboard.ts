@@ -7,13 +7,29 @@ import {
   EmployeeDashboardNotice,
   EmployeeDashboardService,
 } from '../../../services/employee-dashboard';
+import { AvatarService } from '../../../services/avatar';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatToolbarModule,
+    MatDividerModule,
+  ],
   providers: [DatePipe],
 })
 export class Dashboard implements OnInit {
@@ -39,11 +55,14 @@ export class Dashboard implements OnInit {
   announcements: EmployeeDashboardNotice[] = [];
   loading = false;
   error = '';
+  avatarUrl: string | null = null;
+  lastUpdated: Date = new Date();
 
   constructor(
     private router: Router,
     private authService: AuthService,
-    private dashboardService: EmployeeDashboardService
+    private dashboardService: EmployeeDashboardService,
+    private avatarService: AvatarService
   ) {}
 
   ngOnInit(): void {
@@ -58,9 +77,11 @@ export class Dashboard implements OnInit {
       next: (res) => {
         const data = res.data;
         this.userProfile = data.userProfile;
+        this.avatarUrl = this.avatarService.get('employee', data.userProfile.email);
         this.stats = data.stats;
         this.todayAttendance = data.todayAttendance;
         this.announcements = data.announcements || [];
+        this.lastUpdated = new Date();
         this.loading = false;
       },
       error: (err) => {
@@ -78,5 +99,28 @@ export class Dashboard implements OnInit {
 
   navigateTo(page: string) {
     this.router.navigate([page]);
+  }
+
+  onAvatarSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.error = 'Please select an image file.';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      this.avatarUrl = result;
+      this.avatarService.set('employee', this.userProfile.email, result);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeAvatar() {
+    this.avatarUrl = null;
+    this.avatarService.clear('employee', this.userProfile.email);
   }
 }

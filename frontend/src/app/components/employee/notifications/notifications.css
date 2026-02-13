@@ -1,28 +1,40 @@
+.page-shell {
+  max-width: 960px;
+  margin: 28px auto;
+  padding: 0 16px 24px;
+}
+
 .actions {
   margin: 8px 0 12px;
 }
 
 .btn {
-  padding: 6px 12px;
-  border-radius: 4px;
+  padding: 9px 14px;
+  border-radius: 999px;
   border: none;
-  background: #111827;
+  background: #1d4ed8;
   color: white;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 700;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .notifications-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  gap: 10px;
 }
 
 .notification-card {
-  background: white;
-  padding: 10px 12px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(15,23,42,0.08);
+  background: rgba(255, 255, 255, 0.94);
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid #d7e3f3;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
   font-size: 14px;
 }
 
@@ -35,6 +47,11 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 4px;
+  gap: 8px;
+}
+
+.title-row h3 {
+  margin: 0;
 }
 
 .badge {
@@ -47,8 +64,13 @@
 
 .message {
   margin: 0 0 4px;
+  color: #334155;
 }
 
 .time {
-  color: #9ca3af;
+  color: #64748b;
+}
+
+.error {
+  color: #b91c1c;
 }

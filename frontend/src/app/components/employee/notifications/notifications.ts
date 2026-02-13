@@ -1,5 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { EmployeeDashboardService } from '../../../services/employee-dashboard';
+
+interface NotificationItem {
+  title: string;
+  message: string;
+  type: 'info' | 'warning';
+  createdAt: string | Date;
+  read: boolean;
+}
 
 @Component({
   selector: 'app-employee-notifications',
@@ -9,31 +18,34 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./notifications.css'],
 })
 export class Notifications {
-  notifications = [
-    {
-      title: 'New HR Policy',
-      message: 'Please review the updated HR policies.',
-      type: 'info',
-      createdAt: new Date(),
-      read: false,
-    },
-    {
-      title: 'Holiday Notice',
-      message: 'Office will be closed on 25th Dec.',
-      type: 'info',
-      createdAt: new Date(),
-      read: true,
-    },
-    {
-      title: 'System Maintenance',
-      message: 'System maintenance is scheduled for Saturday 2–4 AM.',
-      type: 'warning',
-      createdAt: new Date(),
-      read: false,
-    },
-  ];
+  notifications: NotificationItem[] = [];
+  loading = false;
+  error = '';
+
+  constructor(private dashboardService: EmployeeDashboardService) {}
+
+  ngOnInit(): void {
+    this.loading = true;
+    this.dashboardService.getSummary().subscribe({
+      next: (res) => {
+        const notices = res.data?.announcements || [];
+        this.notifications = notices.map((n, index) => ({
+          title: n.title,
+          message: n.content,
+          type: n.title?.toLowerCase().includes('maintenance') ? 'warning' : 'info',
+          createdAt: n.createdAt,
+          read: index !== 0,
+        }));
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to load notifications.';
+        this.loading = false;
+      },
+    });
+  }
 
   markAllRead() {
-    this.notifications.forEach(n => (n.read = true));
+    this.notifications.forEach((n) => (n.read = true));
   }
 }

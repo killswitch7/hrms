@@ -1,97 +1,143 @@
-<div class="dashboard-container">
-
-  <!-- HEADER -->
-  <div class="header">
-    <div class="header-left">
-      <div class="header-icon">🏠</div>
-      <div>
+<div class="dashboard-shell">
+  <mat-toolbar class="topbar">
+    <div class="identity">
+      <label class="avatar-wrap" for="employeeAvatarInput" title="Change photo">
+        <img *ngIf="avatarUrl; else employeeFallback" [src]="avatarUrl" alt="Employee avatar" />
+        <ng-template #employeeFallback>
+          <mat-icon>person</mat-icon>
+        </ng-template>
+      </label>
+      <input
+        id="employeeAvatarInput"
+        type="file"
+        accept="image/*"
+        class="hidden-input"
+        (change)="onAvatarSelected($event)"
+      />
+      <div class="identity-text">
         <h1>Welcome back, {{ userProfile.name }}</h1>
         <p>{{ userProfile.position }}</p>
       </div>
     </div>
-    <div class="header-right">
-      <button class="btn" (click)="loadSummary()">Refresh</button>
-      <!-- Go to profile page -->
-      <button class="btn" (click)="navigateTo('/employee-profile')">Profile</button>
-      <button class="btn" (click)="onLogout()">Logout</button>
-    </div>
-  </div>
 
-  <!-- MAIN CONTENT -->
-  <div class="main-content">
-    <p class="loading" *ngIf="loading">Loading dashboard data...</p>
-    <p class="error" *ngIf="error">{{ error }}</p>
+    <span class="spacer"></span>
+    <button mat-stroked-button class="toolbar-btn" color="primary" (click)="loadSummary()">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+    <button mat-stroked-button class="toolbar-btn" (click)="navigateTo('/employee-profile')">
+      <mat-icon>badge</mat-icon>
+      Profile
+    </button>
+    <button mat-flat-button class="logout-btn" color="warn" (click)="onLogout()">Logout</button>
+  </mat-toolbar>
 
-    <!-- STATS CARDS -->
-    <div class="stats-cards">
-      <div class="card">
-        <div class="card-header">Leave Balance 📅</div>
-        <div class="card-content">
-          <h2>{{ stats.leaveBalance }} days</h2>
-          <p>Available leave days</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">Attendance ✔️</div>
-        <div class="card-content">
-          <h2>{{ stats.attendance }} days</h2>
-          <p>This month</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">Today's Status ⏱️</div>
-        <div class="card-content">
-          <h2>{{ todayAttendance.status }}</h2>
-          <p>{{ todayAttendance.time ? (todayAttendance.time | date:'shortTime') : '--' }}</p>
-        </div>
-      </div>
+  <main class="content">
+    <div class="message-row" *ngIf="loading || error">
+      <mat-progress-spinner
+        *ngIf="loading"
+        mode="indeterminate"
+        diameter="22"
+      ></mat-progress-spinner>
+      <p class="error" *ngIf="error">{{ error }}</p>
     </div>
 
-    <!-- MANAGEMENT TOOLS -->
-    <div class="management-tools">
-      <h2>Quick Actions</h2>
+    <section class="kpi-grid">
+      <mat-card class="kpi-card animate-rise">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>event</mat-icon>
+          <mat-card-title>Leave Balance</mat-card-title>
+          <mat-card-subtitle>Available leave days</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content><h2>{{ stats.leaveBalance }} days</h2></mat-card-content>
+      </mat-card>
+
+      <mat-card class="kpi-card animate-rise delay-1">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>event_available</mat-icon>
+          <mat-card-title>Attendance</mat-card-title>
+          <mat-card-subtitle>This month</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content><h2>{{ stats.attendance }} days</h2></mat-card-content>
+      </mat-card>
+
+      <mat-card class="kpi-card animate-rise delay-2">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>schedule</mat-icon>
+          <mat-card-title>Today's Status</mat-card-title>
+          <mat-card-subtitle>{{ todayAttendance.time ? (todayAttendance.time | date: 'shortTime') : '--' }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content><h2>{{ todayAttendance.status }}</h2></mat-card-content>
+      </mat-card>
+    </section>
+
+    <mat-card class="tools-card animate-fade">
+      <mat-card-title>Quick Actions</mat-card-title>
+      <mat-divider></mat-divider>
       <div class="tools-grid">
-        <div class="tool-card" (click)="navigateTo('/employee-attendance')">
-          <div class="tool-icon">⏱️</div>
-          Attendance
-        </div>
-        <div class="tool-card" (click)="navigateTo('/employee-leave')">
-          <div class="tool-icon">📅</div>
-          Leave & WFH
-        </div>
-        <div class="tool-card" (click)="navigateTo('/employee-payslip')">
-          <div class="tool-icon">📄</div>
-          Payslips
-        </div>
-        <div class="tool-card" (click)="navigateTo('/employee-holidays')">
-          <div class="tool-icon">🎉</div>
-          Holidays
-        </div>
-        <div class="tool-card" (click)="navigateTo('/employee-notifications')">
-          <div class="tool-icon">🔔</div>
-          Notifications
-        </div>
-        <div class="tool-card" (click)="navigateTo('/employee-profile')">
-          <div class="tool-icon">👤</div>
-          Profile
-        </div>
+        <mat-card class="tool-tile" (click)="navigateTo('/employee-attendance')">
+          <mat-icon>schedule</mat-icon>
+          <span>Attendance</span>
+        </mat-card>
+        <mat-card class="tool-tile" (click)="navigateTo('/employee-leave')">
+          <mat-icon>event_note</mat-icon>
+          <span>Leave & WFH</span>
+        </mat-card>
+        <mat-card class="tool-tile" (click)="navigateTo('/employee-payslip')">
+          <mat-icon>description</mat-icon>
+          <span>Payslips</span>
+        </mat-card>
+        <mat-card class="tool-tile" (click)="navigateTo('/employee-holidays')">
+          <mat-icon>celebration</mat-icon>
+          <span>Holidays</span>
+        </mat-card>
+        <mat-card class="tool-tile" (click)="navigateTo('/employee-notifications')">
+          <mat-icon>notifications</mat-icon>
+          <span>Notifications</span>
+        </mat-card>
+        <mat-card class="tool-tile" (click)="navigateTo('/employee-profile')">
+          <mat-icon>person</mat-icon>
+          <span>Profile</span>
+        </mat-card>
       </div>
-    </div>
+    </mat-card>
 
-    <!-- ANNOUNCEMENTS -->
-    <div class="system-info">
-      <div class="info-card" *ngFor="let ann of announcements">
-        <h3>{{ ann.title }}</h3>
-        <p>{{ ann.content }}</p>
-        <small>{{ ann.createdAt | date:'shortDate' }}</small>
-      </div>
-      <div class="info-card" *ngIf="!announcements.length && !loading">
-        <h3>No notices</h3>
-        <p>No announcements or holiday notices available.</p>
-      </div>
-    </div>
+    <section class="notice-grid">
+      <mat-card class="notice-card" *ngFor="let ann of announcements">
+        <mat-card-title>{{ ann.title }}</mat-card-title>
+        <mat-card-content>
+          <p>{{ ann.content }}</p>
+          <small>{{ ann.createdAt | date:'shortDate' }}</small>
+        </mat-card-content>
+      </mat-card>
 
-  </div>
+      <mat-card class="notice-card" *ngIf="!announcements.length && !loading">
+        <mat-card-title>No notices</mat-card-title>
+        <mat-card-content>
+          <p>No announcements or holiday notices available.</p>
+        </mat-card-content>
+      </mat-card>
+    </section>
+
+    <section class="bottom-grid animate-fade">
+      <mat-card class="info-card">
+        <mat-card-title>Quick Stats</mat-card-title>
+        <mat-card-content>
+          <p>Attendance Days (Month): {{ stats.attendance }}</p>
+          <p>Leave Balance: {{ stats.leaveBalance }} days</p>
+          <p>Notifications: {{ stats.notifications }}</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="info-card">
+        <mat-card-title>System Info</mat-card-title>
+        <mat-card-content>
+          <p>Employee Account: {{ userProfile.email }}</p>
+          <p>Role: Employee</p>
+          <p>Last Refresh: {{ lastUpdated | date: 'short' }}</p>
+          <button mat-button color="warn" *ngIf="avatarUrl" (click)="removeAvatar()">Remove Photo</button>
+        </mat-card-content>
+      </mat-card>
+    </section>
+  </main>
 </div>

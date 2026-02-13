@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { EmployeeDashboardService } from '../../../services/employee-dashboard';
 
 @Component({
   selector: 'app-employee-holidays',
@@ -9,10 +10,30 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./holidays.css'],
 })
 export class Holidays {
-  holidays = [
-    { name: 'New Year', date: new Date('2025-01-01'), type: 'Public Holiday' },
-    { name: 'Republic Day', date: new Date('2025-01-26'), type: 'Public Holiday' },
-    { name: 'Good Friday', date: new Date('2025-04-18'), type: 'Company Holiday' },
-    { name: 'Diwali', date: new Date('2025-10-20'), type: 'Festival' },
-  ];
+  holidays: Array<{ name: string; date: string | Date; type: string }> = [];
+  loading = false;
+  error = '';
+
+  constructor(private dashboardService: EmployeeDashboardService) {}
+
+  ngOnInit(): void {
+    this.loading = true;
+    this.dashboardService.getSummary().subscribe({
+      next: (res) => {
+        const notices = res.data?.announcements || [];
+        this.holidays = notices
+          .filter((x) => x.title?.toLowerCase().includes('holiday'))
+          .map((x) => ({
+            name: x.content?.split(' on ')[0] || x.title,
+            date: x.createdAt,
+            type: 'Company Holiday',
+          }));
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to load holidays.';
+        this.loading = false;
+      },
+    });
+  }
 }

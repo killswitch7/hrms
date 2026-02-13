@@ -5,24 +5,20 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../services/auth';
 import { AvatarService } from '../../../services/avatar';
-import { EmployeeDashboardService } from '../../../services/employee-dashboard';
 
 @Component({
-  selector: 'app-employee-profile',
+  selector: 'app-admin-profile',
   standalone: true,
   imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule],
   templateUrl: './profile.html',
   styleUrls: ['./profile.css'],
 })
-export class Profile implements OnInit {
+export class AdminProfile implements OnInit {
   profile = {
-    name: 'Employee',
+    name: 'Admin',
     email: '',
-    position: 'Employee',
-    department: 'IT',
-    employeeId: 'N/A',
-    joinDate: new Date(),
-    reportingManager: 'Admin User',
+    role: 'admin',
+    lastLogin: new Date().toLocaleString(),
   };
 
   avatarUrl: string | null = null;
@@ -30,26 +26,15 @@ export class Profile implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private avatarService: AvatarService,
-    private employeeDashboardService: EmployeeDashboardService
+    private avatarService: AvatarService
   ) {}
 
   ngOnInit(): void {
-    const email = this.authService.getEmail() || '';
+    const email = this.authService.getEmail() || 'admin@company.com';
+    const baseName = email.split('@')[0] || 'Admin';
     this.profile.email = email;
-    this.avatarUrl = this.avatarService.get('employee', email);
-
-    this.employeeDashboardService.getSummary().subscribe({
-      next: (res) => {
-        this.profile.name = res.data.userProfile.name || this.profile.name;
-        this.profile.position = res.data.userProfile.position || this.profile.position;
-        this.profile.email = res.data.userProfile.email || this.profile.email;
-        this.avatarUrl = this.avatarService.get('employee', this.profile.email);
-      },
-      error: (err) => {
-        this.error = err.error?.message || 'Failed to load profile data.';
-      },
-    });
+    this.profile.name = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+    this.avatarUrl = this.avatarService.get('admin', email);
   }
 
   onAvatarSelected(event: Event) {
@@ -65,13 +50,13 @@ export class Profile implements OnInit {
     reader.onload = () => {
       const result = reader.result as string;
       this.avatarUrl = result;
-      this.avatarService.set('employee', this.profile.email, result);
+      this.avatarService.set('admin', this.profile.email, result);
     };
     reader.readAsDataURL(file);
   }
 
   removeAvatar() {
     this.avatarUrl = null;
-    this.avatarService.clear('employee', this.profile.email);
+    this.avatarService.clear('admin', this.profile.email);
   }
 }

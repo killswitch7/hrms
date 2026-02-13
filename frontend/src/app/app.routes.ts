@@ -14,6 +14,7 @@ import { Payroll } from './components/admin/payroll/payroll';
 import { Announcements } from './components/admin/announcements/announcements';
 import { Analytics } from './components/admin/analytics/analytics';
 import { RegisterEmployee } from './components/admin/register-employee/register-employee';
+import { AdminProfile } from './components/admin/profile/profile';
 
 // Employee feature pages
 import { Attendance } from './components/employee/attendance/attendance';
@@ -21,6 +22,7 @@ import { Holidays } from './components/employee/holidays/holidays';
 import { Leave as EmployeeLeave } from './components/employee/leave/leave';
 import { Payslip } from './components/employee/payslip/payslip';
 import { Profile } from './components/employee/profile/profile';
+import { Notifications } from './components/employee/notifications/notifications';
 
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
@@ -83,6 +85,11 @@ export const routes: Routes = [
     component: RegisterEmployee,
     canActivate: [authGuard],
   },
+  {
+    path: 'admin-profile',
+    component: AdminProfile,
+    canActivate: [authGuard],
+  },
 
   // Employee feature routes
   {
@@ -108,6 +115,11 @@ export const routes: Routes = [
   {
     path: 'employee-profile',
     component: Profile,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'employee-notifications',
+    component: Notifications,
     canActivate: [authGuard],
   },
 

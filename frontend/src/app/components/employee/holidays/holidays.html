@@ -1,15 +1,21 @@
-<h2>Company Holidays</h2>
+<div class="page-shell">
+  <h2>Company Holidays</h2>
+  <p class="error" *ngIf="error">{{ error }}</p>
+  <p *ngIf="loading">Loading holidays...</p>
 
-<div class="holiday-list">
-  <div class="holiday-card" *ngFor="let h of holidays">
-    <div class="date">
-      <span class="day">{{ h.date | date:'dd' }}</span>
-      <span class="month">{{ h.date | date:'MMM' }}</span>
+  <div class="holiday-list" *ngIf="!loading">
+    <div class="holiday-card" *ngFor="let h of holidays">
+      <div class="date">
+        <span class="day">{{ h.date | date:'dd' }}</span>
+        <span class="month">{{ h.date | date:'MMM' }}</span>
+      </div>
+      <div class="details">
+        <h3>{{ h.name }}</h3>
+        <p>{{ h.type }}</p>
+        <small>{{ h.date | date:'fullDate' }}</small>
+      </div>
     </div>
-    <div class="details">
-      <h3>{{ h.name }}</h3>
-      <p>{{ h.type }}</p>
-      <small>{{ h.date | date:'fullDate' }}</small>
-    </div>
+
+    <p *ngIf="!holidays.length">No upcoming holidays found.</p>
   </div>
 </div>

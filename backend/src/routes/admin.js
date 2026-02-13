@@ -1,12 +1,27 @@
 // backend/src/routes/admin.js
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 
 const { protect, requireRole } = require('../middleware/auth');
 const User = require('../models/User');
 const Employee = require('../models/Employee');
 const LeaveRequest = require('../models/LeaveRequest');
 const Attendance = require('../models/Attendance');
+const Announcement = require('../models/Announcement');
+
+function splitName(fullName = '') {
+  const trimmed = String(fullName).trim();
+  if (!trimmed) {
+    return { firstName: '', lastName: '' };
+  }
+
+  const parts = trimmed.split(/\s+/);
+  return {
+    firstName: parts[0] || '',
+    lastName: parts.slice(1).join(' '),
+  };
+}
 
 /**
  * Quick test route
@@ -53,14 +68,16 @@ router.post('/employees', protect, requireRole('admin'), async (req, res) => {
     await user.save();
 
     // 3) Create Employee profile (match your existing schema)
+    const { firstName, lastName } = splitName(name);
+
     const employee = new Employee({
       user: user._id,
       employeeId: `EMP-${Date.now()}`,
-      firstName: name,
-      lastName: '',
+      firstName: firstName || name,
+      lastName,
       email: normalizedEmail,
       department: department || '',
-      position: position || '',
+      designation: position || '',
       status: 'active',
       // any other defaults defined in Employee schema
     });
@@ -101,6 +118,171 @@ router.post('/employees', protect, requireRole('admin'), async (req, res) => {
 });
 
 /**
+ * GET /api/admin/employees
+ * Query: search, status, page, limit
+ */
+router.get('/employees', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const {
+      search = '',
+      status = '',
+      page = '1',
+      limit = '20',
+    } = req.query;
+
+    const safePage = Math.max(parseInt(page, 10) || 1, 1);
+    const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+    const skip = (safePage - 1) * safeLimit;
+
+    const filter = {};
+    if (status && ['active', 'inactive'].includes(String(status))) {
+      filter.status = status;
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(String(search).trim(), 'i');
+      filter.$or = [
+        { employeeId: searchRegex },
+        { firstName: searchRegex },
+        { lastName: searchRegex },
+        { email: searchRegex },
+        { department: searchRegex },
+        { designation: searchRegex },
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      Employee.find(filter)
+        .populate('user', 'name email role')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(safeLimit),
+      Employee.countDocuments(filter),
+    ]);
+
+    return res.json({
+      data: items,
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        total,
+        pages: Math.max(Math.ceil(total / safeLimit), 1),
+      },
+    });
+  } catch (err) {
+    console.error('Error fetching employees (admin):', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * PATCH /api/admin/employees/:id
+ */
+router.patch('/employees/:id', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid employee id' });
+    }
+
+    const employee = await Employee.findById(id).populate('user');
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    const {
+      name,
+      email,
+      department,
+      designation,
+      status,
+      phone,
+      baseSalary,
+    } = req.body;
+
+    if (name !== undefined) {
+      const { firstName, lastName } = splitName(name);
+      employee.firstName = firstName || employee.firstName;
+      employee.lastName = lastName;
+      if (employee.user) {
+        employee.user.name = String(name).trim();
+      }
+    }
+
+    if (email !== undefined) {
+      const normalizedEmail = String(email).trim().toLowerCase();
+      const emailExists = await User.findOne({
+        email: normalizedEmail,
+        _id: { $ne: employee.user?._id },
+      });
+      if (emailExists) {
+        return res.status(409).json({ message: 'A user with this email already exists.' });
+      }
+
+      employee.email = normalizedEmail;
+      if (employee.user) {
+        employee.user.email = normalizedEmail;
+      }
+    }
+
+    if (department !== undefined) employee.department = String(department).trim();
+    if (designation !== undefined) employee.designation = String(designation).trim();
+    if (phone !== undefined) employee.phone = String(phone).trim();
+    if (baseSalary !== undefined) employee.baseSalary = Number(baseSalary) || 0;
+
+    if (status !== undefined) {
+      if (!['active', 'inactive'].includes(String(status))) {
+        return res.status(400).json({ message: 'Invalid status value' });
+      }
+      employee.status = status;
+    }
+
+    await Promise.all([
+      employee.save(),
+      employee.user ? employee.user.save() : Promise.resolve(),
+    ]);
+
+    const updated = await Employee.findById(employee._id).populate('user', 'name email role');
+    return res.json({ message: 'Employee updated successfully', data: updated });
+  } catch (err) {
+    console.error('Error updating employee (admin):', err);
+    if (err.code === 11000) {
+      return res.status(409).json({ message: 'Duplicate field value', key: err.keyValue });
+    }
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * DELETE /api/admin/employees/:id
+ */
+router.delete('/employees/:id', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid employee id' });
+    }
+
+    const employee = await Employee.findById(id);
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    await Promise.all([
+      User.findByIdAndDelete(employee.user),
+      Employee.findByIdAndDelete(employee._id),
+      Attendance.deleteMany({ employee: employee._id }),
+      LeaveRequest.deleteMany({ employee: employee._id }),
+    ]);
+
+    return res.json({ message: 'Employee deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting employee (admin):', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
  * ---------- DASHBOARD SUMMARY (ADMIN) ----------
  * GET /api/admin/dashboard-summary
  */
@@ -116,7 +298,14 @@ router.get('/dashboard-summary', protect, requireRole('admin'), async (req, res)
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
 
-    const [totalEmployees, presentDocs, pendingLeaves, approvedThisMonth, leaveOutcomeStats] =
+    const [
+      totalEmployees,
+      presentDocs,
+      pendingLeaves,
+      approvedThisMonth,
+      leaveOutcomeStats,
+      recentEmployees,
+    ] =
       await Promise.all([
         Employee.countDocuments({ status: 'active' }),
         Attendance.distinct('employee', {
@@ -141,6 +330,10 @@ router.get('/dashboard-summary', protect, requireRole('admin'), async (req, res)
             },
           },
         ]),
+        Employee.find({})
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .select('employeeId firstName lastName email department designation status createdAt'),
       ]);
 
     const presentToday = presentDocs.length;
@@ -165,6 +358,7 @@ router.get('/dashboard-summary', protect, requireRole('admin'), async (req, res)
         attendanceRate,
         leaveApprovalRate,
         generatedAt: new Date(),
+        recentEmployees,
       },
     });
   } catch (err) {
@@ -334,6 +528,110 @@ router.patch('/wfh-requests/:id/reject', protect, requireRole('admin'), async (r
   } catch (err) {
     console.error('Error rejecting WFH:', err);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * ---------- ANNOUNCEMENTS (ADMIN CRUD) ----------
+ */
+router.get('/announcements', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const data = await Announcement.find({})
+      .sort({ createdAt: -1 })
+      .limit(100);
+
+    return res.json({ data });
+  } catch (err) {
+    console.error('Error loading announcements:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.post('/announcements', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { title, content, type = 'General', audience = 'All', effectiveFrom, effectiveTo } = req.body;
+    if (!title || !content) {
+      return res.status(400).json({ message: 'Title and content are required.' });
+    }
+
+    const created = await Announcement.create({
+      title: String(title).trim(),
+      content: String(content).trim(),
+      type,
+      audience,
+      effectiveFrom: effectiveFrom ? new Date(effectiveFrom) : undefined,
+      effectiveTo: effectiveTo ? new Date(effectiveTo) : undefined,
+      createdBy: req.user._id,
+    });
+
+    return res.status(201).json({ message: 'Announcement created', data: created });
+  } catch (err) {
+    console.error('Error creating announcement:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.delete('/announcements/:id', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid announcement id' });
+    }
+
+    const deleted = await Announcement.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Announcement not found' });
+    }
+
+    return res.json({ message: 'Announcement deleted' });
+  } catch (err) {
+    console.error('Error deleting announcement:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * ---------- ANALYTICS (ADMIN) ----------
+ */
+router.get('/analytics', protect, requireRole('admin'), async (req, res) => {
+  try {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date(startOfToday);
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const [activeEmployees, totalEmployees, todayPresentDocs, leaveStats] = await Promise.all([
+      Employee.countDocuments({ status: 'active' }),
+      Employee.countDocuments({}),
+      Attendance.distinct('employee', {
+        date: { $gte: startOfToday, $lte: endOfToday },
+        status: { $in: ['Present', 'WFH'] },
+      }),
+      LeaveRequest.aggregate([
+        { $match: { createdAt: { $gte: startOfMonth } } },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
+    ]);
+
+    const pending = leaveStats.find((x) => x._id === 'Pending')?.count || 0;
+    const approved = leaveStats.find((x) => x._id === 'Approved')?.count || 0;
+    const rejected = leaveStats.find((x) => x._id === 'Rejected')?.count || 0;
+
+    return res.json({
+      data: {
+        activeEmployees,
+        totalEmployees,
+        presentToday: todayPresentDocs.length,
+        attendanceRate: activeEmployees ? Math.round((todayPresentDocs.length / activeEmployees) * 100) : 0,
+        leave: { pending, approved, rejected },
+        generatedAt: now,
+      },
+    });
+  } catch (err) {
+    console.error('Error loading analytics:', err);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 

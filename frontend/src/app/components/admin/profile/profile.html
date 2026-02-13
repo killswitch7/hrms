@@ -1,0 +1,32 @@
+<div class="profile-shell">
+  <mat-card class="profile-card">
+    <div class="avatar-block">
+      <label class="avatar-wrap" for="adminProfileAvatarInput">
+        <img *ngIf="avatarUrl; else fallback" [src]="avatarUrl" alt="Admin photo" />
+        <ng-template #fallback>
+          <mat-icon>shield</mat-icon>
+        </ng-template>
+      </label>
+      <input
+        id="adminProfileAvatarInput"
+        class="hidden-input"
+        type="file"
+        accept="image/*"
+        (change)="onAvatarSelected($event)"
+      />
+      <div class="avatar-actions">
+        <label for="adminProfileAvatarInput" class="upload-label">Upload Photo</label>
+        <button mat-button color="warn" *ngIf="avatarUrl" (click)="removeAvatar()">Remove</button>
+      </div>
+    </div>
+
+    <div class="details">
+      <h2>Admin Profile</h2>
+      <p class="error" *ngIf="error">{{ error }}</p>
+      <div class="row"><label>Name</label><span>{{ profile.name }}</span></div>
+      <div class="row"><label>Email</label><span>{{ profile.email }}</span></div>
+      <div class="row"><label>Role</label><span>{{ profile.role }}</span></div>
+      <div class="row"><label>Last Login</label><span>{{ profile.lastLogin }}</span></div>
+    </div>
+  </mat-card>
+</div>
