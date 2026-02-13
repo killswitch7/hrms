@@ -1,8 +1,12 @@
 // src/app/components/employee/dashboard.ts
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth';
+import {
+  EmployeeDashboardNotice,
+  EmployeeDashboardService,
+} from '../../../services/employee-dashboard';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,56 +16,67 @@ import { AuthService } from '../../../services/auth';
   imports: [CommonModule, RouterModule],
   providers: [DatePipe],
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
   userProfile = {
-    name: 'Shuvam Sharma',
-    position: 'Software Engineer',
-    leaveBalance: 10,
+    name: 'Employee',
+    position: 'Employee',
+    email: '',
   };
 
   stats = {
-    leaveBalance: 10,
-    attendance: 20,
-    notifications: 3,
+    leaveBalance: 0,
+    attendance: 0,
+    notifications: 0,
   };
 
   todayAttendance = {
-    checkIn: new Date(),
-    checkOut: null,
+    status: 'Not Checked In',
+    time: null as string | null,
+    checkIn: null as string | null,
+    checkOut: null as string | null,
   };
 
-  announcements = [
-    {
-      id: 1,
-      title: 'New HR Policy',
-      content: 'Please review the updated HR policies.',
-      createdAt: new Date(),
-    },
-    {
-      id: 2,
-      title: 'Holiday Notice',
-      content: 'Office will be closed on 25th Dec.',
-      createdAt: new Date(),
-    },
-    {
-      id: 3,
-      title: 'Maintenance',
-      content: 'System maintenance on Saturday.',
-      createdAt: new Date(),
-    },
-  ];
+  announcements: EmployeeDashboardNotice[] = [];
+  loading = false;
+  error = '';
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private dashboardService: EmployeeDashboardService
   ) {}
+
+  ngOnInit(): void {
+    this.loadSummary();
+  }
+
+  loadSummary() {
+    this.loading = true;
+    this.error = '';
+
+    this.dashboardService.getSummary().subscribe({
+      next: (res) => {
+        const data = res.data;
+        this.userProfile = data.userProfile;
+        this.stats = data.stats;
+        this.todayAttendance = data.todayAttendance;
+        this.announcements = data.announcements || [];
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Failed to load dashboard data.';
+        this.loading = false;
+      },
+    });
+  }
 
   onLogout() {
     console.log('Logout clicked, clearing session and redirecting to login');
     this.authService.clearSession();
     this.router.navigate(['/login'], { replaceUrl: true });
   }
-    navigateTo(page: string) {
+
+  navigateTo(page: string) {
     this.router.navigate([page]);
   }
 }
