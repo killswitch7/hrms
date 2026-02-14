@@ -25,20 +25,36 @@ export class AuthService {
 
   private apiUrl = 'http://localhost:5001/api';
 
+  constructor() {
+    // One-time cleanup: old persistent auth tokens caused auto-login across rebuilds.
+    this.clearLegacyLocalStorage();
+  }
+
 
   private isBrowser(): boolean {
     return typeof window !== 'undefined';
   }
 
-  private hasLocalStorage(): boolean {
+  private hasSessionStorage(): boolean {
     try {
       return (
         this.isBrowser() &&
-        !!window.localStorage &&
-        typeof window.localStorage.getItem === 'function'
+        !!window.sessionStorage &&
+        typeof window.sessionStorage.getItem === 'function'
       );
     } catch {
       return false;
+    }
+  }
+
+  private clearLegacyLocalStorage(): void {
+    if (!this.isBrowser()) return;
+    try {
+      window.localStorage.removeItem('token');
+      window.localStorage.removeItem('role');
+      window.localStorage.removeItem('email');
+    } catch {
+      // Ignore storage errors
     }
   }
 
@@ -73,36 +89,48 @@ export class AuthService {
   // ---------- SESSION HELPERS (JWT + role + email) ----------
 
   saveSession(token: string, role: string, email: string) {
-    if (!this.hasLocalStorage()) return;
-    window.localStorage.setItem('token', token);
-    window.localStorage.setItem('role', role);
-    window.localStorage.setItem('email', email);
+    if (!this.hasSessionStorage()) return;
+    window.sessionStorage.setItem('token', token);
+    window.sessionStorage.setItem('role', role);
+    window.sessionStorage.setItem('email', email);
   }
 
   clearSession() {
-    if (!this.hasLocalStorage()) return;
-    window.localStorage.removeItem('token');
-    window.localStorage.removeItem('role');
-    window.localStorage.removeItem('email');
+    if (!this.hasSessionStorage()) return;
+    window.sessionStorage.removeItem('token');
+    window.sessionStorage.removeItem('role');
+    window.sessionStorage.removeItem('email');
   }
 
   getToken(): string | null {
-    if (!this.hasLocalStorage()) return null;
-    return window.localStorage.getItem('token');
+    if (!this.hasSessionStorage()) return null;
+    return window.sessionStorage.getItem('token');
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) return false;
+
+    const payload = this.decodeToken();
+    const exp = payload?.exp;
+    if (!exp) return true;
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const isValid = exp > nowSeconds;
+    if (!isValid) {
+      this.clearSession();
+    }
+    return isValid;
   }
 
   getStoredRole(): string | null {
-    if (!this.hasLocalStorage()) return null;
-    return window.localStorage.getItem('role');
+    if (!this.hasSessionStorage()) return null;
+    return window.sessionStorage.getItem('role');
   }
 
   getStoredEmail(): string | null {
-    if (!this.hasLocalStorage()) return null;
-    return window.localStorage.getItem('email');
+    if (!this.hasSessionStorage()) return null;
+    return window.sessionStorage.getItem('email');
   }
 
   // ---------- OPTIONAL: decode token as fallback ----------

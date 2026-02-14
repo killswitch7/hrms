@@ -2,6 +2,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Employee = require('../models/Employee');
 
 const router = express.Router();
 
@@ -75,6 +76,17 @@ router.post('/login', async (req, res) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Block login for inactive employees.
+    // If admin switches status back to active, login works again.
+    if (user.role === 'employee') {
+      const employeeProfile = await Employee.findOne({ user: user._id }).select('status');
+      if (employeeProfile && employeeProfile.status === 'inactive') {
+        return res.status(403).json({
+          message: 'Your account is inactive. Please contact admin.',
+        });
+      }
     }
 
     const token = jwt.sign(

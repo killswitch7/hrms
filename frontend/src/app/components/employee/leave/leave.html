@@ -1,185 +1,200 @@
-<div class="leave-wfh-container">
-  <h1>Leave & Work From Home</h1>
-
-  <div class="grid-two">
-    <!-- ========== NORMAL LEAVE ========== -->
-    <div class="card form-card">
-      <h2>Request Leave</h2>
-
-      <form (ngSubmit)="submitLeave()">
-        <div class="form-row">
-          <label for="leaveType">Leave Type</label>
-          <select
-            id="leaveType"
-            [(ngModel)]="leaveType"
-            name="leaveType"
-          >
-            <option value="Annual">Annual</option>
-            <option value="Sick">Sick</option>
-            <option value="Casual">Casual</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-
-        <div class="form-row">
-          <label for="leaveFrom">From Date</label>
-          <input
-            id="leaveFrom"
-            type="date"
-            [(ngModel)]="leaveFromDate"
-            name="leaveFromDate"
-            required
-          />
-        </div>
-
-        <div class="form-row">
-          <label for="leaveTo">To Date</label>
-          <input
-            id="leaveTo"
-            type="date"
-            [(ngModel)]="leaveToDate"
-            name="leaveToDate"
-            required
-          />
-        </div>
-
-        <div class="form-row">
-          <label for="leaveReason">Reason</label>
-          <textarea
-            id="leaveReason"
-            [(ngModel)]="leaveReason"
-            name="leaveReason"
-            rows="3"
-            placeholder="Explain why you need leave"
-          ></textarea>
-        </div>
-
-        <button type="submit" class="btn" [disabled]="loadingLeave">
-          {{ loadingLeave ? 'Submitting...' : 'Submit Leave Request' }}
-        </button>
-
-        <p class="error" *ngIf="errorLeave">{{ errorLeave }}</p>
-        <p class="success" *ngIf="successLeave">{{ successLeave }}</p>
-      </form>
-
-      <h3>My Leave Requests</h3>
-
-      <div *ngIf="loadingLeave && !leaveRequests.length">
-        Loading...
-      </div>
-
-      <div *ngIf="!loadingLeave && !leaveRequests.length">
-        <p>No leave requests yet.</p>
-      </div>
-
-      <table *ngIf="leaveRequests.length" class="wfh-table">
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Reason</th>
-            <th>Status</th>
-            <th>Requested On</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let req of leaveRequests">
-            <td>{{ req.type }}</td>
-            <td>{{ req.from | date: 'mediumDate' }}</td>
-            <td>{{ req.to | date: 'mediumDate' }}</td>
-            <td>{{ req.reason || '-' }}</td>
-            <td>
-              <span class="status" [ngClass]="req.status?.toLowerCase()">
-                {{ req.status }}
-              </span>
-            </td>
-            <td>{{ req.createdAt | date: 'short' }}</td>
-          </tr>
-        </tbody>
-      </table>
+<div class="leave-wfh-container" style="padding-top: 12px;">
+  <div class="page-pad" style="max-width: 1240px; margin: 0 auto; padding: 26px 18px 34px;">
+    <div class="page-head">
+      <h1>Leave & Work From Home</h1>
+      <p>Submit and track leave and WFH requests from one place.</p>
     </div>
 
-    <!-- ========== WFH ========== -->
-    <div class="card form-card">
-      <h2>Request Work From Home</h2>
+    <div class="grid-two" style="display: grid; grid-template-columns: repeat(auto-fit,minmax(420px,1fr)); gap: 16px; align-items: start;">
+      <!-- ========== NORMAL LEAVE ========== -->
+      <div
+        class="card form-card"
+        style="border-radius: 18px; border: 1px solid #d7e3f3; box-shadow: 0 10px 24px rgba(15,23,42,0.08); background: rgba(255,255,255,0.95); padding: 16px;"
+      >
+        <h2>Request Leave</h2>
 
-      <form (ngSubmit)="submitWfh()">
-        <div class="form-row">
-          <label for="wfhFrom">From Date</label>
-          <input
-            id="wfhFrom"
-            type="date"
-            [(ngModel)]="wfhFromDate"
-            name="wfhFromDate"
-            required
-          />
+        <form (ngSubmit)="submitLeave()">
+          <div class="form-row">
+            <label for="leaveType">Leave Type</label>
+            <select
+              id="leaveType"
+              [(ngModel)]="leaveType"
+              name="leaveType"
+            >
+              <option value="Annual">Annual</option>
+              <option value="Sick">Sick</option>
+              <option value="Casual">Casual</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="leaveFrom">From Date</label>
+            <input
+              id="leaveFrom"
+              type="date"
+              [(ngModel)]="leaveFromDate"
+              name="leaveFromDate"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <label for="leaveTo">To Date</label>
+            <input
+              id="leaveTo"
+              type="date"
+              [(ngModel)]="leaveToDate"
+              name="leaveToDate"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <label for="leaveReason">Reason</label>
+            <textarea
+              id="leaveReason"
+              [(ngModel)]="leaveReason"
+              name="leaveReason"
+              rows="3"
+              placeholder="Explain why you need leave"
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn" [disabled]="loadingLeave">
+            {{ loadingLeave ? 'Submitting...' : 'Submit Leave Request' }}
+          </button>
+
+          <p class="error" *ngIf="errorLeave">{{ errorLeave }}</p>
+          <p class="success" *ngIf="successLeave">{{ successLeave }}</p>
+        </form>
+
+        <h3>My Leave Requests</h3>
+
+        <div *ngIf="loadingLeave && !leaveRequests.length">
+          Loading...
         </div>
 
-        <div class="form-row">
-          <label for="wfhTo">To Date</label>
-          <input
-            id="wfhTo"
-            type="date"
-            [(ngModel)]="wfhToDate"
-            name="wfhToDate"
-            required
-          />
+        <div *ngIf="!loadingLeave && !leaveRequests.length" class="empty-state">
+          <p>No leave requests yet.</p>
         </div>
 
-        <div class="form-row">
-          <label for="wfhReason">Reason (optional)</label>
-          <textarea
-            id="wfhReason"
-            [(ngModel)]="wfhReason"
-            name="wfhReason"
-            rows="3"
-            placeholder="Describe why you are requesting WFH"
-          ></textarea>
+        <div class="table-wrap" *ngIf="leaveRequests.length">
+          <table class="wfh-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Requested On</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let req of leaveRequests">
+                <td>{{ req.type }}</td>
+                <td>{{ req.from | date: 'mediumDate' }}</td>
+                <td>{{ req.to | date: 'mediumDate' }}</td>
+                <td>{{ req.reason || '-' }}</td>
+                <td>
+                  <span class="status" [ngClass]="req.status?.toLowerCase()">
+                    {{ req.status }}
+                  </span>
+                </td>
+                <td>{{ req.createdAt | date: 'short' }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
-        <button type="submit" class="btn" [disabled]="loadingWfh">
-          {{ loadingWfh ? 'Submitting...' : 'Submit WFH Request' }}
-        </button>
-
-        <p class="error" *ngIf="errorWfh">{{ errorWfh }}</p>
-        <p class="success" *ngIf="successWfh">{{ successWfh }}</p>
-      </form>
-
-      <h3>My WFH Requests</h3>
-
-      <div *ngIf="loadingWfh && !wfhRequests.length">
-        Loading...
       </div>
 
-      <div *ngIf="!loadingWfh && !wfhRequests.length">
-        <p>No WFH requests yet.</p>
-      </div>
+      <!-- ========== WFH ========== -->
+      <div
+        class="card form-card"
+        style="border-radius: 18px; border: 1px solid #d7e3f3; box-shadow: 0 10px 24px rgba(15,23,42,0.08); background: rgba(255,255,255,0.95); padding: 16px;"
+      >
+        <h2>Request Work From Home</h2>
 
-      <table *ngIf="wfhRequests.length" class="wfh-table">
-        <thead>
-          <tr>
-            <th>From</th>
-            <th>To</th>
-            <th>Reason</th>
-            <th>Status</th>
-            <th>Requested On</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let req of wfhRequests">
-            <td>{{ req.from | date: 'mediumDate' }}</td>
-            <td>{{ req.to | date: 'mediumDate' }}</td>
-            <td>{{ req.reason || '-' }}</td>
-            <td>
-              <span class="status" [ngClass]="req.status?.toLowerCase()">
-                {{ req.status }}
-              </span>
-            </td>
-            <td>{{ req.createdAt | date: 'short' }}</td>
-          </tr>
-        </tbody>
-      </table>
+        <form (ngSubmit)="submitWfh()">
+          <div class="form-row">
+            <label for="wfhFrom">From Date</label>
+            <input
+              id="wfhFrom"
+              type="date"
+              [(ngModel)]="wfhFromDate"
+              name="wfhFromDate"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <label for="wfhTo">To Date</label>
+            <input
+              id="wfhTo"
+              type="date"
+              [(ngModel)]="wfhToDate"
+              name="wfhToDate"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <label for="wfhReason">Reason (optional)</label>
+            <textarea
+              id="wfhReason"
+              [(ngModel)]="wfhReason"
+              name="wfhReason"
+              rows="3"
+              placeholder="Describe why you are requesting WFH"
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn" [disabled]="loadingWfh">
+            {{ loadingWfh ? 'Submitting...' : 'Submit WFH Request' }}
+          </button>
+
+          <p class="error" *ngIf="errorWfh">{{ errorWfh }}</p>
+          <p class="success" *ngIf="successWfh">{{ successWfh }}</p>
+        </form>
+
+        <h3>My WFH Requests</h3>
+
+        <div *ngIf="loadingWfh && !wfhRequests.length">
+          Loading...
+        </div>
+
+        <div *ngIf="!loadingWfh && !wfhRequests.length" class="empty-state">
+          <p>No WFH requests yet.</p>
+        </div>
+
+        <div class="table-wrap" *ngIf="wfhRequests.length">
+          <table class="wfh-table">
+            <thead>
+              <tr>
+                <th>From</th>
+                <th>To</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Requested On</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let req of wfhRequests">
+                <td>{{ req.from | date: 'mediumDate' }}</td>
+                <td>{{ req.to | date: 'mediumDate' }}</td>
+                <td>{{ req.reason || '-' }}</td>
+                <td>
+                  <span class="status" [ngClass]="req.status?.toLowerCase()">
+                    {{ req.status }}
+                  </span>
+                </td>
+                <td>{{ req.createdAt | date: 'short' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>

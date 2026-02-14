@@ -58,7 +58,15 @@
           </td>
           <td>{{ r.checkIn ? (r.checkIn | date: 'shortTime') : '-' }}</td>
           <td>{{ r.checkOut ? (r.checkOut | date: 'shortTime') : '-' }}</td>
-          <td>{{ r.status || 'Present' }}</td>
+          <td>
+            <span
+              class="status-pill"
+              [class.present]="(r.status || 'Present') !== 'Absent'"
+              [class.absent]="(r.status || 'Present') === 'Absent'"
+            >
+              {{ r.status || 'Present' }}
+            </span>
+          </td>
         </tr>
       </tbody>
     </table>

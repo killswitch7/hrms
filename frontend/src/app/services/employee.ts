@@ -63,7 +63,9 @@ export class EmployeeService {
 
   private getAuthHeaders(): HttpHeaders {
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    const token = localStorage.getItem('token');
+    const token =
+      (typeof window !== 'undefined' && window.sessionStorage.getItem('token')) ||
+      (typeof window !== 'undefined' && window.localStorage.getItem('token'));
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }

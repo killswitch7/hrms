@@ -26,6 +26,9 @@ export class AdminAttendance implements OnInit {
   constructor(private attendanceService: AttendanceService) {}
 
   ngOnInit(): void {
+    const today = new Date().toISOString().split('T')[0];
+    this.filterFrom = today;
+    this.filterTo = today;
     this.loadAttendance();
   }
 

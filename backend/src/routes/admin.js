@@ -23,6 +23,18 @@ function splitName(fullName = '') {
   };
 }
 
+function startOfDay(input = new Date()) {
+  const d = new Date(input);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function endOfDay(input = new Date()) {
+  const d = new Date(input);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
 /**
  * Quick test route
  * GET /api/admin/ping
@@ -374,18 +386,65 @@ router.get('/dashboard-summary', protect, requireRole('admin'), async (req, res)
 router.get('/attendance', protect, requireRole('admin'), async (req, res) => {
   try {
     const { from, to, employeeId } = req.query;
+    const fromDate = from ? startOfDay(from) : startOfDay(new Date());
+    const toDate = to ? endOfDay(to) : endOfDay(fromDate);
+    const isSingleDay =
+      fromDate.getTime() === startOfDay(toDate).getTime();
 
-    const filter = {};
-
-    if (from || to) {
-      filter.date = {};
-      if (from) filter.date.$gte = new Date(from);
-      if (to) {
-        const toDate = new Date(to);
-        toDate.setHours(23, 59, 59, 999);
-        filter.date.$lte = toDate;
+    // Single day view: show all employees with Present/Absent state.
+    if (isSingleDay) {
+      const employeeFilter = { status: 'active' };
+      if (employeeId) {
+        employeeFilter.employeeId = employeeId;
       }
+
+      const employees = await Employee.find(employeeFilter)
+        .select('employeeId firstName lastName email')
+        .sort({ firstName: 1, lastName: 1 });
+
+      if (!employees.length) {
+        return res.json({ data: [] });
+      }
+
+      const employeeIds = employees.map((e) => e._id);
+      const dayRecords = await Attendance.find({
+        employee: { $in: employeeIds },
+        date: { $gte: fromDate, $lte: toDate },
+      }).sort({ createdAt: -1 });
+
+      const byEmployee = new Map();
+      for (const rec of dayRecords) {
+        const key = String(rec.employee);
+        if (!byEmployee.has(key)) byEmployee.set(key, rec);
+      }
+
+      const rows = employees.map((emp) => {
+        const rec = byEmployee.get(String(emp._id));
+        const present = !!rec && ['Present', 'WFH'].includes(rec.status || 'Present');
+
+        return {
+          _id: rec?._id || `absent-${emp._id}-${fromDate.toISOString()}`,
+          date: fromDate,
+          checkIn: rec?.checkIn || null,
+          checkOut: rec?.checkOut || null,
+          status: present ? (rec.status || 'Present') : 'Absent',
+          employee: {
+            _id: emp._id,
+            employeeId: emp.employeeId,
+            firstName: emp.firstName,
+            lastName: emp.lastName,
+            email: emp.email,
+          },
+        };
+      });
+
+      return res.json({ data: rows });
     }
+
+    // Range view: keep historical attendance records only.
+    const filter = {
+      date: { $gte: fromDate, $lte: toDate },
+    };
 
     if (employeeId) {
       const employee = await Employee.findOne({ employeeId });
@@ -399,7 +458,7 @@ router.get('/attendance', protect, requireRole('admin'), async (req, res) => {
       .populate('employee', 'employeeId firstName lastName email')
       .sort({ date: -1 });
 
-    res.json({ data: records });
+    return res.json({ data: records });
   } catch (err) {
     console.error('Error fetching attendance (admin):', err);
     res.status(500).json({ message: 'Server error' });
