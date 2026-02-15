@@ -25,6 +25,13 @@ export class Attendance implements OnInit {
   todayRecord: AttendanceRecord | null = null;
 
   todayString: string = new Date().toDateString();
+  calendarDate = new Date();
+  calendarCells: Array<{
+    date: Date;
+    inMonth: boolean;
+    isToday: boolean;
+    status: 'Present' | 'WFH' | 'Absent' | '';
+  }> = [];
 
   constructor(private attendanceService: AttendanceService) {}
 
@@ -65,6 +72,7 @@ export class Attendance implements OnInit {
           this.todayRecord =
             this.records.find((r) => r.date && this.isSameDay(r.date, today)) ||
             null;
+          this.buildCalendar();
         },
         error: (err) => {
           console.error('[Attendance] Error loading attendance:', err);
@@ -137,5 +145,62 @@ export class Attendance implements OnInit {
 
   get hasCheckedOutToday(): boolean {
     return !!this.todayRecord?.checkOut;
+  }
+
+  previousMonth() {
+    this.calendarDate = new Date(
+      this.calendarDate.getFullYear(),
+      this.calendarDate.getMonth() - 1,
+      1
+    );
+    this.buildCalendar();
+  }
+
+  nextMonth() {
+    this.calendarDate = new Date(
+      this.calendarDate.getFullYear(),
+      this.calendarDate.getMonth() + 1,
+      1
+    );
+    this.buildCalendar();
+  }
+
+  private buildCalendar() {
+    const year = this.calendarDate.getFullYear();
+    const month = this.calendarDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const gridStart = new Date(firstDay);
+    gridStart.setDate(firstDay.getDate() - firstDay.getDay());
+
+    const today = new Date();
+    const cells: Array<{
+      date: Date;
+      inMonth: boolean;
+      isToday: boolean;
+      status: 'Present' | 'WFH' | 'Absent' | '';
+    }> = [];
+
+    for (let i = 0; i < 42; i++) {
+      const date = new Date(gridStart);
+      date.setDate(gridStart.getDate() + i);
+
+      const rec = this.records.find((r) => r.date && this.isSameDay(r.date, date));
+      const inMonth = date.getMonth() === month;
+      const isToday = this.isSameDay(date, today);
+      const isPastOrToday =
+        new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() <=
+        new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+
+      let status: 'Present' | 'WFH' | 'Absent' | '' = '';
+      if (rec) {
+        status = (rec.status as 'Present' | 'WFH') || 'Present';
+      } else if (inMonth && isPastOrToday) {
+        status = 'Absent';
+      }
+
+      cells.push({ date, inMonth, isToday, status });
+    }
+
+    this.calendarCells = cells;
   }
 }
