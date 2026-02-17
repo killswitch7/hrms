@@ -15,6 +15,7 @@ import { Announcements } from './components/admin/announcements/announcements';
 import { Analytics } from './components/admin/analytics/analytics';
 import { RegisterEmployee } from './components/admin/register-employee/register-employee';
 import { AdminProfile } from './components/admin/profile/profile';
+import { AdminHolidays } from './components/admin/holidays/holidays';
 
 // Employee feature pages
 import { Attendance } from './components/employee/attendance/attendance';
@@ -71,6 +72,11 @@ export const routes: Routes = [
   {
     path: 'announcements',
     component: Announcements,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'holidays',
+    component: AdminHolidays,
     canActivate: [authGuard],
   },
   {

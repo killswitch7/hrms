@@ -1,0 +1,178 @@
+.page-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 24px 40px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid #d5dfef;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 12px 30px -24px rgba(15, 23, 42, 0.35);
+}
+
+.page-title {
+  margin: 0 0 14px;
+  font-size: 2rem;
+  line-height: 1.2;
+  color: #0f172a;
+}
+
+.form-panel h3,
+.list-panel h3 {
+  margin: 0 0 14px;
+  font-size: 1.55rem;
+  color: #0f172a;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.form-grid textarea {
+  grid-column: 1 / -1;
+}
+
+input,
+select,
+textarea {
+  display: block;
+  width: 100%;
+  border: 1px solid #becce2;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font: inherit;
+  background: #f9fbff;
+  color: #0f172a;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+}
+
+.btn.danger {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.list-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e7edf7;
+  margin-bottom: 6px;
+}
+
+.list-head span {
+  color: #475569;
+  font-size: 0.92rem;
+}
+
+.holiday {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 4px;
+  border-bottom: 1px solid #eef3fb;
+}
+
+.holiday:last-child {
+  border-bottom: 0;
+}
+
+.holiday-info {
+  min-width: 0;
+}
+
+.holiday h3 {
+  margin: 0 0 4px;
+  font-size: 1.12rem;
+  line-height: 1.25;
+  color: #0f172a;
+}
+
+.holiday p,
+.holiday small {
+  margin: 0;
+}
+
+.holiday p {
+  color: #334155;
+}
+
+.holiday small {
+  color: #64748b;
+}
+
+.empty-state {
+  margin: 18px 0 2px;
+  color: #64748b;
+}
+
+.error {
+  margin: 0 0 10px;
+  color: #b91c1c;
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .page-shell {
+    padding: 20px 14px 28px;
+  }
+
+  .page-title {
+    font-size: 1.65rem;
+  }
+
+  .form-panel h3,
+  .list-panel h3 {
+    font-size: 1.35rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .holiday {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

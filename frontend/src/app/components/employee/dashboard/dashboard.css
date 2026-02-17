@@ -88,17 +88,31 @@
   gap: 16px;
 }
 
-.kpi-card h2 {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
 .kpi-card {
   border-radius: 16px;
   border: 1px solid #d7e3f3;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.kpi-card mat-card-header {
+  margin-bottom: 4px;
+}
+
+.metric-value,
+.status-value {
+  margin: 0;
+  color: #0f172a;
+  line-height: 1.1;
+}
+
+.metric-value {
+  font-size: 1.95rem;
+  font-weight: 700;
+}
+
+.status-value {
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
 .kpi-card:nth-child(1) {
@@ -163,13 +177,33 @@
 }
 
 .notice-card {
+  padding: 18px 18px 14px;
   border-radius: 16px;
   border: 1px solid #d7e3f3;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
 }
 
+.notice-card mat-card-title {
+  margin: 0 0 8px;
+  line-height: 1.2;
+}
+
+.notice-card mat-divider {
+  margin-bottom: 14px;
+}
+
+.notice-card mat-card-content {
+  margin: 0;
+  padding: 0;
+}
+
 .notice-card p {
+  margin: 0 0 8px;
   color: #334155;
+}
+
+.notice-card small {
+  color: #64748b;
 }
 
 .bottom-grid {
@@ -181,15 +215,27 @@
 
 .info-card {
   min-height: 184px;
+  padding: 18px 18px 16px;
   border-radius: 16px;
   border: 1px solid #d7e3f3;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.info-card mat-card-title {
+  margin: 0 0 8px;
+  line-height: 1.2;
+}
+
+.info-card mat-divider {
+  margin-bottom: 14px;
 }
 
 .info-card mat-card-content {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin: 0;
+  padding: 0;
 }
 
 .info-card p {

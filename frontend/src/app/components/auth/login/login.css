@@ -9,6 +9,12 @@
   padding: 20px;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 .login-container {
   width: min(460px, 100%);
   padding: 28px;
@@ -62,18 +68,34 @@ label {
 
 input {
   width: 100%;
-  padding: 11px 12px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  font-size: 0.95rem;
-  background: #fff;
+  height: 54px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid #b9c8df;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: #0f172a;
+  background: #f8fbff;
   transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+input::placeholder {
+  color: #64748b;
 }
 
 input:focus {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+  background: #fff;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0f172a;
+  -webkit-box-shadow: 0 0 0px 1000px #f8fbff inset;
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 button {

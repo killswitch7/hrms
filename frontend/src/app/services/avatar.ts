@@ -5,23 +5,30 @@ import { Injectable } from '@angular/core';
 })
 export class AvatarService {
   private prefix = 'hrms_avatar';
+  private eventName = 'hrms-avatar-updated';
 
   private key(role: 'admin' | 'employee', email: string): string {
     return `${this.prefix}:${role}:${email.toLowerCase()}`;
   }
 
   get(role: 'admin' | 'employee', email: string): string | null {
-    if (!email) return null;
+    if (!email || typeof localStorage === 'undefined') return null;
     return localStorage.getItem(this.key(role, email));
   }
 
   set(role: 'admin' | 'employee', email: string, dataUrl: string): void {
-    if (!email) return;
+    if (!email || typeof localStorage === 'undefined') return;
     localStorage.setItem(this.key(role, email), dataUrl);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(this.eventName, { detail: { role, email } }));
+    }
   }
 
   clear(role: 'admin' | 'employee', email: string): void {
-    if (!email) return;
+    if (!email || typeof localStorage === 'undefined') return;
     localStorage.removeItem(this.key(role, email));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(this.eventName, { detail: { role, email } }));
+    }
   }
 }

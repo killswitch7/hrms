@@ -9,6 +9,14 @@ export interface EmployeeDashboardNotice {
   createdAt: string;
 }
 
+export interface EmployeeHoliday {
+  _id: string;
+  name: string;
+  date: string;
+  type: 'Public' | 'Company' | 'Optional' | 'Festival';
+  description?: string;
+}
+
 export interface EmployeeDashboardSummary {
   userProfile: {
     name: string;
@@ -39,6 +47,12 @@ export class EmployeeDashboardService {
   getSummary(): Observable<{ data: EmployeeDashboardSummary }> {
     return this.http.get<{ data: EmployeeDashboardSummary }>(
       `${this.employeeBase}/dashboard-summary`
+    );
+  }
+
+  getHolidays(): Observable<{ data: EmployeeHoliday[] }> {
+    return this.http.get<{ data: EmployeeHoliday[] }>(
+      `${this.employeeBase}/holidays`
     );
   }
 }

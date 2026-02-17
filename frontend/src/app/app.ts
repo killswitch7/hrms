@@ -4,6 +4,7 @@ import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './services/auth';
+import { AvatarService } from './services/avatar';
 
 @Component({
   selector: 'app-root',
@@ -13,7 +14,10 @@ import { AuthService } from './services/auth';
     <header class="global-header" *ngIf="showHeader">
       <div class="header-inner">
         <div class="identity">
-          <div class="avatar">{{ initials }}</div>
+          <div class="avatar">
+            <img *ngIf="avatarUrl; else initialsFallback" [src]="avatarUrl" alt="Profile photo" />
+            <ng-template #initialsFallback>{{ initials }}</ng-template>
+          </div>
           <div>
             <h1>{{ title }}</h1>
             <p>{{ subtitle }}</p>
@@ -40,13 +44,22 @@ export class App {
   title = 'Control Center';
   subtitle = '';
   initials = 'U';
+  avatarUrl: string | null = null;
   mainLabel = 'Dashboard';
 
-  constructor(private router: Router, private auth: AuthService) {
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+    private avatarService: AvatarService
+  ) {
     this.syncHeaderState();
     this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))
       .subscribe(() => this.syncHeaderState());
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('hrms-avatar-updated', () => this.syncHeaderState());
+    }
   }
 
   private syncHeaderState() {
@@ -59,6 +72,7 @@ export class App {
     this.initials = namePart.slice(0, 1).toUpperCase();
     this.subtitle = `${this.role === 'admin' ? 'Admin' : 'Employee'} \u2022 ${this.email}`;
     this.mainLabel = this.role === 'admin' ? 'Employees' : 'Dashboard';
+    this.avatarUrl = this.role ? this.avatarService.get(this.role, this.email) : null;
   }
 
   refreshPage() {

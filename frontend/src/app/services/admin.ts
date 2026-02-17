@@ -45,6 +45,14 @@ export interface AdminAnalytics {
   generatedAt: string;
 }
 
+export interface AdminHoliday {
+  _id: string;
+  name: string;
+  date: string;
+  type: 'Public' | 'Company' | 'Optional' | 'Festival';
+  description?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -80,5 +88,25 @@ export class Admin {
 
   deleteAnnouncement(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.adminBase}/announcements/${id}`);
+  }
+
+  getHolidays(): Observable<{ data: AdminHoliday[] }> {
+    return this.http.get<{ data: AdminHoliday[] }>(`${this.adminBase}/holidays?upcoming=false`);
+  }
+
+  createHoliday(payload: {
+    name: string;
+    date: string;
+    type?: 'Public' | 'Company' | 'Optional' | 'Festival';
+    description?: string;
+  }): Observable<{ message: string; data: AdminHoliday }> {
+    return this.http.post<{ message: string; data: AdminHoliday }>(
+      `${this.adminBase}/holidays`,
+      payload
+    );
+  }
+
+  deleteHoliday(id: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.adminBase}/holidays/${id}`);
   }
 }

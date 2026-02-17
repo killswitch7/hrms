@@ -116,6 +116,7 @@
     <section class="bottom-grid animate-fade">
       <mat-card class="info-card">
         <mat-card-title>Quick Stats</mat-card-title>
+        <mat-divider></mat-divider>
         <mat-card-content>
           <p>Attendance Rate: {{ analytics.attendanceRate }}%</p>
           <p>Leave Approval Rate: {{ analytics.leaveApprovalRate }}%</p>
@@ -124,11 +125,11 @@
 
       <mat-card class="info-card">
         <mat-card-title>System Info</mat-card-title>
+        <mat-divider></mat-divider>
         <mat-card-content>
           <p>Admin Account: {{ userProfile.email }}</p>
           <p>Last Login: {{ userProfile.lastLogin }}</p>
           <p>Last Sync: {{ analytics.generatedAt | date: 'short' }}</p>
-          <button mat-button color="warn" *ngIf="avatarUrl" (click)="removeAvatar()">Remove Photo</button>
         </mat-card-content>
       </mat-card>
     </section>

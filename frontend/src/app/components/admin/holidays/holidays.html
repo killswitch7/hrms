@@ -1,0 +1,39 @@
+<div class="page-shell">
+  <h2 class="page-title">Holiday Management</h2>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <section class="panel form-panel">
+    <h3>Add Holiday</h3>
+    <div class="form-grid">
+      <input type="text" [(ngModel)]="name" placeholder="Holiday name" />
+      <input type="date" [(ngModel)]="date" />
+      <select [(ngModel)]="type">
+        <option value="Public">Public</option>
+        <option value="Company">Company</option>
+        <option value="Optional">Optional</option>
+        <option value="Festival">Festival</option>
+      </select>
+      <textarea [(ngModel)]="description" rows="3" placeholder="Description (optional)"></textarea>
+    </div>
+    <button class="btn primary" type="button" (click)="addHoliday()" [disabled]="loading">
+      Add Holiday
+    </button>
+  </section>
+
+  <section class="panel list-panel">
+    <div class="list-head">
+      <h3>Holiday List</h3>
+      <span>{{ holidays.length }} total</span>
+    </div>
+    <p *ngIf="loading">Loading holidays...</p>
+    <div class="holiday" *ngFor="let h of holidays">
+      <div class="holiday-info">
+        <h3>{{ h.name }}</h3>
+        <p>{{ h.type }} · {{ h.date | date:'fullDate' }}</p>
+        <small *ngIf="h.description">{{ h.description }}</small>
+      </div>
+      <button class="btn danger" type="button" (click)="deleteHoliday(h._id)">Delete</button>
+    </div>
+    <p class="empty-state" *ngIf="!loading && !holidays.length">No holidays found.</p>
+  </section>
+</div>

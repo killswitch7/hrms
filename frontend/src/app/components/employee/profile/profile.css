@@ -1,5 +1,5 @@
 .profile-shell {
-  min-height: 100vh;
+  min-height: calc(100vh - 78px);
   padding: 24px 16px;
   background: linear-gradient(180deg, #f8fbff, #eef2ff);
 }

@@ -49,7 +49,7 @@
           <mat-card-title>Leave Balance</mat-card-title>
           <mat-card-subtitle>Available leave days</mat-card-subtitle>
         </mat-card-header>
-        <mat-card-content><h2>{{ stats.leaveBalance }} days</h2></mat-card-content>
+        <mat-card-content><h2 class="metric-value">{{ stats.leaveBalance }} days</h2></mat-card-content>
       </mat-card>
 
       <mat-card class="kpi-card animate-rise delay-1">
@@ -58,7 +58,7 @@
           <mat-card-title>Attendance</mat-card-title>
           <mat-card-subtitle>This month</mat-card-subtitle>
         </mat-card-header>
-        <mat-card-content><h2>{{ stats.attendance }} days</h2></mat-card-content>
+        <mat-card-content><h2 class="metric-value">{{ stats.attendance }} days</h2></mat-card-content>
       </mat-card>
 
       <mat-card class="kpi-card animate-rise delay-2">
@@ -67,7 +67,7 @@
           <mat-card-title>Today's Status</mat-card-title>
           <mat-card-subtitle>{{ todayAttendance.time ? (todayAttendance.time | date: 'shortTime') : '--' }}</mat-card-subtitle>
         </mat-card-header>
-        <mat-card-content><h2>{{ todayAttendance.status }}</h2></mat-card-content>
+        <mat-card-content><h2 class="status-value">{{ todayAttendance.status }}</h2></mat-card-content>
       </mat-card>
     </section>
 
@@ -105,6 +105,7 @@
     <section class="notice-grid">
       <mat-card class="notice-card" *ngFor="let ann of announcements">
         <mat-card-title>{{ ann.title }}</mat-card-title>
+        <mat-divider></mat-divider>
         <mat-card-content>
           <p>{{ ann.content }}</p>
           <small>{{ ann.createdAt | date:'shortDate' }}</small>
@@ -113,6 +114,7 @@
 
       <mat-card class="notice-card" *ngIf="!announcements.length && !loading">
         <mat-card-title>No notices</mat-card-title>
+        <mat-divider></mat-divider>
         <mat-card-content>
           <p>No announcements or holiday notices available.</p>
         </mat-card-content>
@@ -122,6 +124,7 @@
     <section class="bottom-grid animate-fade">
       <mat-card class="info-card">
         <mat-card-title>Quick Stats</mat-card-title>
+        <mat-divider></mat-divider>
         <mat-card-content>
           <p>Attendance Days (Month): {{ stats.attendance }}</p>
           <p>Leave Balance: {{ stats.leaveBalance }} days</p>
@@ -131,11 +134,11 @@
 
       <mat-card class="info-card">
         <mat-card-title>System Info</mat-card-title>
+        <mat-divider></mat-divider>
         <mat-card-content>
           <p>Employee Account: {{ userProfile.email }}</p>
           <p>Role: Employee</p>
           <p>Last Refresh: {{ lastUpdated | date: 'short' }}</p>
-          <button mat-button color="warn" *ngIf="avatarUrl" (click)="removeAvatar()">Remove Photo</button>
         </mat-card-content>
       </mat-card>
     </section>

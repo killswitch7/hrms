@@ -18,16 +18,13 @@ export class Holidays {
 
   ngOnInit(): void {
     this.loading = true;
-    this.dashboardService.getSummary().subscribe({
+    this.dashboardService.getHolidays().subscribe({
       next: (res) => {
-        const notices = res.data?.announcements || [];
-        this.holidays = notices
-          .filter((x) => x.title?.toLowerCase().includes('holiday'))
-          .map((x) => ({
-            name: x.content?.split(' on ')[0] || x.title,
-            date: x.createdAt,
-            type: 'Company Holiday',
-          }));
+        this.holidays = (res.data || []).map((x) => ({
+          name: x.name,
+          date: x.date,
+          type: x.type || 'Company',
+        }));
         this.loading = false;
       },
       error: (err) => {
