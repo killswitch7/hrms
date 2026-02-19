@@ -43,75 +43,73 @@
     <p class="success" *ngIf="success">{{ success }}</p>
   </div>
 
-  <div class="history-grid">
-    <div class="card calendar-card">
-      <div class="calendar-header">
-        <h2>{{ calendarDate | date: 'MMMM y' }}</h2>
-        <div class="calendar-nav">
-          <button type="button" class="btn secondary" (click)="previousMonth()">Prev</button>
-          <button type="button" class="btn secondary" (click)="nextMonth()">Next</button>
-        </div>
+  <div class="card calendar-card">
+    <div class="calendar-header">
+      <h2>{{ calendarDate | date: 'MMMM y' }}</h2>
+      <div class="calendar-nav">
+        <button type="button" class="btn secondary" (click)="previousMonth()">Prev</button>
+        <button type="button" class="btn secondary" (click)="nextMonth()">Next</button>
       </div>
+    </div>
 
-      <div class="calendar-grid week-labels">
-        <div>Sun</div>
-        <div>Mon</div>
-        <div>Tue</div>
-        <div>Wed</div>
-        <div>Thu</div>
-        <div>Fri</div>
-        <div>Sat</div>
-      </div>
+    <div class="calendar-grid week-labels">
+      <div>Sun</div>
+      <div>Mon</div>
+      <div>Tue</div>
+      <div>Wed</div>
+      <div>Thu</div>
+      <div>Fri</div>
+      <div>Sat</div>
+    </div>
 
-      <div class="calendar-grid">
-        <div
-          class="day-cell"
-          *ngFor="let cell of calendarCells"
-          [class.outside]="!cell.inMonth"
-          [class.today]="cell.isToday"
+    <div class="calendar-grid">
+      <div
+        class="day-cell"
+        *ngFor="let cell of calendarCells"
+        [class.outside]="!cell.inMonth"
+        [class.today]="cell.isToday"
+      >
+        <div class="day-num">{{ cell.date | date: 'd' }}</div>
+        <span
+          *ngIf="cell.status"
+          class="day-status"
+          [class.present]="cell.status === 'Present' || cell.status === 'WFH'"
+          [class.absent]="cell.status === 'Absent'"
         >
-          <div class="day-num">{{ cell.date | date: 'd' }}</div>
-          <span
-            *ngIf="cell.status"
-            class="day-status"
-            [class.present]="cell.status === 'Present' || cell.status === 'WFH'"
-            [class.absent]="cell.status === 'Absent'"
-          >
-            {{ cell.status }}
-          </span>
-        </div>
+          {{ cell.status }}
+        </span>
       </div>
     </div>
+  </div>
 
-    <div class="card history-card">
-      <h2>Last 30 Days</h2>
+  <div class="card history-card">
+    <h2>Last 30 Days</h2>
 
-      <div *ngIf="loading && !records.length">
-        Loading attendance...
-      </div>
-
-      <div *ngIf="!loading && !records.length">
-        <p>No attendance records found.</p>
-      </div>
-
-      <table *ngIf="records.length" class="attendance-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Check-In</th>
-            <th>Check-Out</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let r of records">
-            <td>{{ r.date | date: 'mediumDate' }}</td>
-            <td>{{ r.checkIn ? (r.checkIn | date: 'shortTime') : '-' }}</td>
-            <td>{{ r.checkOut ? (r.checkOut | date: 'shortTime') : '-' }}</td>
-            <td>{{ r.status || 'Present' }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div *ngIf="loading && !records.length">
+      Loading attendance...
     </div>
+
+    <div *ngIf="!loading && !records.length">
+      <p>No attendance records found.</p>
+    </div>
+
+    <table *ngIf="records.length" class="attendance-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Check-In</th>
+          <th>Check-Out</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of records">
+          <td>{{ r.date | date: 'mediumDate' }}</td>
+          <td>{{ r.checkIn ? (r.checkIn | date: 'shortTime') : '-' }}</td>
+          <td>{{ r.checkOut ? (r.checkOut | date: 'shortTime') : '-' }}</td>
+          <td>{{ r.status || 'Present' }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>

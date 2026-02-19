@@ -66,12 +66,6 @@
   color: #475569;
 }
 
-.history-grid {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 16px;
-}
-
 .calendar-header {
   display: flex;
   justify-content: space-between;
@@ -154,10 +148,4 @@
 .day-status.absent {
   background: #fee2e2;
   color: #991b1b;
-}
-
-@media (max-width: 1100px) {
-  .history-grid {
-    grid-template-columns: 1fr;
-  }
 }
