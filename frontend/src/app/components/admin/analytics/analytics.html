@@ -33,4 +33,30 @@
       <span class="value">{{ data.leave.rejected }}</span>
     </div>
   </div>
+
+  <div class="charts" *ngIf="!loading && data">
+    <div class="chart-card">
+      <h3>Attendance Overview</h3>
+      <div class="chart-wrap">
+        <canvas
+          baseChart
+          [type]="'doughnut'"
+          [data]="attendanceChartData"
+          [options]="attendanceChartOptions">
+        </canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Leave Request Summary</h3>
+      <div class="chart-wrap">
+        <canvas
+          baseChart
+          [type]="'bar'"
+          [data]="leaveChartData"
+          [options]="leaveChartOptions">
+        </canvas>
+      </div>
+    </div>
+  </div>
 </div>

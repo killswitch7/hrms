@@ -30,14 +30,33 @@ form {
   color: #334155;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid #cbd5e1;
   font-size: 0.95rem;
 }
 
-.form-group input:focus {
+.hint {
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.dept-link-btn {
+  margin-top: 6px;
+  width: fit-content;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);

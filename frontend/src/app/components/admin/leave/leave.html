@@ -28,6 +28,25 @@
     </button>
   </div>
 
+  <section class="panel">
+    <div class="filter-row">
+      <select [(ngModel)]="statusFilter">
+        <option value="">All Status</option>
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Search by employee id, name, or email"
+      />
+      <button class="tab-btn active" (click)="applyFilters()">Apply</button>
+      <button class="tab-btn" (click)="clearFilters()">Clear</button>
+    </div>
+  </section>
+
   <!-- LEAVE TAB -->
   <section class="panel" *ngIf="activeTab === 'leave'">
     <h2>Pending Leave Requests</h2>

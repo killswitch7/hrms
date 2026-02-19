@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { EmployeeService } from '../../../services/employee';
+import { Admin, DepartmentItem } from '../../../services/admin';
 
 @Component({
   selector: 'app-register-employee',
@@ -16,8 +17,10 @@ export class RegisterEmployee {
   name = '';
   email = '';
   password = '';
+  role: 'employee' | 'manager' = 'employee';
   department = '';
   position = '';
+  departments: DepartmentItem[] = [];
 
   error = '';
   success = '';
@@ -25,8 +28,24 @@ export class RegisterEmployee {
 
   constructor(
     private employeeService: EmployeeService,
+    private adminService: Admin,
     public router: Router
   ) {}
+
+  ngOnInit() {
+    this.loadDepartments();
+  }
+
+  loadDepartments() {
+    this.adminService.getDepartments().subscribe({
+      next: (res) => {
+        this.departments = res.data || [];
+      },
+      error: () => {
+        this.departments = [];
+      },
+    });
+  }
 
   onSubmit() {
     this.error = '';
@@ -34,6 +53,10 @@ export class RegisterEmployee {
 
     if (!this.name || !this.email || !this.password) {
       this.error = 'Name, email and password are required.';
+      return;
+    }
+    if (!this.department) {
+      this.error = 'Please select a department.';
       return;
     }
 
@@ -44,18 +67,20 @@ export class RegisterEmployee {
         name: this.name,
         email: this.email,
         password: this.password,
+        role: this.role,
         department: this.department,
         position: this.position,
       })
       .subscribe({
         next: (res) => {
           this.loading = false;
-          this.success = 'Employee registered successfully.';
+          this.success = `User registered successfully as ${res?.user?.role || this.role}.`;
 
           // Clear form
           this.name = '';
           this.email = '';
           this.password = '';
+          this.role = 'employee';
           this.department = '';
           this.position = '';
         },

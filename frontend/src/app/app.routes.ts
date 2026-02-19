@@ -16,6 +16,10 @@ import { Analytics } from './components/admin/analytics/analytics';
 import { RegisterEmployee } from './components/admin/register-employee/register-employee';
 import { AdminProfile } from './components/admin/profile/profile';
 import { AdminHolidays } from './components/admin/holidays/holidays';
+import { AdminDepartments } from './components/admin/departments/departments';
+import { ManagerDashboard } from './components/manager/dashboard/dashboard';
+import { ManagerAttendance } from './components/manager/attendance/attendance';
+import { ManagerLeave } from './components/manager/leave/leave';
 
 // Employee feature pages
 import { Attendance } from './components/employee/attendance/attendance';
@@ -27,6 +31,7 @@ import { Notifications } from './components/employee/notifications/notifications
 
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
+import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
   // Auth
@@ -40,93 +45,115 @@ export const routes: Routes = [
   {
     path: 'admin-dashboard',
     component: AdminDashboard,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['admin'])],
+  },
+  {
+    path: 'manager-dashboard',
+    component: ManagerDashboard,
+    canActivate: [authGuard, roleGuard(['manager'])],
   },
   {
     path: 'dashboard', // employee dashboard
     component: Dashboard,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['employee'])],
   },
 
   // Admin feature routes
   {
     path: 'employees',
     component: Employees,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['admin', 'manager'])],
   },
   {
     path: 'attendance',
     component: AdminAttendance,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['admin', 'manager'])],
   },
   {
     path: 'leave-approvals',
     component: AdminLeave,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['admin', 'manager'])],
   },
   {
     path: 'payroll',
     component: Payroll,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['admin'])],
   },
   {
     path: 'announcements',
     component: Announcements,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['admin'])],
   },
   {
     path: 'holidays',
     component: AdminHolidays,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['admin'])],
   },
   {
     path: 'analytics',
     component: Analytics,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['admin'])],
+  },
+  {
+    path: 'departments',
+    component: AdminDepartments,
+    canActivate: [authGuard, roleGuard(['admin'])],
   },
 
   // NEW: Admin Register Employee
   {
     path: 'register-employee',
     component: RegisterEmployee,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['admin'])],
   },
   {
     path: 'admin-profile',
     component: AdminProfile,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['admin', 'manager'])],
+  },
+
+  // Manager self-service routes
+  {
+    path: 'manager-attendance',
+    component: ManagerAttendance,
+    canActivate: [authGuard, roleGuard(['manager'])],
+  },
+  {
+    path: 'manager-leave',
+    component: ManagerLeave,
+    canActivate: [authGuard, roleGuard(['manager'])],
   },
 
   // Employee feature routes
   {
     path: 'employee-attendance',
     component: Attendance,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['employee'])],
   },
   {
     path: 'employee-holidays',
     component: Holidays,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['employee'])],
   },
   {
     path: 'employee-leave',
     component: EmployeeLeave,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['employee'])],
   },
   {
     path: 'employee-payslip',
     component: Payslip,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['employee'])],
   },
   {
     path: 'employee-profile',
     component: Profile,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['employee'])],
   },
   {
     path: 'employee-notifications',
     component: Notifications,
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard(['employee'])],
   },
 
   // Defaults

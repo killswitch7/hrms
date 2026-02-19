@@ -7,6 +7,8 @@ import {
   EmployeeService,
   UpdateEmployeeDto,
 } from '../../../services/employee';
+import { AuthService } from '../../../services/auth';
+import { Admin, DepartmentItem } from '../../../services/admin';
 
 @Component({
   selector: 'app-employees',
@@ -23,17 +25,40 @@ export class Employees {
 
   search = '';
   statusFilter: '' | 'active' | 'inactive' = '';
+  roleFilter: '' | 'employee' | 'manager' = '';
+  departmentFilter = '';
   page = 1;
   limit = 20;
   total = 0;
+  departments: DepartmentItem[] = [];
+
+  isManager = false;
 
   editId = '';
   editForm: UpdateEmployeeDto & { name?: string } = {};
 
-  constructor(private employeeService: EmployeeService, private router: Router) {}
+  constructor(
+    private employeeService: EmployeeService,
+    private router: Router,
+    private authService: AuthService,
+    private adminService: Admin
+  ) {}
 
   ngOnInit(): void {
+    this.isManager = this.authService.getRole() === 'manager';
+    if (!this.isManager) this.loadDepartments();
     this.loadEmployees();
+  }
+
+  loadDepartments() {
+    this.adminService.getDepartments().subscribe({
+      next: (res) => {
+        this.departments = res.data || [];
+      },
+      error: () => {
+        this.departments = [];
+      },
+    });
   }
 
   loadEmployees() {
@@ -44,6 +69,8 @@ export class Employees {
       .getEmployees({
         search: this.search,
         status: this.statusFilter,
+        role: this.roleFilter,
+        department: this.departmentFilter,
         page: this.page,
         limit: this.limit,
       })
@@ -69,11 +96,14 @@ export class Employees {
   clearFilters() {
     this.search = '';
     this.statusFilter = '';
+    this.roleFilter = '';
+    this.departmentFilter = '';
     this.page = 1;
     this.loadEmployees();
   }
 
   startEdit(emp: EmployeeItem) {
+    if (this.isManager) return;
     this.success = '';
     this.error = '';
     this.editId = emp._id;
@@ -84,6 +114,7 @@ export class Employees {
       department: emp.department || '',
       designation: emp.designation || '',
       status: emp.status,
+      role: (emp.user?.role as 'employee' | 'manager') || 'employee',
       baseSalary: emp.baseSalary || 0,
     };
   }
@@ -94,7 +125,12 @@ export class Employees {
   }
 
   saveEdit() {
+    if (this.isManager) return;
     if (!this.editId) return;
+    if (this.editForm.role === 'manager' && !String(this.editForm.department || '').trim()) {
+      this.error = 'Manager must have a department.';
+      return;
+    }
 
     this.loading = true;
     this.error = '';
@@ -114,6 +150,7 @@ export class Employees {
   }
 
   deleteEmployee(emp: EmployeeItem) {
+    if (this.isManager) return;
     const fullName = [emp.firstName, emp.lastName].filter(Boolean).join(' ');
     const ok = window.confirm(`Delete ${fullName || emp.email}? This action cannot be undone.`);
     if (!ok) return;
@@ -150,6 +187,7 @@ export class Employees {
   }
 
   goToRegister() {
+    if (this.isManager) return;
     this.router.navigate(['/register-employee']);
   }
 }

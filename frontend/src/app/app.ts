@@ -25,7 +25,6 @@ import { AvatarService } from './services/avatar';
         </div>
 
         <div class="actions">
-          <button class="btn ghost" (click)="refreshPage()">Refresh</button>
           <button class="btn ghost" (click)="goToProfile()">Profile</button>
           <button class="btn ghost" (click)="goToMain()"> {{ mainLabel }} </button>
           <button class="btn primary" (click)="logout()">Logout</button>
@@ -39,7 +38,7 @@ import { AvatarService } from './services/avatar';
 })
 export class App {
   showHeader = false;
-  role: 'admin' | 'employee' | null = null;
+  role: 'admin' | 'manager' | 'employee' | null = null;
   email = '';
   title = 'Control Center';
   subtitle = '';
@@ -70,8 +69,11 @@ export class App {
 
     const namePart = this.email.split('@')[0] || 'user';
     this.initials = namePart.slice(0, 1).toUpperCase();
-    this.subtitle = `${this.role === 'admin' ? 'Admin' : 'Employee'} \u2022 ${this.email}`;
-    this.mainLabel = this.role === 'admin' ? 'Employees' : 'Dashboard';
+    const roleName =
+      this.role === 'admin' ? 'Admin' : this.role === 'manager' ? 'Manager' : 'Employee';
+    this.subtitle = `${roleName} \u2022 ${this.email}`;
+    this.mainLabel =
+      this.role === 'admin' ? 'Employees' : this.role === 'manager' ? 'Team' : 'Dashboard';
     this.avatarUrl = this.role ? this.avatarService.get(this.role, this.email) : null;
   }
 
@@ -80,11 +82,13 @@ export class App {
   }
 
   goToProfile() {
-    this.router.navigate([this.role === 'admin' ? '/admin-profile' : '/employee-profile']);
+    this.router.navigate([this.role === 'admin' || this.role === 'manager' ? '/admin-profile' : '/employee-profile']);
   }
 
   goToMain() {
-    this.router.navigate([this.role === 'admin' ? '/employees' : '/dashboard']);
+    if (this.role === 'admin') return this.router.navigate(['/employees']);
+    if (this.role === 'manager') return this.router.navigate(['/manager-dashboard']);
+    return this.router.navigate(['/dashboard']);
   }
 
   logout() {

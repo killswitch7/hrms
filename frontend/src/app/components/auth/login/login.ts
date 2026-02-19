@@ -42,6 +42,8 @@ export class Login {
 
         if (res.user.role === 'admin') {
           this.router.navigate(['/admin-dashboard'], { replaceUrl: true });
+        } else if (res.user.role === 'manager') {
+          this.router.navigate(['/manager-dashboard'], { replaceUrl: true });
         } else {
           this.router.navigate(['/dashboard'], { replaceUrl: true });
         }

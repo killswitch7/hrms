@@ -1,6 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { AuthService } from './auth';
 
 export interface DashboardSummary {
   totalEmployees: number;
@@ -53,25 +55,36 @@ export interface AdminHoliday {
   description?: string;
 }
 
+export interface DepartmentItem {
+  _id: string;
+  name: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class Admin {
   private http = inject(HttpClient);
-  private adminBase = 'http://localhost:5001/api/admin';
+  private auth = inject(AuthService);
+  private apiRoot = 'http://localhost:5001/api';
+
+  private getManageBase(): string {
+    const role = this.auth.getRole();
+    return role === 'manager' ? `${this.apiRoot}/manager` : `${this.apiRoot}/admin`;
+  }
 
   getDashboardSummary(): Observable<{ data: DashboardSummary }> {
     return this.http.get<{ data: DashboardSummary }>(
-      `${this.adminBase}/dashboard-summary`
+      `${this.getManageBase()}/dashboard-summary`
     );
   }
 
   getAnalytics(): Observable<{ data: AdminAnalytics }> {
-    return this.http.get<{ data: AdminAnalytics }>(`${this.adminBase}/analytics`);
+    return this.http.get<{ data: AdminAnalytics }>(`${this.getManageBase()}/analytics`);
   }
 
   getAnnouncements(): Observable<{ data: AdminAnnouncement[] }> {
-    return this.http.get<{ data: AdminAnnouncement[] }>(`${this.adminBase}/announcements`);
+    return this.http.get<{ data: AdminAnnouncement[] }>(`${this.getManageBase()}/announcements`);
   }
 
   createAnnouncement(payload: {
@@ -81,17 +94,17 @@ export class Admin {
     audience?: string;
   }): Observable<{ message: string; data: AdminAnnouncement }> {
     return this.http.post<{ message: string; data: AdminAnnouncement }>(
-      `${this.adminBase}/announcements`,
+      `${this.getManageBase()}/announcements`,
       payload
     );
   }
 
   deleteAnnouncement(id: string): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.adminBase}/announcements/${id}`);
+    return this.http.delete<{ message: string }>(`${this.getManageBase()}/announcements/${id}`);
   }
 
   getHolidays(): Observable<{ data: AdminHoliday[] }> {
-    return this.http.get<{ data: AdminHoliday[] }>(`${this.adminBase}/holidays?upcoming=false`);
+    return this.http.get<{ data: AdminHoliday[] }>(`${this.getManageBase()}/holidays?upcoming=false`);
   }
 
   createHoliday(payload: {
@@ -101,12 +114,35 @@ export class Admin {
     description?: string;
   }): Observable<{ message: string; data: AdminHoliday }> {
     return this.http.post<{ message: string; data: AdminHoliday }>(
-      `${this.adminBase}/holidays`,
+      `${this.getManageBase()}/holidays`,
       payload
     );
   }
 
   deleteHoliday(id: string): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.adminBase}/holidays/${id}`);
+    return this.http.delete<{ message: string }>(`${this.getManageBase()}/holidays/${id}`);
+  }
+
+  getDepartments(): Observable<{ data: DepartmentItem[] }> {
+    return this.http
+      .get<{ data: DepartmentItem[] }>(`${this.apiRoot}/departments`)
+      .pipe(
+        catchError(() =>
+          this.http.get<{ data: DepartmentItem[] }>(`${this.apiRoot}/admin/departments`)
+        )
+      );
+  }
+
+  createDepartment(payload: { name: string }): Observable<{ message: string; data: DepartmentItem }> {
+    return this.http
+      .post<{ message: string; data: DepartmentItem }>(`${this.apiRoot}/departments`, payload)
+      .pipe(
+        catchError(() =>
+          this.http.post<{ message: string; data: DepartmentItem }>(
+            `${this.apiRoot}/admin/departments`,
+            payload
+          )
+        )
+      );
   }
 }

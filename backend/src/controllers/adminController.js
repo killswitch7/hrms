@@ -16,9 +16,16 @@ function ping(req, res) {
 
 async function createEmployee(req, res) {
   try {
-    const { name, email, password, department, position } = req.body;
+    const { name, email, password, department, position, role = 'employee' } = req.body;
+    const normalizedRole = String(role).trim().toLowerCase();
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email and password are required.' });
+    }
+    if (!['employee', 'manager'].includes(normalizedRole)) {
+      return res.status(400).json({ message: 'Role must be employee or manager.' });
+    }
+    if (normalizedRole === 'manager' && !String(department || '').trim()) {
+      return res.status(400).json({ message: 'Department is required for manager role.' });
     }
 
     const normalizedEmail = String(email).toLowerCase();
@@ -31,7 +38,7 @@ async function createEmployee(req, res) {
       name,
       email: normalizedEmail,
       password,
-      role: 'employee',
+      role: normalizedRole,
     });
 
     const { firstName, lastName } = splitName(name);
@@ -42,7 +49,7 @@ async function createEmployee(req, res) {
       lastName,
       email: normalizedEmail,
       department: department || '',
-      designation: position || '',
+      designation: position || (normalizedRole === 'manager' ? 'Manager' : ''),
       status: 'active',
     });
 
@@ -62,7 +69,7 @@ async function createEmployee(req, res) {
 
 async function getEmployees(req, res) {
   try {
-    const { search = '', status = '', page = '1', limit = '20' } = req.query;
+    const { search = '', status = '', role = '', department = '', page = '1', limit = '20' } = req.query;
     const safePage = Math.max(parseInt(page, 10) || 1, 1);
     const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
     const skip = (safePage - 1) * safeLimit;
@@ -70,6 +77,13 @@ async function getEmployees(req, res) {
     const filter = {};
     if (status && ['active', 'inactive'].includes(String(status))) {
       filter.status = status;
+    }
+    if (department) {
+      filter.department = String(department).trim();
+    }
+    if (role && ['employee', 'manager', 'admin'].includes(String(role))) {
+      const userIds = await User.find({ role }).distinct('_id');
+      filter.user = { $in: userIds };
     }
 
     if (search) {
@@ -117,7 +131,7 @@ async function updateEmployee(req, res) {
     const employee = await Employee.findById(req.params.id).populate('user');
     if (!employee) return res.status(404).json({ message: 'Employee not found' });
 
-    const { name, email, department, designation, status, phone, baseSalary } = req.body;
+    const { name, email, department, designation, status, phone, baseSalary, role } = req.body;
 
     if (name !== undefined) {
       const { firstName, lastName } = splitName(name);
@@ -147,6 +161,17 @@ async function updateEmployee(req, res) {
         return res.status(400).json({ message: 'Invalid status value' });
       }
       employee.status = status;
+    }
+    if (role !== undefined) {
+      if (!['employee', 'manager'].includes(String(role))) {
+        return res.status(400).json({ message: 'Role must be employee or manager.' });
+      }
+      if (employee.user) employee.user.role = role;
+    }
+
+    const effectiveRole = String(role !== undefined ? role : employee.user?.role || 'employee');
+    if (effectiveRole === 'manager' && !String(employee.department || '').trim()) {
+      return res.status(400).json({ message: 'Manager must have a department.' });
     }
 
     await Promise.all([

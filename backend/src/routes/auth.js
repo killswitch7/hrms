@@ -78,9 +78,9 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Block login for inactive employees.
+    // Block login for inactive employee/manager profile.
     // If admin switches status back to active, login works again.
-    if (user.role === 'employee') {
+    if (user.role === 'employee' || user.role === 'manager') {
       const employeeProfile = await Employee.findOne({ user: user._id }).select('status');
       if (employeeProfile && employeeProfile.status === 'inactive') {
         return res.status(403).json({

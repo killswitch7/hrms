@@ -1,0 +1,22 @@
+<div class="page-shell">
+  <h1>Departments</h1>
+  <p class="muted">Manage department list used in employee/manager registration.</p>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <section class="panel">
+    <h2>Add Department</h2>
+    <div class="form-grid">
+      <input type="text" [(ngModel)]="name" placeholder="Department name" />
+      <button class="btn primary" type="button" (click)="addDepartment()" [disabled]="loading">Add</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Department List</h2>
+    <p *ngIf="loading">Loading departments...</p>
+    <div class="item" *ngFor="let d of departments">
+      <strong>{{ d.name }}</strong>
+    </div>
+    <p *ngIf="!loading && !departments.length">No departments found.</p>
+  </section>
+</div>

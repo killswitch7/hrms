@@ -5,7 +5,10 @@ const connectDB = require('./config/db');
 
 const authRoute = require('./routes/auth');
 const adminRoute = require('./routes/admin');
+const managerRoute = require('./routes/manager');
 const employeeRoute = require('./routes/employee');
+const departmentRoutes = require('./routes/departmentRoutes');
+const { protect, requireRole } = require('./middleware/auth');
 
 const app = express();
 
@@ -52,7 +55,11 @@ app.options(/.*/, cors());
 // Routes
 app.use('/api/auth', authRoute);
 app.use('/api/admin', adminRoute);      // <-- IMPORTANT
+app.use('/api/manager', managerRoute);
 app.use('/api/employee', employeeRoute);
+// Department endpoints (mounted directly also to avoid route mismatch issues)
+app.use('/api/admin/departments', protect, requireRole('admin'), departmentRoutes);
+app.use('/api/departments', protect, requireRole('admin'), departmentRoutes);
 
 // Test route
 app.get('/', (req, res) => res.send('HRMS Backend is running'));

@@ -39,14 +39,23 @@
     </div>
 
     <div class="form-group">
-      <label for="department">Department</label>
-      <input
-        id="department"
-        name="department"
-        type="text"
-        [(ngModel)]="department"
-        placeholder="e.g. HR, IT, Finance"
-      />
+      <label for="department">Department *</label>
+      <select id="department" name="department" [(ngModel)]="department" required>
+        <option value="">Select department</option>
+        <option *ngFor="let d of departments" [value]="d.name">{{ d.name }}</option>
+      </select>
+      <small class="hint">Need a new department? Add it from Departments page.</small>
+      <button type="button" class="dept-link-btn" (click)="router.navigate(['/departments'])">
+        Open Departments
+      </button>
+    </div>
+
+    <div class="form-group">
+      <label for="role">Role</label>
+      <select id="role" name="role" [(ngModel)]="role">
+        <option value="employee">Employee</option>
+        <option value="manager">Manager</option>
+      </select>
     </div>
 
     <div class="form-group">

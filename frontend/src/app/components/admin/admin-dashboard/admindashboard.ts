@@ -43,15 +43,19 @@ export class AdminDashboard implements OnInit {
   userProfile = {
     name: 'Admin',
     email: '',
+    role: 'admin',
+    department: '',
     lastLogin: new Date().toLocaleString(),
   };
 
   loading = false;
   error = '';
   avatarUrl: string | null = null;
+  isManager = false;
 
-  menuItems = [
+  adminMenuItems = [
     { icon: 'groups', label: 'Employees', page: '/employees' },
+    { icon: 'domain', label: 'Departments', page: '/departments' },
     { icon: 'person_add', label: 'Register Employee', page: '/register-employee' },
     { icon: 'event_note', label: 'Attendance Logs', page: '/attendance' },
     { icon: 'task_alt', label: 'Leave Approvals', page: '/leave-approvals' },
@@ -59,6 +63,13 @@ export class AdminDashboard implements OnInit {
     { icon: 'celebration', label: 'Holidays', page: '/holidays' },
     { icon: 'campaign', label: 'Announcements', page: '/announcements' },
     { icon: 'query_stats', label: 'Analytics', page: '/analytics' },
+  ];
+  managerMenuItems = [
+    { icon: 'access_time', label: 'My Attendance', page: '/manager-attendance' },
+    { icon: 'home_work', label: 'My Leave & WFH', page: '/manager-leave' },
+    { icon: 'groups', label: 'Employees', page: '/employees' },
+    { icon: 'event_note', label: 'Attendance Logs', page: '/attendance' },
+    { icon: 'task_alt', label: 'Leave Approvals', page: '/leave-approvals' },
   ];
 
   constructor(
@@ -69,13 +80,19 @@ export class AdminDashboard implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.isManager = this.authService.getRole() === 'manager';
     const email = this.authService.getEmail() || 'admin@company.com';
     const firstPart = email.split('@')[0] || 'Admin';
     this.userProfile.email = email;
+    this.userProfile.role = this.isManager ? 'manager' : 'admin';
     this.userProfile.name = firstPart.charAt(0).toUpperCase() + firstPart.slice(1);
-    this.avatarUrl = this.avatarService.get('admin', email);
+    this.avatarUrl = this.avatarService.get(this.isManager ? 'manager' : 'admin', email);
 
     this.loadDashboardSummary();
+  }
+
+  get menuItems() {
+    return this.isManager ? this.managerMenuItems : this.adminMenuItems;
   }
 
   loadDashboardSummary() {
@@ -85,6 +102,7 @@ export class AdminDashboard implements OnInit {
     this.adminService.getDashboardSummary().subscribe({
       next: (res) => {
         this.analytics = res.data || this.analytics;
+        this.userProfile.department = (res.data as any)?.department || '';
         this.loading = false;
       },
       error: (err) => {
@@ -117,13 +135,13 @@ export class AdminDashboard implements OnInit {
     reader.onload = () => {
       const result = reader.result as string;
       this.avatarUrl = result;
-      this.avatarService.set('admin', this.userProfile.email, result);
+      this.avatarService.set(this.isManager ? 'manager' : 'admin', this.userProfile.email, result);
     };
     reader.readAsDataURL(file);
   }
 
   removeAvatar() {
     this.avatarUrl = null;
-    this.avatarService.clear('admin', this.userProfile.email);
+    this.avatarService.clear(this.isManager ? 'manager' : 'admin', this.userProfile.email);
   }
 }

@@ -2,6 +2,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from './auth';
 
 export interface AttendanceRecord {
   _id?: string;
@@ -25,17 +26,28 @@ export interface AttendanceRecord {
 })
 export class AttendanceService {
   private http = inject(HttpClient);
+  private auth = inject(AuthService);
   private employeeBase = 'http://localhost:5001/api/employee';
+  private managerMyBase = 'http://localhost:5001/api/manager/my-attendance';
   private adminBase = 'http://localhost:5001/api/admin';
+  private managerBase = 'http://localhost:5001/api/manager';
+
+  private getManageBase(): string {
+    return this.auth.getRole() === 'manager' ? this.managerBase : this.adminBase;
+  }
+
+  private getSelfBase(): string {
+    return this.auth.getRole() === 'manager' ? this.managerMyBase : `${this.employeeBase}/attendance`;
+  }
 
   // -------- Employee side --------
 
   checkIn(): Observable<any> {
-    return this.http.post(`${this.employeeBase}/attendance/check-in`, {});
+    return this.http.post(`${this.getSelfBase()}/check-in`, {});
   }
 
   checkOut(): Observable<any> {
-    return this.http.post(`${this.employeeBase}/attendance/check-out`, {});
+    return this.http.post(`${this.getSelfBase()}/check-out`, {});
   }
 
   getMyAttendance(from?: string, to?: string): Observable<{ data: AttendanceRecord[] }> {
@@ -43,10 +55,7 @@ export class AttendanceService {
     if (from) params.from = from;
     if (to) params.to = to;
 
-    return this.http.get<{ data: AttendanceRecord[] }>(
-      `${this.employeeBase}/attendance`,
-      { params }
-    );
+    return this.http.get<{ data: AttendanceRecord[] }>(this.getSelfBase(), { params });
   }
 
   // -------- Admin side --------
@@ -62,7 +71,7 @@ export class AttendanceService {
     if (employeeId) params.employeeId = employeeId;
 
     return this.http.get<{ data: AttendanceRecord[] }>(
-      `${this.adminBase}/attendance`,
+      `${this.getManageBase()}/attendance`,
       { params }
     );
   }

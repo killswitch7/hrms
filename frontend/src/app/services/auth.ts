@@ -7,7 +7,7 @@ import { Observable, tap } from 'rxjs';
 export interface AuthUser {
   id: string;
   email: string;
-  role: 'admin' | 'employee';
+  role: 'admin' | 'manager' | 'employee';
 }
 
 export interface AuthResponse {
@@ -73,7 +73,7 @@ export class AuthService {
   register(body: {
     email: string;
     password: string;
-    role?: 'admin' | 'employee';
+    role?: 'admin' | 'manager' | 'employee';
     firstName?: string;
     lastName?: string;
   }): Observable<AuthResponse> {
@@ -149,9 +149,9 @@ export class AuthService {
     }
   }
 
-  getRole(): 'admin' | 'employee' | null {
+  getRole(): 'admin' | 'manager' | 'employee' | null {
     const stored = this.getStoredRole();
-    if (stored === 'admin' || stored === 'employee') return stored as any;
+    if (stored === 'admin' || stored === 'manager' || stored === 'employee') return stored as any;
 
     const payload = this.decodeToken();
     return payload?.role ?? null;

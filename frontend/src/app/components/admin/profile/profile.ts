@@ -23,6 +23,7 @@ export class AdminProfile implements OnInit {
 
   avatarUrl: string | null = null;
   error = '';
+  isManager = false;
 
   constructor(
     private authService: AuthService,
@@ -30,11 +31,13 @@ export class AdminProfile implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.isManager = this.authService.getRole() === 'manager';
     const email = this.authService.getEmail() || 'admin@company.com';
     const baseName = email.split('@')[0] || 'Admin';
     this.profile.email = email;
     this.profile.name = baseName.charAt(0).toUpperCase() + baseName.slice(1);
-    this.avatarUrl = this.avatarService.get('admin', email);
+    this.profile.role = this.isManager ? 'manager' : 'admin';
+    this.avatarUrl = this.avatarService.get(this.isManager ? 'manager' : 'admin', email);
   }
 
   onAvatarSelected(event: Event) {
@@ -50,13 +53,13 @@ export class AdminProfile implements OnInit {
     reader.onload = () => {
       const result = reader.result as string;
       this.avatarUrl = result;
-      this.avatarService.set('admin', this.profile.email, result);
+      this.avatarService.set(this.isManager ? 'manager' : 'admin', this.profile.email, result);
     };
     reader.readAsDataURL(file);
   }
 
   removeAvatar() {
     this.avatarUrl = null;
-    this.avatarService.clear('admin', this.profile.email);
+    this.avatarService.clear(this.isManager ? 'manager' : 'admin', this.profile.email);
   }
 }

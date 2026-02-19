@@ -2,6 +2,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from './auth';
 
 export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
 
@@ -29,9 +30,25 @@ export type WfhRequest = LeaveRequest;
 })
 export class LeaveService {
   private http = inject(HttpClient);
+  private auth = inject(AuthService);
 
   private employeeBase = 'http://localhost:5001/api/employee';
+  private managerMyLeaveBase = 'http://localhost:5001/api/manager/my-leave';
+  private managerMyWfhBase = 'http://localhost:5001/api/manager/my-wfh';
   private adminBase = 'http://localhost:5001/api/admin';
+  private managerBase = 'http://localhost:5001/api/manager';
+
+  private getManageBase(): string {
+    return this.auth.getRole() === 'manager' ? this.managerBase : this.adminBase;
+  }
+
+  private getSelfLeaveBase(): string {
+    return this.auth.getRole() === 'manager' ? this.managerMyLeaveBase : `${this.employeeBase}/leave`;
+  }
+
+  private getSelfWfhBase(): string {
+    return this.auth.getRole() === 'manager' ? this.managerMyWfhBase : `${this.employeeBase}/wfh`;
+  }
 
   // ---------- EMPLOYEE: NORMAL LEAVE ----------
 
@@ -41,13 +58,12 @@ export class LeaveService {
     type: string;
     reason?: string;
   }): Observable<any> {
-    return this.http.post(`${this.employeeBase}/leave`, request);
+    return this.http.post(this.getSelfLeaveBase(), request);
   }
 
   getMyLeaveRequests(type?: string): Observable<{ data: LeaveRequest[] }> {
-    const url = type
-      ? `${this.employeeBase}/leave?type=${type}`
-      : `${this.employeeBase}/leave`;
+    const base = this.getSelfLeaveBase();
+    const url = type ? `${base}?type=${type}` : base;
 
     return this.http.get<{ data: LeaveRequest[] }>(url);
   }
@@ -55,46 +71,50 @@ export class LeaveService {
   // ---------- EMPLOYEE: WFH ----------
 
   createWfh(request: { from: string; to: string; reason?: string }): Observable<any> {
-    return this.http.post(`${this.employeeBase}/wfh`, request);
+    return this.http.post(this.getSelfWfhBase(), request);
   }
 
   getMyWfhRequests(): Observable<{ data: WfhRequest[] }> {
-    return this.http.get<{ data: WfhRequest[] }>(`${this.employeeBase}/wfh`);
+    return this.http.get<{ data: WfhRequest[] }>(this.getSelfWfhBase());
   }
 
   // ---------- ADMIN: LEAVE (non-WFH) ----------
 
-  getAllLeaveRequests(status?: LeaveStatus): Observable<{ data: LeaveRequest[] }> {
-    const url = status
-      ? `${this.adminBase}/leave-requests?status=${status}`
-      : `${this.adminBase}/leave-requests`;
+  getAllLeaveRequests(status?: LeaveStatus, search?: string): Observable<{ data: LeaveRequest[] }> {
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    if (search) params.set('search', search);
+    const qs = params.toString();
+    const url = `${this.getManageBase()}/leave-requests${qs ? `?${qs}` : ''}`;
 
     return this.http.get<{ data: LeaveRequest[] }>(url);
   }
 
   approveLeave(id: string): Observable<any> {
-    return this.http.patch(`${this.adminBase}/leave-requests/${id}/approve`, {});
+    return this.http.patch(`${this.getManageBase()}/leave-requests/${id}/approve`, {});
   }
 
   rejectLeave(id: string): Observable<any> {
-    return this.http.patch(`${this.adminBase}/leave-requests/${id}/reject`, {});
+    return this.http.patch(`${this.getManageBase()}/leave-requests/${id}/reject`, {});
   }
 
   // ---------- ADMIN: WFH ----------
 
-  getAllWfhRequests(status?: LeaveStatus): Observable<{ data: WfhRequest[] }> {
-    const url = status
-      ? `${this.adminBase}/wfh-requests?status=${status}`
-      : `${this.adminBase}/wfh-requests`;
+  getAllWfhRequests(status?: LeaveStatus, search?: string): Observable<{ data: WfhRequest[] }> {
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    if (search) params.set('search', search);
+    const qs = params.toString();
+    const url = `${this.getManageBase()}/wfh-requests${qs ? `?${qs}` : ''}`;
 
     return this.http.get<{ data: WfhRequest[] }>(url);
   }
 
   approveWfh(id: string): Observable<any> {
-    return this.http.patch(`${this.adminBase}/wfh-requests/${id}/approve`, {});
+    return this.http.patch(`${this.getManageBase()}/wfh-requests/${id}/approve`, {});
   }
 
   rejectWfh(id: string): Observable<any> {
-    return this.http.patch(`${this.adminBase}/wfh-requests/${id}/reject`, {});
+    return this.http.patch(`${this.getManageBase()}/wfh-requests/${id}/reject`, {});
   }
 }

@@ -15,8 +15,11 @@
         (change)="onAvatarSelected($event)"
       />
       <div class="identity-text">
-        <h1>Control Center</h1>
-        <p>{{ userProfile.name }} • {{ userProfile.email }}</p>
+        <h1>{{ isManager ? 'Manager Center' : 'Control Center' }}</h1>
+        <p>
+          {{ userProfile.name }} • {{ userProfile.email }}
+          <span *ngIf="isManager && userProfile.department">• {{ userProfile.department }}</span>
+        </p>
       </div>
     </div>
 
@@ -32,7 +35,7 @@
     </button>
     <button mat-stroked-button class="toolbar-btn" (click)="goTo('/employees')">
       <mat-icon>groups</mat-icon>
-      Employees
+      {{ isManager ? 'Team' : 'Employees' }}
     </button>
     <button mat-flat-button class="logout-btn" color="warn" (click)="onLogout()">Logout</button>
   </mat-toolbar>
@@ -97,7 +100,7 @@
     </mat-card>
 
     <mat-card class="tools-card animate-fade">
-      <mat-card-title>Recent Employees</mat-card-title>
+      <mat-card-title>{{ isManager ? 'Recent Team Members' : 'Recent Employees' }}</mat-card-title>
       <mat-divider></mat-divider>
       <div class="recent-list" *ngIf="analytics.recentEmployees.length; else noRecentEmployees">
         <div class="recent-item" *ngFor="let emp of analytics.recentEmployees">
@@ -127,7 +130,7 @@
         <mat-card-title>System Info</mat-card-title>
         <mat-divider></mat-divider>
         <mat-card-content>
-          <p>Admin Account: {{ userProfile.email }}</p>
+          <p>{{ isManager ? 'Manager Account' : 'Admin Account' }}: {{ userProfile.email }}</p>
           <p>Last Login: {{ userProfile.lastLogin }}</p>
           <p>Last Sync: {{ analytics.generatedAt | date: 'short' }}</p>
         </mat-card-content>

@@ -1,17 +1,20 @@
 // frontend/src/app/components/admin/leave-approvals/leave-approvals.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { LeaveService, LeaveRequest, WfhRequest } from '../../../services/leave';
 
 @Component({
   selector: 'app-leave-approvals',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './leave.html',
   styleUrls: ['./leave.css'],
 })
 export class LeaveApprovals implements OnInit {
   activeTab: 'leave' | 'wfh' = 'leave';
+  statusFilter: '' | 'Pending' | 'Approved' | 'Rejected' | 'Cancelled' = 'Pending';
+  searchTerm = '';
 
   // Leave
   leaveRequests: LeaveRequest[] = [];
@@ -36,11 +39,11 @@ export class LeaveApprovals implements OnInit {
 
   // ---------- LOADERS ----------
 
-  loadLeaveRequests(status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled' | '' = 'Pending') {
+  loadLeaveRequests(status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled' | '' = this.statusFilter) {
     this.loadingLeave = true;
     this.errorLeave = '';
 
-    this.leaveService.getAllLeaveRequests(status || undefined).subscribe({
+    this.leaveService.getAllLeaveRequests(status || undefined, this.searchTerm.trim() || undefined).subscribe({
       next: (res) => {
         this.leaveRequests = res.data || [];
         this.loadingLeave = false;
@@ -53,11 +56,11 @@ export class LeaveApprovals implements OnInit {
     });
   }
 
-  loadWfhRequests(status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled' | '' = 'Pending') {
+  loadWfhRequests(status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled' | '' = this.statusFilter) {
     this.loadingWfh = true;
     this.errorWfh = '';
 
-    this.leaveService.getAllWfhRequests(status || undefined).subscribe({
+    this.leaveService.getAllWfhRequests(status || undefined, this.searchTerm.trim() || undefined).subscribe({
       next: (res) => {
         this.wfhRequests = res.data || [];
         this.loadingWfh = false;
@@ -71,6 +74,17 @@ export class LeaveApprovals implements OnInit {
   }
 
   // ---------- ACTIONS ----------
+
+  applyFilters() {
+    this.loadLeaveRequests(this.statusFilter);
+    this.loadWfhRequests(this.statusFilter);
+  }
+
+  clearFilters() {
+    this.statusFilter = 'Pending';
+    this.searchTerm = '';
+    this.applyFilters();
+  }
 
   approveLeave(req: LeaveRequest) {
     if (!req._id) return;

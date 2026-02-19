@@ -2,11 +2,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from './auth';
 
 interface CreateEmployeeDto {
   name: string;
   email: string;
   password: string;
+  role?: 'employee' | 'manager';
   department?: string;
   position?: string;
 }
@@ -50,6 +52,7 @@ export interface UpdateEmployeeDto {
   department?: string;
   designation?: string;
   status?: 'active' | 'inactive';
+  role?: 'employee' | 'manager';
   baseSalary?: number;
 }
 
@@ -59,7 +62,13 @@ export interface UpdateEmployeeDto {
 export class EmployeeService {
   private baseUrl = 'http://localhost:5001/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private auth: AuthService) {}
+
+  private getManageBase(): string {
+    return this.auth.getRole() === 'manager'
+      ? `${this.baseUrl}/manager`
+      : `${this.baseUrl}/admin`;
+  }
 
   private getAuthHeaders(): HttpHeaders {
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
@@ -81,14 +90,18 @@ export class EmployeeService {
   getEmployees(params?: {
     search?: string;
     status?: 'active' | 'inactive' | '';
+    role?: 'employee' | 'manager' | '';
+    department?: string;
     page?: number;
     limit?: number;
   }): Observable<EmployeeListResponse> {
-    return this.http.get<EmployeeListResponse>(`${this.baseUrl}/admin/employees`, {
+    return this.http.get<EmployeeListResponse>(`${this.getManageBase()}/employees`, {
       headers: this.getAuthHeaders(),
       params: {
         search: params?.search ?? '',
         status: params?.status ?? '',
+        role: params?.role ?? '',
+        department: params?.department ?? '',
         page: String(params?.page ?? 1),
         limit: String(params?.limit ?? 20),
       },

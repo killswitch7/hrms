@@ -2,7 +2,15 @@
 // Leave APIs for employee and admin.
 
 const LeaveRequest = require('../models/LeaveRequest');
+const Employee = require('../models/Employee');
+const User = require('../models/User');
 const { getOrCreateEmployeeForUser } = require('./employeeController');
+
+async function getEmployeeIdsByUserRole(role) {
+  const userIds = await User.find({ role }).distinct('_id');
+  const employeeIds = await Employee.find({ user: { $in: userIds } }).distinct('_id');
+  return employeeIds;
+}
 
 // Employee: create normal leave (not WFH).
 async function createLeave(req, res) {
@@ -51,9 +59,19 @@ async function getMyLeave(req, res) {
 // Admin: list leave requests.
 async function getAdminLeaveRequests(req, res) {
   try {
-    const { status } = req.query;
-    const filter = { type: { $ne: 'WFH' } };
+    const { status, search = '' } = req.query;
+    // Admin handles only manager leave requests.
+    const managerEmployeeIds = await getEmployeeIdsByUserRole('manager');
+    const filter = { type: { $ne: 'WFH' }, employee: { $in: managerEmployeeIds } };
     if (status) filter.status = status;
+    if (search) {
+      const regex = new RegExp(String(search).trim(), 'i');
+      const employees = await Employee.find({
+        _id: { $in: managerEmployeeIds },
+        $or: [{ employeeId: regex }, { firstName: regex }, { lastName: regex }, { email: regex }],
+      }).select('_id');
+      filter.employee = { $in: employees.map((e) => e._id) };
+    }
 
     const data = await LeaveRequest.find(filter)
       .populate('employee', 'employeeId firstName lastName email')
@@ -68,12 +86,22 @@ async function getAdminLeaveRequests(req, res) {
 
 async function approveLeave(req, res) {
   try {
-    const updated = await LeaveRequest.findOneAndUpdate(
-      { _id: req.params.id, type: { $ne: 'WFH' } },
-      { status: 'Approved', approvedBy: req.user._id, approvedAt: new Date() },
-      { new: true }
+    const request = await LeaveRequest.findOne({ _id: req.params.id, type: { $ne: 'WFH' } }).populate(
+      'employee',
+      'user'
     );
-    if (!updated) return res.status(404).json({ message: 'Leave request not found' });
+    if (!request) return res.status(404).json({ message: 'Leave request not found' });
+
+    const owner = await User.findById(request.employee?.user).select('role');
+    if (owner?.role !== 'manager') {
+      return res.status(403).json({ message: 'Admin can approve only manager leave requests.' });
+    }
+
+    request.status = 'Approved';
+    request.approvedBy = req.user._id;
+    request.approvedAt = new Date();
+    await request.save();
+    const updated = request;
     return res.json({ message: 'Leave approved', data: updated });
   } catch (err) {
     console.error('approveLeave error:', err);
@@ -83,12 +111,22 @@ async function approveLeave(req, res) {
 
 async function rejectLeave(req, res) {
   try {
-    const updated = await LeaveRequest.findOneAndUpdate(
-      { _id: req.params.id, type: { $ne: 'WFH' } },
-      { status: 'Rejected', approvedBy: req.user._id, approvedAt: new Date() },
-      { new: true }
+    const request = await LeaveRequest.findOne({ _id: req.params.id, type: { $ne: 'WFH' } }).populate(
+      'employee',
+      'user'
     );
-    if (!updated) return res.status(404).json({ message: 'Leave request not found' });
+    if (!request) return res.status(404).json({ message: 'Leave request not found' });
+
+    const owner = await User.findById(request.employee?.user).select('role');
+    if (owner?.role !== 'manager') {
+      return res.status(403).json({ message: 'Admin can reject only manager leave requests.' });
+    }
+
+    request.status = 'Rejected';
+    request.approvedBy = req.user._id;
+    request.approvedAt = new Date();
+    await request.save();
+    const updated = request;
     return res.json({ message: 'Leave rejected', data: updated });
   } catch (err) {
     console.error('rejectLeave error:', err);
