@@ -11,6 +11,7 @@ const { employeeLeaveRouter } = require('./leaveRoutes');
 const { employeeWfhRouter } = require('./wfhRoutes');
 const { employeePayrollRouter } = require('./payrollRoutes');
 const { employeeHolidayRouter } = require('./holidayRoutes');
+const { selfDocumentRouter } = require('./documentRoutes');
 
 // All employee routes need auth + employee role.
 router.use(protect);
@@ -28,5 +29,6 @@ router.use('/leave', employeeLeaveRouter);
 router.use('/wfh', employeeWfhRouter);
 router.use('/holidays', employeeHolidayRouter);
 router.use('/payroll', employeePayrollRouter);
+router.use('/documents', selfDocumentRouter);
 
 module.exports = router;

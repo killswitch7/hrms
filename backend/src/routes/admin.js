@@ -15,6 +15,7 @@ const { adminWfhRouter } = require('./wfhRoutes');
 const { adminPayrollRouter } = require('./payrollRoutes');
 const { adminHolidayRouter } = require('./holidayRoutes');
 const departmentRoutes = require('./departmentRoutes');
+const { adminDocumentRouter } = require('./documentRoutes');
 
 // Simple health check.
 router.get('/ping', ping);
@@ -36,5 +37,6 @@ router.use('/announcements', announcementRoutes);
 router.use('/holidays', adminHolidayRouter);
 router.use('/departments', departmentRoutes);
 router.use('/payroll', adminPayrollRouter);
+router.use('/document-requests', adminDocumentRouter);
 
 module.exports = router;

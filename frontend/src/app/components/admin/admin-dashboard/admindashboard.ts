@@ -66,11 +66,13 @@ export class AdminDashboard implements OnInit {
     { icon: 'celebration', label: 'Holidays', page: '/holidays' },
     { icon: 'campaign', label: 'Announcements', page: '/announcements' },
     { icon: 'query_stats', label: 'Analytics', page: '/analytics' },
+    { icon: 'description', label: 'Document Requests', page: '/hr-documents' },
   ];
   // Manager tool buttons
   managerMenuItems = [
     { icon: 'access_time', label: 'My Attendance', page: '/manager-attendance' },
     { icon: 'home_work', label: 'My Leave & WFH', page: '/manager-leave' },
+    { icon: 'description', label: 'My Documents', page: '/manager-documents' },
     { icon: 'groups', label: 'Employees', page: '/employees' },
     { icon: 'event_note', label: 'Attendance Logs', page: '/attendance' },
     { icon: 'task_alt', label: 'Leave Approvals', page: '/leave-approvals' },

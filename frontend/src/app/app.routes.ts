@@ -17,9 +17,11 @@ import { RegisterEmployee } from './components/admin/register-employee/register-
 import { AdminProfile } from './components/admin/profile/profile';
 import { AdminHolidays } from './components/admin/holidays/holidays';
 import { AdminDepartments } from './components/admin/departments/departments';
+import { Hrdocuments } from './components/admin/hrdocuments/hrdocuments';
 import { ManagerDashboard } from './components/manager/dashboard/dashboard';
 import { ManagerAttendance } from './components/manager/attendance/attendance';
 import { ManagerLeave } from './components/manager/leave/leave';
+import { ManagerDocuments } from './components/manager/documents/documents';
 
 // Employee pages
 import { Attendance } from './components/employee/attendance/attendance';
@@ -28,6 +30,7 @@ import { Leave as EmployeeLeave } from './components/employee/leave/leave';
 import { Payslip } from './components/employee/payslip/payslip';
 import { Profile } from './components/employee/profile/profile';
 import { Notifications } from './components/employee/notifications/notifications';
+import { EmployeeDocuments } from './components/employee/documents/documents';
 
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
@@ -99,6 +102,11 @@ export const routes: Routes = [
     component: AdminDepartments,
     canActivate: [authGuard, roleGuard(['admin'])],
   },
+  {
+    path: 'hr-documents',
+    component: Hrdocuments,
+    canActivate: [authGuard, roleGuard(['admin'])],
+  },
 
   // Register page (admin only)
   {
@@ -121,6 +129,11 @@ export const routes: Routes = [
   {
     path: 'manager-leave',
     component: ManagerLeave,
+    canActivate: [authGuard, roleGuard(['manager'])],
+  },
+  {
+    path: 'manager-documents',
+    component: ManagerDocuments,
     canActivate: [authGuard, roleGuard(['manager'])],
   },
 
@@ -153,6 +166,11 @@ export const routes: Routes = [
   {
     path: 'employee-notifications',
     component: Notifications,
+    canActivate: [authGuard, roleGuard(['employee'])],
+  },
+  {
+    path: 'employee-documents',
+    component: EmployeeDocuments,
     canActivate: [authGuard, roleGuard(['employee'])],
   },
 

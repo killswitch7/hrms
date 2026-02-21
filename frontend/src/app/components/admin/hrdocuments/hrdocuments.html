@@ -1,1 +1,69 @@
-<p>hrdocuments works!</p>
+<div class="page-shell">
+  <h1>Document Requests</h1>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <section class="panel">
+    <h2>Filters</h2>
+    <div class="filter-row">
+      <input [(ngModel)]="search" placeholder="Search name, email, employee id" />
+      <select [(ngModel)]="role">
+        <option value="">All Roles</option>
+        <option value="employee">Employee</option>
+        <option value="manager">Manager</option>
+      </select>
+      <select [(ngModel)]="status">
+        <option value="">All Status</option>
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+      <button class="btn" (click)="loadRequests()">Apply</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Requests</h2>
+    <p *ngIf="loading">Loading...</p>
+    <table *ngIf="!loading && requests.length">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Role</th>
+          <th>Type</th>
+          <th>Purpose</th>
+          <th>Status</th>
+          <th>Requested On</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let req of requests">
+          <td>
+            {{ req.employee?.firstName }} {{ req.employee?.lastName }}
+            <div class="small">{{ req.employee?.employeeId }} • {{ req.employee?.email }}</div>
+          </td>
+          <td>{{ req.requestedByRole }}</td>
+          <td>{{ req.type }}</td>
+          <td>{{ req.purpose || '-' }}</td>
+          <td>{{ req.status }}</td>
+          <td>{{ req.createdAt | date: 'short' }}</td>
+          <td class="action-cell">
+            <div class="action-wrap">
+              <button class="btn mini" *ngIf="req.status === 'Pending'" (click)="approve(req._id)">Approve</button>
+              <button class="btn mini danger" *ngIf="req.status === 'Pending'" (click)="reject(req._id)">Reject</button>
+              <button class="btn mini ghost" *ngIf="req.status === 'Approved'" (click)="viewDoc(req._id)">View</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="!loading && !requests.length">No requests found.</p>
+  </section>
+
+  <section class="panel preview-panel" *ngIf="selectedHtml">
+    <iframe class="doc-frame" [srcdoc]="selectedHtml"></iframe>
+    <div class="preview-foot">
+      <button class="close-btn" type="button" (click)="closePreview()">Close Preview</button>
+    </div>
+  </section>
+</div>

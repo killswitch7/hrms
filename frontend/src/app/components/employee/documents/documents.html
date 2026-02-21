@@ -1,0 +1,61 @@
+<div class="page-shell">
+  <h1>Document Requests</h1>
+
+  <section class="panel">
+    <h2>Request New Document</h2>
+    <div class="row">
+      <select [(ngModel)]="type">
+        <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+      </select>
+      <input [(ngModel)]="purpose" type="text" placeholder="Purpose (optional)" />
+      <button class="btn" (click)="submitRequest()" [disabled]="loading">Submit</button>
+    </div>
+    <p class="error" *ngIf="error">{{ error }}</p>
+    <p class="success" *ngIf="success">{{ success }}</p>
+  </section>
+
+  <section class="panel">
+    <h2>My Requests</h2>
+    <p *ngIf="loading">Loading...</p>
+    <table *ngIf="!loading && requests.length">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Purpose</th>
+          <th>Status</th>
+          <th>Requested On</th>
+          <th>Reason</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let req of requests">
+          <td>{{ req.type }}</td>
+          <td>{{ req.purpose || '-' }}</td>
+          <td>{{ req.status }}</td>
+          <td>{{ req.createdAt | date: 'short' }}</td>
+          <td>{{ req.rejectionReason || '-' }}</td>
+          <td>
+            <button
+              class="btn mini"
+              *ngIf="req.status === 'Approved'"
+              (click)="viewDoc(req._id)"
+            >
+              View
+            </button>
+            <span *ngIf="req.status !== 'Approved'">-</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="!loading && !requests.length">No requests yet.</p>
+  </section>
+
+  <section class="panel" *ngIf="selectedHtml">
+    <div class="preview-head">
+      <h2>{{ selectedType }}</h2>
+      <button class="btn mini danger" (click)="closePreview()">Close</button>
+    </div>
+    <iframe class="doc-frame" [srcdoc]="selectedHtml"></iframe>
+  </section>
+</div>
