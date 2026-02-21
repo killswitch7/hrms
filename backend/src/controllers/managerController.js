@@ -1,5 +1,7 @@
 // controllers/managerController.js
-// Manager can only manage their own department.
+// Manager controller:
+// - Manager can see only own department data
+// - Manager can approve/reject employee leave and WFH in same department
 
 const mongoose = require('mongoose');
 const Employee = require('../models/Employee');
@@ -8,24 +10,29 @@ const Attendance = require('../models/Attendance');
 const LeaveRequest = require('../models/LeaveRequest');
 const { normalizeDate } = require('./employeeController');
 
+// Start of day helper (00:00:00)
 function startOfDay(input = new Date()) {
   const d = new Date(input);
   d.setHours(0, 0, 0, 0);
   return d;
 }
 
+// End of day helper (23:59:59)
 function endOfDay(input = new Date()) {
   const d = new Date(input);
   d.setHours(23, 59, 59, 999);
   return d;
 }
 
+// Find manager department from manager profile
 async function getManagerDepartment(userId) {
   const profile = await Employee.findOne({ user: userId }).select('department');
   const department = String(profile?.department || '').trim();
   return department;
 }
 
+// Get employee profile ids in a department.
+// Optional: filter by user role like employee/manager.
 async function getDepartmentEmployeeIds(department, role = '') {
   if (!department) return [];
   const filter = { department };
@@ -37,6 +44,7 @@ async function getDepartmentEmployeeIds(department, role = '') {
   return employees.map((e) => e._id);
 }
 
+// Nice label for UI
 function roleLabel(role) {
   return role === 'manager' ? 'Manager' : role === 'admin' ? 'Admin' : 'Employee';
 }
@@ -47,16 +55,19 @@ async function ping(req, res) {
 
 async function dashboardSummary(req, res) {
   try {
+    // Manager must have department
     const department = await getManagerDepartment(req.user._id);
     if (!department) return res.status(400).json({ message: 'Manager department not set.' });
 
     const employeeIds = await getDepartmentEmployeeIds(department);
+    // Date range for daily/monthly stats
     const startToday = startOfDay(new Date());
     const endToday = endOfDay(new Date());
     const startMonth = new Date();
     startMonth.setDate(1);
     startMonth.setHours(0, 0, 0, 0);
 
+    // Load stats in parallel
     const [totalEmployees, presentDocs, pendingLeaves, approvedThisMonth, leaveOutcomeStats, recentEmployees] =
       await Promise.all([
         Employee.countDocuments({ department, status: 'active' }),
@@ -110,14 +121,17 @@ async function dashboardSummary(req, res) {
 
 async function getEmployees(req, res) {
   try {
+    // Manager can only see same department
     const department = await getManagerDepartment(req.user._id);
     if (!department) return res.status(400).json({ message: 'Manager department not set.' });
 
+    // Read filters from query
     const { search = '', status = '', role = '', department: departmentFilter = '', page = '1', limit = '20' } = req.query;
     const safePage = Math.max(parseInt(page, 10) || 1, 1);
     const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
     const skip = (safePage - 1) * safeLimit;
 
+    // Build mongo filter
     const filter = { department };
     if (departmentFilter && String(departmentFilter).trim() !== department) {
       return res.json({
@@ -168,9 +182,11 @@ async function getEmployees(req, res) {
 
 async function getAttendance(req, res) {
   try {
+    // Manager can only see same department attendance
     const department = await getManagerDepartment(req.user._id);
     if (!department) return res.status(400).json({ message: 'Manager department not set.' });
 
+    // Read date + optional filters
     const { from, to, employeeId, status = '' } = req.query;
     const fromDate = from ? startOfDay(from) : startOfDay(new Date());
     const toDate = to ? endOfDay(to) : endOfDay(fromDate);
@@ -185,6 +201,7 @@ async function getAttendance(req, res) {
 
     const employeeIds = employees.map((e) => e._id);
 
+    // For one day: also show absent employees
     if (isSingleDay) {
       const dayRecords = await Attendance.find({
         employee: { $in: employeeIds },
@@ -197,6 +214,7 @@ async function getAttendance(req, res) {
         if (!byEmployee.has(key)) byEmployee.set(key, rec);
       });
 
+      // One row per employee
       let rows = employees.map((emp) => {
         const rec = byEmployee.get(String(emp._id));
         const rowStatus = rec ? rec.status || 'Present' : 'Absent';
@@ -242,6 +260,7 @@ async function getAttendance(req, res) {
 
 async function getLeaveRequests(req, res) {
   try {
+    // Leave list for same department employees only
     const department = await getManagerDepartment(req.user._id);
     if (!department) return res.status(400).json({ message: 'Manager department not set.' });
 
@@ -273,6 +292,7 @@ async function getLeaveRequests(req, res) {
 
 async function getWfhRequests(req, res) {
   try {
+    // WFH list for same department employees only
     const department = await getManagerDepartment(req.user._id);
     if (!department) return res.status(400).json({ message: 'Manager department not set.' });
 
@@ -304,6 +324,7 @@ async function getWfhRequests(req, res) {
 
 async function approveLeave(req, res) {
   try {
+    // Validate id first
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: 'Invalid leave request id' });
     }
@@ -312,9 +333,11 @@ async function approveLeave(req, res) {
 
     const request = await LeaveRequest.findOne({ _id: req.params.id, type: { $ne: 'WFH' } }).populate('employee');
     if (!request) return res.status(404).json({ message: 'Leave request not found' });
+    // Only same department allowed
     if (String(request.employee?.department || '') !== department) {
       return res.status(403).json({ message: 'You can only manage your own department requests.' });
     }
+    // Manager can approve only employee requests (not manager/admin)
     const owner = await User.findById(request.employee?.user).select('role');
     if (owner?.role !== 'employee') {
       return res.status(403).json({ message: 'Manager can approve only employee leave requests.' });
@@ -333,6 +356,7 @@ async function approveLeave(req, res) {
 
 async function rejectLeave(req, res) {
   try {
+    // Validate id first
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: 'Invalid leave request id' });
     }
@@ -341,9 +365,11 @@ async function rejectLeave(req, res) {
 
     const request = await LeaveRequest.findOne({ _id: req.params.id, type: { $ne: 'WFH' } }).populate('employee');
     if (!request) return res.status(404).json({ message: 'Leave request not found' });
+    // Only same department allowed
     if (String(request.employee?.department || '') !== department) {
       return res.status(403).json({ message: 'You can only manage your own department requests.' });
     }
+    // Manager can reject only employee requests
     const owner = await User.findById(request.employee?.user).select('role');
     if (owner?.role !== 'employee') {
       return res.status(403).json({ message: 'Manager can reject only employee leave requests.' });
@@ -362,6 +388,7 @@ async function rejectLeave(req, res) {
 
 async function approveWfh(req, res) {
   try {
+    // Validate id first
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: 'Invalid WFH request id' });
     }
@@ -370,9 +397,11 @@ async function approveWfh(req, res) {
 
     const request = await LeaveRequest.findOne({ _id: req.params.id, type: 'WFH' }).populate('employee');
     if (!request) return res.status(404).json({ message: 'WFH request not found' });
+    // Only same department allowed
     if (String(request.employee?.department || '') !== department) {
       return res.status(403).json({ message: 'You can only manage your own department requests.' });
     }
+    // Manager can approve only employee requests
     const owner = await User.findById(request.employee?.user).select('role');
     if (owner?.role !== 'employee') {
       return res.status(403).json({ message: 'Manager can approve only employee WFH requests.' });
@@ -391,6 +420,7 @@ async function approveWfh(req, res) {
 
 async function rejectWfh(req, res) {
   try {
+    // Validate id first
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: 'Invalid WFH request id' });
     }
@@ -399,9 +429,11 @@ async function rejectWfh(req, res) {
 
     const request = await LeaveRequest.findOne({ _id: req.params.id, type: 'WFH' }).populate('employee');
     if (!request) return res.status(404).json({ message: 'WFH request not found' });
+    // Only same department allowed
     if (String(request.employee?.department || '') !== department) {
       return res.status(403).json({ message: 'You can only manage your own department requests.' });
     }
+    // Manager can reject only employee requests
     const owner = await User.findById(request.employee?.user).select('role');
     if (owner?.role !== 'employee') {
       return res.status(403).json({ message: 'Manager can reject only employee WFH requests.' });

@@ -32,20 +32,24 @@ export class LeaveService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
 
+  // Base URLs for each role
   private employeeBase = 'http://localhost:5001/api/employee';
   private managerMyLeaveBase = 'http://localhost:5001/api/manager/my-leave';
   private managerMyWfhBase = 'http://localhost:5001/api/manager/my-wfh';
   private adminBase = 'http://localhost:5001/api/admin';
   private managerBase = 'http://localhost:5001/api/manager';
 
+  // Used by admin/manager approval pages
   private getManageBase(): string {
     return this.auth.getRole() === 'manager' ? this.managerBase : this.adminBase;
   }
 
+  // Used by employee/manager own leave request page
   private getSelfLeaveBase(): string {
     return this.auth.getRole() === 'manager' ? this.managerMyLeaveBase : `${this.employeeBase}/leave`;
   }
 
+  // Used by employee/manager own WFH request page
   private getSelfWfhBase(): string {
     return this.auth.getRole() === 'manager' ? this.managerMyWfhBase : `${this.employeeBase}/wfh`;
   }

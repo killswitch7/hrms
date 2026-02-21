@@ -1,5 +1,7 @@
 // routes/manager.js
-// Manager can manage data only for their department.
+// Manager routes:
+// 1) Team management (same department only)
+// 2) Personal pages (attendance + leave + wfh)
 
 const express = require('express');
 const { protect, requireRole } = require('../middleware/auth');

@@ -50,7 +50,7 @@ export class Attendance implements OnInit {
   }
 
   loadAttendance() {
-    console.log('[Attendance] Loading my attendance...');
+    // Load my attendance list
     this.loading = true;
     this.error = '';
     this.success = '';
@@ -59,14 +59,12 @@ export class Attendance implements OnInit {
       .getMyAttendance()
       .pipe(
         finalize(() => {
-          // 🔑 ALWAYS run (success or error), so button never gets stuck
+          // Always stop loading even if API fails
           this.loading = false;
-          console.log('[Attendance] loadAttendance finalize, loading =', this.loading);
         })
       )
       .subscribe({
         next: (res) => {
-          console.log('[Attendance] GET /attendance response:', res);
           this.records = res.data || [];
           const today = new Date();
           this.todayRecord =
@@ -75,14 +73,13 @@ export class Attendance implements OnInit {
           this.buildCalendar();
         },
         error: (err) => {
-          console.error('[Attendance] Error loading attendance:', err);
+          console.error('Error loading attendance:', err);
           this.error = err.error?.message || 'Failed to load attendance.';
         },
       });
   }
 
   onCheckIn() {
-    console.log('[Attendance] Check In clicked, loading =', this.loading);
     if (this.loading) return;
 
     this.error = '';
@@ -94,24 +91,21 @@ export class Attendance implements OnInit {
       .pipe(
         finalize(() => {
           this.loading = false;
-          console.log('[Attendance] check-in finalize, loading =', this.loading);
         })
       )
       .subscribe({
         next: (res) => {
-          console.log('[Attendance] Check-in response:', res);
           this.success = res.message || 'Checked in successfully';
           this.loadAttendance();
         },
         error: (err) => {
-          console.error('[Attendance] Check-in error:', err);
+          console.error('Check-in error:', err);
           this.error = err.error?.message || 'Failed to check in.';
         },
       });
   }
 
   onCheckOut() {
-    console.log('[Attendance] Check Out clicked, loading =', this.loading);
     if (this.loading) return;
 
     this.error = '';
@@ -123,17 +117,15 @@ export class Attendance implements OnInit {
       .pipe(
         finalize(() => {
           this.loading = false;
-          console.log('[Attendance] check-out finalize, loading =', this.loading);
         })
       )
       .subscribe({
         next: (res) => {
-          console.log('[Attendance] Check-out response:', res);
           this.success = res.message || 'Checked out successfully';
           this.loadAttendance();
         },
         error: (err) => {
-          console.error('[Attendance] Check-out error:', err);
+          console.error('Check-out error:', err);
           this.error = err.error?.message || 'Failed to check out.';
         },
       });
@@ -148,6 +140,7 @@ export class Attendance implements OnInit {
   }
 
   previousMonth() {
+    // Go to previous month in calendar
     this.calendarDate = new Date(
       this.calendarDate.getFullYear(),
       this.calendarDate.getMonth() - 1,
@@ -157,6 +150,7 @@ export class Attendance implements OnInit {
   }
 
   nextMonth() {
+    // Go to next month in calendar
     this.calendarDate = new Date(
       this.calendarDate.getFullYear(),
       this.calendarDate.getMonth() + 1,
@@ -166,6 +160,7 @@ export class Attendance implements OnInit {
   }
 
   private buildCalendar() {
+    // Make 6x7 calendar cells for selected month
     const year = this.calendarDate.getFullYear();
     const month = this.calendarDate.getMonth();
     const firstDay = new Date(year, month, 1);

@@ -33,18 +33,21 @@ import { MatDividerModule } from '@angular/material/divider';
   providers: [DatePipe],
 })
 export class Dashboard implements OnInit {
+  // Top bar profile data
   userProfile = {
     name: 'Employee',
     position: 'Employee',
     email: '',
   };
 
+  // Main dashboard numbers
   stats = {
     leaveBalance: 0,
     attendance: 0,
     notifications: 0,
   };
 
+  // Today's check-in/check-out summary
   todayAttendance = {
     status: 'Not Checked In',
     time: null as string | null,
@@ -66,10 +69,12 @@ export class Dashboard implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Load dashboard data once page opens
     this.loadSummary();
   }
 
   loadSummary() {
+    // Call backend and fill cards
     this.loading = true;
     this.error = '';
 
@@ -92,16 +97,18 @@ export class Dashboard implements OnInit {
   }
 
   onLogout() {
-    console.log('Logout clicked, clearing session and redirecting to login');
+    // Clear session and go back to login
     this.authService.clearSession();
     this.router.navigate(['/login'], { replaceUrl: true });
   }
 
   navigateTo(page: string) {
+    // Small helper to open another page
     this.router.navigate([page]);
   }
 
   onAvatarSelected(event: Event) {
+    // Save selected profile photo for this user
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;

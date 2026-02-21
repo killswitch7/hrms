@@ -15,7 +15,7 @@ import { LeaveService, LeaveRequest, WfhRequest } from '../../../services/leave'
   styleUrls: ['./leave.css'],
 })
 export class Leave implements OnInit {
-  // ---------- LEAVE FORM ----------
+  // Leave form model
   leaveType: string = 'Annual';
   leaveFromDate: string = '';
   leaveToDate: string = '';
@@ -26,7 +26,7 @@ export class Leave implements OnInit {
   errorLeave: string = '';
   successLeave: string = '';
 
-  // ---------- WFH FORM ----------
+  // WFH form model
   wfhFromDate: string = '';
   wfhToDate: string = '';
   wfhReason: string = '';
@@ -43,8 +43,7 @@ export class Leave implements OnInit {
     this.loadMyWfhRequests();
   }
 
-  // ---------- LOADERS ----------
-
+  // Load my leave requests
   loadMyLeaveRequests() {
     this.loadingLeave = true;
     this.errorLeave = '';
@@ -62,6 +61,7 @@ export class Leave implements OnInit {
     });
   }
 
+  // Load my WFH requests
   loadMyWfhRequests() {
     this.loadingWfh = true;
     this.errorWfh = '';
@@ -79,8 +79,7 @@ export class Leave implements OnInit {
     });
   }
 
-  // ---------- SUBMIT LEAVE ----------
-
+  // Submit leave form
   submitLeave() {
     this.errorLeave = '';
     this.successLeave = '';
@@ -104,7 +103,7 @@ export class Leave implements OnInit {
           this.loadingLeave = false;
           this.successLeave = res.message || 'Leave request submitted';
 
-          // Reset form
+          // Clear form after success
           this.leaveFromDate = '';
           this.leaveToDate = '';
           this.leaveReason = '';
@@ -121,8 +120,7 @@ export class Leave implements OnInit {
       });
   }
 
-  // ---------- SUBMIT WFH ----------
-
+  // Submit WFH form
   submitWfh() {
     this.errorWfh = '';
     this.successWfh = '';
@@ -145,7 +143,7 @@ export class Leave implements OnInit {
           this.loadingWfh = false;
           this.successWfh = res.message || 'WFH request submitted';
 
-          // Reset form
+          // Clear form after success
           this.wfhFromDate = '';
           this.wfhToDate = '';
           this.wfhReason = '';

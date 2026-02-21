@@ -29,6 +29,7 @@ import { MatDividerModule } from '@angular/material/divider';
   styleUrls: ['./admindashboard.css'],
 })
 export class AdminDashboard implements OnInit {
+  // Numbers for cards
   analytics: DashboardSummary = {
     totalEmployees: 0,
     presentToday: 0,
@@ -40,6 +41,7 @@ export class AdminDashboard implements OnInit {
     recentEmployees: [],
   };
 
+  // Top bar user data
   userProfile = {
     name: 'Admin',
     email: '',
@@ -53,6 +55,7 @@ export class AdminDashboard implements OnInit {
   avatarUrl: string | null = null;
   isManager = false;
 
+  // Admin tool buttons
   adminMenuItems = [
     { icon: 'groups', label: 'Employees', page: '/employees' },
     { icon: 'domain', label: 'Departments', page: '/departments' },
@@ -64,6 +67,7 @@ export class AdminDashboard implements OnInit {
     { icon: 'campaign', label: 'Announcements', page: '/announcements' },
     { icon: 'query_stats', label: 'Analytics', page: '/analytics' },
   ];
+  // Manager tool buttons
   managerMenuItems = [
     { icon: 'access_time', label: 'My Attendance', page: '/manager-attendance' },
     { icon: 'home_work', label: 'My Leave & WFH', page: '/manager-leave' },
@@ -80,6 +84,7 @@ export class AdminDashboard implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Check role and load profile basics
     this.isManager = this.authService.getRole() === 'manager';
     const email = this.authService.getEmail() || 'admin@company.com';
     const firstPart = email.split('@')[0] || 'Admin';
@@ -88,6 +93,7 @@ export class AdminDashboard implements OnInit {
     this.userProfile.name = firstPart.charAt(0).toUpperCase() + firstPart.slice(1);
     this.avatarUrl = this.avatarService.get(this.isManager ? 'manager' : 'admin', email);
 
+    // Load dashboard numbers
     this.loadDashboardSummary();
   }
 
@@ -96,6 +102,7 @@ export class AdminDashboard implements OnInit {
   }
 
   loadDashboardSummary() {
+    // Call backend and fill cards
     this.loading = true;
     this.error = '';
 
@@ -113,16 +120,18 @@ export class AdminDashboard implements OnInit {
   }
 
   goTo(page: string) {
+    // Simple route navigation helper
     this.router.navigate([page]);
   }
 
   onLogout() {
-    console.log('Logging out from admin...');
+    // Clear session and go to login
     this.authService.clearSession();
     this.router.navigate(['/login'], { replaceUrl: true });
   }
 
   onAvatarSelected(event: Event) {
+    // Save selected image in local storage
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;

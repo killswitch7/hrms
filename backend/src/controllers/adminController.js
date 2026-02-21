@@ -12,12 +12,15 @@ function ping(req, res) {
   return res.json({ message: 'Admin route working' });
 }
 
-// ---------------- EMPLOYEE CRUD (ADMIN) ----------------
+// ---------------- Employee CRUD (admin only) ----------------
 
 async function createEmployee(req, res) {
   try {
+    // Read form data from frontend
     const { name, email, password, department, position, role = 'employee' } = req.body;
     const normalizedRole = String(role).trim().toLowerCase();
+
+    // Basic validation
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email and password are required.' });
     }
@@ -28,12 +31,14 @@ async function createEmployee(req, res) {
       return res.status(400).json({ message: 'Department is required for manager role.' });
     }
 
+    // Email should be unique
     const normalizedEmail = String(email).toLowerCase();
     const existing = await User.findOne({ email: normalizedEmail });
     if (existing) {
       return res.status(409).json({ message: 'A user with this email already exists.' });
     }
 
+    // Create user login account
     const user = await User.create({
       name,
       email: normalizedEmail,
@@ -41,6 +46,7 @@ async function createEmployee(req, res) {
       role: normalizedRole,
     });
 
+    // Create employee profile linked to user account
     const { firstName, lastName } = splitName(name);
     const employee = await Employee.create({
       user: user._id,
@@ -69,11 +75,13 @@ async function createEmployee(req, res) {
 
 async function getEmployees(req, res) {
   try {
+    // Read filters from query params
     const { search = '', status = '', role = '', department = '', page = '1', limit = '20' } = req.query;
     const safePage = Math.max(parseInt(page, 10) || 1, 1);
     const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
     const skip = (safePage - 1) * safeLimit;
 
+    // Build mongo filter object
     const filter = {};
     if (status && ['active', 'inactive'].includes(String(status))) {
       filter.status = status;
@@ -128,9 +136,11 @@ async function updateEmployee(req, res) {
       return res.status(400).json({ message: 'Invalid employee id' });
     }
 
+    // Get existing employee profile
     const employee = await Employee.findById(req.params.id).populate('user');
     if (!employee) return res.status(404).json({ message: 'Employee not found' });
 
+    // Update fields only if value is sent
     const { name, email, department, designation, status, phone, baseSalary, role } = req.body;
 
     if (name !== undefined) {
@@ -174,6 +184,7 @@ async function updateEmployee(req, res) {
       return res.status(400).json({ message: 'Manager must have a department.' });
     }
 
+    // Save profile + user model
     await Promise.all([
       employee.save(),
       employee.user ? employee.user.save() : Promise.resolve(),
@@ -210,10 +221,11 @@ async function deleteEmployee(req, res) {
   }
 }
 
-// ---------------- DASHBOARD / ANALYTICS ----------------
+// ---------------- Dashboard / analytics ----------------
 
 async function dashboardSummary(req, res) {
   try {
+    // Build dates for today and this month
     const startOfToday = normalizeDate(new Date());
     const endOfToday = new Date(startOfToday);
     endOfToday.setHours(23, 59, 59, 999);
@@ -268,6 +280,7 @@ async function dashboardSummary(req, res) {
 
 async function analytics(req, res) {
   try {
+    // Build dates for month stats
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfToday = normalizeDate(now);

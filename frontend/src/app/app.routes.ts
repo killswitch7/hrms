@@ -1,12 +1,12 @@
 // frontend/src/app/app.routes.ts
 import { Routes } from '@angular/router';
 
-// Auth + dashboards
+// Login and main dashboard pages
 import { Login } from './components/auth/login/login';
 import { AdminDashboard } from './components/admin/admin-dashboard/admindashboard';
 import { Dashboard } from './components/employee/dashboard/dashboard';
 
-// Admin feature pages
+// Admin pages
 import { Employees } from './components/admin/employees/employees';
 import { AdminAttendance } from './components/admin/attendance/attendance';
 import { LeaveApprovals as AdminLeave } from './components/admin/leave/leave';
@@ -21,7 +21,7 @@ import { ManagerDashboard } from './components/manager/dashboard/dashboard';
 import { ManagerAttendance } from './components/manager/attendance/attendance';
 import { ManagerLeave } from './components/manager/leave/leave';
 
-// Employee feature pages
+// Employee pages
 import { Attendance } from './components/employee/attendance/attendance';
 import { Holidays } from './components/employee/holidays/holidays';
 import { Leave as EmployeeLeave } from './components/employee/leave/leave';
@@ -34,14 +34,14 @@ import { loginGuard } from './guards/login.guard';
 import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
-  // Auth
+  // Login page
   {
     path: 'login',
     component: Login,
     canActivate: [loginGuard],
   },
 
-  // Dashboards
+  // Dashboard pages by role
   {
     path: 'admin-dashboard',
     component: AdminDashboard,
@@ -58,7 +58,7 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard(['employee'])],
   },
 
-  // Admin feature routes
+  // Admin + manager management pages
   {
     path: 'employees',
     component: Employees,
@@ -100,7 +100,7 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard(['admin'])],
   },
 
-  // NEW: Admin Register Employee
+  // Register page (admin only)
   {
     path: 'register-employee',
     component: RegisterEmployee,
@@ -112,7 +112,7 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard(['admin', 'manager'])],
   },
 
-  // Manager self-service routes
+  // Manager personal pages
   {
     path: 'manager-attendance',
     component: ManagerAttendance,
@@ -124,7 +124,7 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard(['manager'])],
   },
 
-  // Employee feature routes
+  // Employee pages
   {
     path: 'employee-attendance',
     component: Attendance,
@@ -156,7 +156,7 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard(['employee'])],
   },
 
-  // Defaults
+  // Default route
   {
     path: '',
     pathMatch: 'full',

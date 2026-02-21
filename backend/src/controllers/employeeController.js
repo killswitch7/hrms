@@ -9,6 +9,7 @@ const Announcement = require('../models/Announcement');
 const Holiday = require('../models/Holiday');
 
 function splitName(fullName = '') {
+  // Split full name into first and last name
   const trimmed = String(fullName).trim();
   if (!trimmed) return { firstName: '', lastName: '' };
   const parts = trimmed.split(/\s+/);
@@ -16,6 +17,7 @@ function splitName(fullName = '') {
 }
 
 function normalizeDate(input = new Date()) {
+  // Keep only date part (00:00:00 time)
   const d = new Date(input);
   d.setHours(0, 0, 0, 0);
   return d;
@@ -23,9 +25,11 @@ function normalizeDate(input = new Date()) {
 
 // If employee profile does not exist, we create it automatically.
 async function getOrCreateEmployeeForUser(user) {
+  // Try to find employee profile
   let employee = await Employee.findOne({ user: user._id });
   if (employee) return employee;
 
+  // If not found, create a basic profile
   const firstName = user.name || user.email.split('@')[0] || 'Employee';
   employee = await Employee.create({
     user: user._id,
@@ -42,8 +46,10 @@ async function getOrCreateEmployeeForUser(user) {
 
 async function getEmployeeDashboardSummary(req, res) {
   try {
+    // Ensure profile exists
     const employee = await getOrCreateEmployeeForUser(req.user);
 
+    // Dates used for today/month/year calculations
     const now = new Date();
     const startOfToday = normalizeDate(now);
     const endOfToday = new Date(startOfToday);
@@ -56,6 +62,7 @@ async function getEmployeeDashboardSummary(req, res) {
     const startOfYear = new Date(now.getFullYear(), 0, 1);
     const endOfYear = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
 
+    // Fetch all needed data in parallel
     const [todayRecord, monthAttendanceDays, approvedLeaves, announcements] = await Promise.all([
       Attendance.findOne({
         employee: employee._id,
@@ -85,6 +92,7 @@ async function getEmployeeDashboardSummary(req, res) {
         .select('title content createdAt'),
     ]);
 
+    // Basic leave balance logic
     const annualAllowance = 24;
     const usedLeaveDays = approvedLeaves.reduce((sum, leave) => {
       const from = normalizeDate(leave.from);
@@ -94,6 +102,7 @@ async function getEmployeeDashboardSummary(req, res) {
     }, 0);
     const leaveBalance = Math.max(0, annualAllowance - usedLeaveDays);
 
+    // Build today's attendance text
     let todayStatus = 'Not Checked In';
     let checkTime = null;
     if (todayRecord?.checkOut) {
@@ -104,6 +113,7 @@ async function getEmployeeDashboardSummary(req, res) {
       checkTime = todayRecord.checkIn;
     }
 
+    // First take announcements
     let noticeItems = announcements.map((item) => ({
       id: item._id,
       title: item.title,
@@ -111,6 +121,7 @@ async function getEmployeeDashboardSummary(req, res) {
       createdAt: item.createdAt,
     }));
 
+    // If less than 3 notices, add upcoming holidays
     if (noticeItems.length < 3) {
       const holidays = await Holiday.find({ date: { $gte: startOfToday } })
         .sort({ date: 1 })

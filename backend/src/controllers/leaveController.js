@@ -1,18 +1,21 @@
 // controllers/leaveController.js
-// Leave APIs for employee and admin.
+// Simple leave controller:
+// - Employee can create and see own leave
+// - Manager leave requests go to admin for approval
 
 const LeaveRequest = require('../models/LeaveRequest');
 const Employee = require('../models/Employee');
 const User = require('../models/User');
 const { getOrCreateEmployeeForUser } = require('./employeeController');
 
+// Get employee profile ids for users with a given role
 async function getEmployeeIdsByUserRole(role) {
   const userIds = await User.find({ role }).distinct('_id');
   const employeeIds = await Employee.find({ user: { $in: userIds } }).distinct('_id');
   return employeeIds;
 }
 
-// Employee: create normal leave (not WFH).
+// Employee/Manager: create normal leave (not WFH)
 async function createLeave(req, res) {
   try {
     const { from, to, reason, type } = req.body;
@@ -40,7 +43,7 @@ async function createLeave(req, res) {
   }
 }
 
-// Employee: get own leave requests.
+// Employee/Manager: get own leave requests
 async function getMyLeave(req, res) {
   try {
     const employee = await getOrCreateEmployeeForUser(req.user);
@@ -56,11 +59,11 @@ async function getMyLeave(req, res) {
   }
 }
 
-// Admin: list leave requests.
+// Admin: list manager leave requests only
 async function getAdminLeaveRequests(req, res) {
   try {
     const { status, search = '' } = req.query;
-    // Admin handles only manager leave requests.
+    // Admin should only review manager requests
     const managerEmployeeIds = await getEmployeeIdsByUserRole('manager');
     const filter = { type: { $ne: 'WFH' }, employee: { $in: managerEmployeeIds } };
     if (status) filter.status = status;
@@ -92,6 +95,7 @@ async function approveLeave(req, res) {
     );
     if (!request) return res.status(404).json({ message: 'Leave request not found' });
 
+    // Check who created this leave
     const owner = await User.findById(request.employee?.user).select('role');
     if (owner?.role !== 'manager') {
       return res.status(403).json({ message: 'Admin can approve only manager leave requests.' });
@@ -117,6 +121,7 @@ async function rejectLeave(req, res) {
     );
     if (!request) return res.status(404).json({ message: 'Leave request not found' });
 
+    // Check who created this leave
     const owner = await User.findById(request.employee?.user).select('role');
     if (owner?.role !== 'manager') {
       return res.status(403).json({ message: 'Admin can reject only manager leave requests.' });

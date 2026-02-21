@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from './auth';
 
+// Data shape for dashboard cards
 export interface DashboardSummary {
   totalEmployees: number;
   presentToday: number;
@@ -68,6 +69,8 @@ export class Admin {
   private auth = inject(AuthService);
   private apiRoot = 'http://localhost:5001/api';
 
+  // If role is manager, call manager endpoints.
+  // Else call admin endpoints.
   private getManageBase(): string {
     const role = this.auth.getRole();
     return role === 'manager' ? `${this.apiRoot}/manager` : `${this.apiRoot}/admin`;
@@ -124,6 +127,8 @@ export class Admin {
   }
 
   getDepartments(): Observable<{ data: DepartmentItem[] }> {
+    // Try direct departments route first.
+    // If that fails, use admin/departments route.
     return this.http
       .get<{ data: DepartmentItem[] }>(`${this.apiRoot}/departments`)
       .pipe(
@@ -134,6 +139,7 @@ export class Admin {
   }
 
   createDepartment(payload: { name: string }): Observable<{ message: string; data: DepartmentItem }> {
+    // Same fallback logic for create.
     return this.http
       .post<{ message: string; data: DepartmentItem }>(`${this.apiRoot}/departments`, payload)
       .pipe(

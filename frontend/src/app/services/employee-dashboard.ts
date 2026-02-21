@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+// These interfaces are the data coming from backend.
 export interface EmployeeDashboardNotice {
   id: string;
   title: string;
@@ -44,12 +45,14 @@ export class EmployeeDashboardService {
   private http = inject(HttpClient);
   private employeeBase = 'http://localhost:5001/api/employee';
 
+  // Dashboard summary for employee home page
   getSummary(): Observable<{ data: EmployeeDashboardSummary }> {
     return this.http.get<{ data: EmployeeDashboardSummary }>(
       `${this.employeeBase}/dashboard-summary`
     );
   }
 
+  // Holiday list for employee holiday page
   getHolidays(): Observable<{ data: EmployeeHoliday[] }> {
     return this.http.get<{ data: EmployeeHoliday[] }>(
       `${this.employeeBase}/holidays`

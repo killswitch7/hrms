@@ -27,15 +27,19 @@ export interface AttendanceRecord {
 export class AttendanceService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
+
+  // Base URLs for each role
   private employeeBase = 'http://localhost:5001/api/employee';
   private managerMyBase = 'http://localhost:5001/api/manager/my-attendance';
   private adminBase = 'http://localhost:5001/api/admin';
   private managerBase = 'http://localhost:5001/api/manager';
 
+  // Used for admin/manager team attendance page
   private getManageBase(): string {
     return this.auth.getRole() === 'manager' ? this.managerBase : this.adminBase;
   }
 
+  // Used for own check-in/check-out page
   private getSelfBase(): string {
     return this.auth.getRole() === 'manager' ? this.managerMyBase : `${this.employeeBase}/attendance`;
   }
