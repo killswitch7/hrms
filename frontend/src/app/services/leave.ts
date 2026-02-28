@@ -84,10 +84,17 @@ export class LeaveService {
 
   // ---------- ADMIN: LEAVE (non-WFH) ----------
 
-  getAllLeaveRequests(status?: LeaveStatus, search?: string): Observable<{ data: LeaveRequest[] }> {
+  getAllLeaveRequests(
+    status?: LeaveStatus,
+    search?: string,
+    from?: string,
+    to?: string
+  ): Observable<{ data: LeaveRequest[] }> {
     const params = new URLSearchParams();
     if (status) params.set('status', status);
     if (search) params.set('search', search);
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
     const qs = params.toString();
     const url = `${this.getManageBase()}/leave-requests${qs ? `?${qs}` : ''}`;
 
@@ -104,10 +111,17 @@ export class LeaveService {
 
   // ---------- ADMIN: WFH ----------
 
-  getAllWfhRequests(status?: LeaveStatus, search?: string): Observable<{ data: WfhRequest[] }> {
+  getAllWfhRequests(
+    status?: LeaveStatus,
+    search?: string,
+    from?: string,
+    to?: string
+  ): Observable<{ data: WfhRequest[] }> {
     const params = new URLSearchParams();
     if (status) params.set('status', status);
     if (search) params.set('search', search);
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
     const qs = params.toString();
     const url = `${this.getManageBase()}/wfh-requests${qs ? `?${qs}` : ''}`;
 

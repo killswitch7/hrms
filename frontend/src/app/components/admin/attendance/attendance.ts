@@ -22,6 +22,7 @@ export class AdminAttendance implements OnInit {
   filterFrom: string = '';
   filterTo: string = '';
   filterEmployeeId: string = '';
+  filterRole: string = '';
 
   constructor(private attendanceService: AttendanceService) {}
 
@@ -37,7 +38,12 @@ export class AdminAttendance implements OnInit {
     this.error = '';
 
     this.attendanceService
-      .getAllAttendance(this.filterFrom, this.filterTo, this.filterEmployeeId)
+      .getAllAttendance(
+        this.filterFrom,
+        this.filterTo,
+        this.filterEmployeeId,
+        this.filterRole
+      )
       .subscribe({
         next: (res) => {
           this.records = res.data || [];
@@ -59,6 +65,7 @@ export class AdminAttendance implements OnInit {
     this.filterFrom = '';
     this.filterTo = '';
     this.filterEmployeeId = '';
+    this.filterRole = '';
     this.loadAttendance();
   }
 }

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Admin, AdminHoliday } from '../../../services/admin';
+import { AuthService } from '../../../services/auth';
 
 @Component({
   selector: 'app-admin-holidays',
@@ -16,13 +17,16 @@ export class AdminHolidays {
   error = '';
 
   name = '';
-  date = '';
+  startDate = '';
+  endDate = '';
   type: 'Public' | 'Company' | 'Optional' | 'Festival' = 'Public';
   description = '';
+  isManager = false;
 
-  constructor(private adminService: Admin) {}
+  constructor(private adminService: Admin, private authService: AuthService) {}
 
   ngOnInit(): void {
+    this.isManager = this.authService.getRole() === 'manager';
     this.loadHolidays();
   }
 
@@ -42,8 +46,9 @@ export class AdminHolidays {
   }
 
   addHoliday() {
-    if (!this.name.trim() || !this.date) {
-      this.error = 'Holiday name and date are required.';
+    if (this.isManager) return;
+    if (!this.name.trim() || !this.startDate) {
+      this.error = 'Holiday name and start date are required.';
       return;
     }
 
@@ -52,14 +57,16 @@ export class AdminHolidays {
     this.adminService
       .createHoliday({
         name: this.name.trim(),
-        date: this.date,
+        startDate: this.startDate,
+        endDate: this.endDate || this.startDate,
         type: this.type,
         description: this.description.trim(),
       })
       .subscribe({
         next: () => {
           this.name = '';
-          this.date = '';
+          this.startDate = '';
+          this.endDate = '';
           this.type = 'Public';
           this.description = '';
           this.loadHolidays();
@@ -72,6 +79,7 @@ export class AdminHolidays {
   }
 
   deleteHoliday(id: string) {
+    if (this.isManager) return;
     if (!window.confirm('Delete this holiday?')) return;
     this.loading = true;
     this.adminService.deleteHoliday(id).subscribe({

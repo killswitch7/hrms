@@ -3,6 +3,7 @@
 
 const Employee = require('../models/Employee');
 const Attendance = require('../models/Attendance');
+const User = require('../models/User');
 const { getOrCreateEmployeeForUser, normalizeDate } = require('./employeeController');
 
 function startOfDay(input = new Date()) {
@@ -20,14 +21,23 @@ function endOfDay(input = new Date()) {
 // Admin: attendance table and day-wise present/absent list.
 async function getAdminAttendance(req, res) {
   try {
-    const { from, to, employeeId } = req.query;
+    const { from, to, employeeId, role } = req.query;
     const fromDate = from ? startOfDay(from) : startOfDay(new Date());
     const toDate = to ? endOfDay(to) : endOfDay(fromDate);
     const isSingleDay = fromDate.getTime() === startOfDay(toDate).getTime();
+    const allowedRole = ['employee', 'manager'].includes(role) ? role : '';
+
+    let roleUserIds = [];
+    if (allowedRole) {
+      const users = await User.find({ role: allowedRole }).select('_id');
+      roleUserIds = users.map((u) => u._id);
+      if (!roleUserIds.length) return res.json({ data: [] });
+    }
 
     if (isSingleDay) {
       const employeeFilter = { status: 'active' };
       if (employeeId) employeeFilter.employeeId = employeeId;
+      if (allowedRole) employeeFilter.user = { $in: roleUserIds };
 
       const employees = await Employee.find(employeeFilter)
         .select('employeeId firstName lastName email')
@@ -73,6 +83,14 @@ async function getAdminAttendance(req, res) {
       const employee = await Employee.findOne({ employeeId });
       if (!employee) return res.json({ data: [] });
       filter.employee = employee._id;
+    } else if (allowedRole) {
+      const employees = await Employee.find({
+        status: 'active',
+        user: { $in: roleUserIds },
+      }).select('_id');
+
+      if (!employees.length) return res.json({ data: [] });
+      filter.employee = { $in: employees.map((e) => e._id) };
     }
 
     const records = await Attendance.find(filter)

@@ -50,11 +50,20 @@ async function getMyWfh(req, res) {
 
 async function getAdminWfhRequests(req, res) {
   try {
-    const { status, search = '' } = req.query;
+    const { status, search = '', from = '', to = '' } = req.query;
     // Admin should only review manager requests
     const managerEmployeeIds = await getEmployeeIdsByUserRole('manager');
     const filter = { type: 'WFH', employee: { $in: managerEmployeeIds } };
     if (status) filter.status = status;
+    if (from || to) {
+      filter.createdAt = {};
+      if (from) filter.createdAt.$gte = new Date(from);
+      if (to) {
+        const toDate = new Date(to);
+        toDate.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = toDate;
+      }
+    }
     if (search) {
       const regex = new RegExp(String(search).trim(), 'i');
       const employees = await Employee.find({

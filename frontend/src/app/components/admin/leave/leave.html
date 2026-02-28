@@ -5,8 +5,8 @@
       <p>Review pending requests and take action quickly.</p>
     </div>
     <div class="head-badges">
-      <span class="badge">{{ leaveRequests.length }} Leave Pending</span>
-      <span class="badge">{{ wfhRequests.length }} WFH Pending</span>
+      <span class="badge">{{ leaveRequests.length }} Leave Requests</span>
+      <span class="badge">{{ wfhRequests.length }} WFH Requests</span>
     </div>
   </section>
 
@@ -42,14 +42,18 @@
         [(ngModel)]="searchTerm"
         placeholder="Search by employee id, name, or email"
       />
-      <button class="tab-btn active" (click)="applyFilters()">Apply</button>
-      <button class="tab-btn" (click)="clearFilters()">Clear</button>
+      <input type="date" [(ngModel)]="fromDate" />
+      <input type="date" [(ngModel)]="toDate" />
+      <div class="filter-actions">
+        <button class="tab-btn active" (click)="applyFilters()">Apply</button>
+        <button class="tab-btn" (click)="clearFilters()">Clear</button>
+      </div>
     </div>
   </section>
 
   <!-- LEAVE TAB -->
   <section class="panel" *ngIf="activeTab === 'leave'">
-    <h2>Pending Leave Requests</h2>
+    <h2>Leave Requests</h2>
 
     <p class="error" *ngIf="errorLeave">{{ errorLeave }}</p>
 
@@ -86,23 +90,26 @@
               </span>
             </td>
             <td>{{ req.createdAt | date: 'short' }}</td>
-            <td>
+            <td *ngIf="req.status === 'Pending'; else noLeaveAction">
               <button class="btn approve" (click)="approveLeave(req)">Approve</button>
               <button class="btn reject" (click)="rejectLeave(req)">Reject</button>
             </td>
+            <ng-template #noLeaveAction>
+              <td>-</td>
+            </ng-template>
           </tr>
         </tbody>
       </table>
     </div>
 
     <div class="empty" *ngIf="!loadingLeave && !leaveRequests.length">
-      <p>No pending leave requests.</p>
+      <p>No leave requests found.</p>
     </div>
   </section>
 
   <!-- WFH TAB -->
   <section class="panel" *ngIf="activeTab === 'wfh'">
-    <h2>Pending WFH Requests</h2>
+    <h2>WFH Requests</h2>
 
     <p class="error" *ngIf="errorWfh">{{ errorWfh }}</p>
 
@@ -137,17 +144,20 @@
               </span>
             </td>
             <td>{{ req.createdAt | date: 'short' }}</td>
-            <td>
+            <td *ngIf="req.status === 'Pending'; else noWfhAction">
               <button class="btn approve" (click)="approveWfh(req)">Approve</button>
               <button class="btn reject" (click)="rejectWfh(req)">Reject</button>
             </td>
+            <ng-template #noWfhAction>
+              <td>-</td>
+            </ng-template>
           </tr>
         </tbody>
       </table>
     </div>
 
     <div class="empty" *ngIf="!loadingWfh && !wfhRequests.length">
-      <p>No pending WFH requests.</p>
+      <p>No WFH requests found.</p>
     </div>
   </section>
 </div>

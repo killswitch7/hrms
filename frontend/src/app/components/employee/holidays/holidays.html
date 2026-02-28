@@ -12,7 +12,12 @@
       <div class="details">
         <h3>{{ h.name }}</h3>
         <p>{{ h.type }}</p>
-        <small>{{ h.date | date:'fullDate' }}</small>
+        <small *ngIf="(h.startDate || h.date) === (h.endDate || h.startDate || h.date); else holidayRange">
+          {{ (h.startDate || h.date) | date:'fullDate' }}
+        </small>
+        <ng-template #holidayRange>
+          <small>{{ (h.startDate || h.date) | date:'mediumDate' }} - {{ (h.endDate || h.startDate || h.date) | date:'mediumDate' }}</small>
+        </ng-template>
       </div>
     </div>
 

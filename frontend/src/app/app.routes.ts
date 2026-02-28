@@ -85,12 +85,12 @@ export const routes: Routes = [
   {
     path: 'announcements',
     component: Announcements,
-    canActivate: [authGuard, roleGuard(['admin'])],
+    canActivate: [authGuard, roleGuard(['admin', 'manager'])],
   },
   {
     path: 'holidays',
     component: AdminHolidays,
-    canActivate: [authGuard, roleGuard(['admin'])],
+    canActivate: [authGuard, roleGuard(['admin', 'manager'])],
   },
   {
     path: 'analytics',

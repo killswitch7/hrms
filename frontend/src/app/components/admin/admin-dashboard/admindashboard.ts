@@ -76,6 +76,7 @@ export class AdminDashboard implements OnInit {
     { icon: 'groups', label: 'Employees', page: '/employees' },
     { icon: 'event_note', label: 'Attendance Logs', page: '/attendance' },
     { icon: 'task_alt', label: 'Leave Approvals', page: '/leave-approvals' },
+    { icon: 'celebration', label: 'Holidays', page: '/holidays' },
   ];
 
   constructor(

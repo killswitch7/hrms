@@ -264,7 +264,7 @@ async function getLeaveRequests(req, res) {
     const department = await getManagerDepartment(req.user._id);
     if (!department) return res.status(400).json({ message: 'Manager department not set.' });
 
-    const { status, search = '' } = req.query;
+    const { status, search = '', from = '', to = '' } = req.query;
     const deptEmployeeIds = await getDepartmentEmployeeIds(department, 'employee');
     let employeeIds = deptEmployeeIds;
 
@@ -279,6 +279,15 @@ async function getLeaveRequests(req, res) {
 
     const filter = { type: { $ne: 'WFH' }, employee: { $in: employeeIds } };
     if (status) filter.status = status;
+    if (from || to) {
+      filter.createdAt = {};
+      if (from) filter.createdAt.$gte = new Date(from);
+      if (to) {
+        const toDate = new Date(to);
+        toDate.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = toDate;
+      }
+    }
 
     const data = await LeaveRequest.find(filter)
       .populate('employee', 'employeeId firstName lastName email department')
@@ -296,7 +305,7 @@ async function getWfhRequests(req, res) {
     const department = await getManagerDepartment(req.user._id);
     if (!department) return res.status(400).json({ message: 'Manager department not set.' });
 
-    const { status, search = '' } = req.query;
+    const { status, search = '', from = '', to = '' } = req.query;
     const deptEmployeeIds = await getDepartmentEmployeeIds(department, 'employee');
     let employeeIds = deptEmployeeIds;
 
@@ -311,6 +320,15 @@ async function getWfhRequests(req, res) {
 
     const filter = { type: 'WFH', employee: { $in: employeeIds } };
     if (status) filter.status = status;
+    if (from || to) {
+      filter.createdAt = {};
+      if (from) filter.createdAt.$gte = new Date(from);
+      if (to) {
+        const toDate = new Date(to);
+        toDate.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = toDate;
+      }
+    }
 
     const data = await LeaveRequest.find(filter)
       .populate('employee', 'employeeId firstName lastName email department')

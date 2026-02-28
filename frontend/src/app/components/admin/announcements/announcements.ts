@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Admin, AdminAnnouncement } from '../../../services/admin';
+import { AuthService } from '../../../services/auth';
 
 @Component({
   selector: 'app-announcements',
@@ -18,10 +19,12 @@ export class Announcements {
   audience = 'All';
   loading = false;
   error = '';
+  isManager = false;
 
-  constructor(private adminService: Admin) {}
+  constructor(private adminService: Admin, private authService: AuthService) {}
 
   ngOnInit(): void {
+    this.isManager = this.authService.getRole() === 'manager';
     this.loadAnnouncements();
   }
 
@@ -41,6 +44,7 @@ export class Announcements {
   }
 
   createAnnouncement() {
+    if (this.isManager) return;
     if (!this.title.trim() || !this.content.trim()) {
       this.error = 'Title and content are required.';
       return;
@@ -71,6 +75,7 @@ export class Announcements {
   }
 
   deleteAnnouncement(id: string) {
+    if (this.isManager) return;
     const ok = window.confirm('Delete this announcement?');
     if (!ok) return;
 

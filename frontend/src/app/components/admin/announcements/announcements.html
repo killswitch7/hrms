@@ -2,7 +2,7 @@
   <h2>Announcements</h2>
   <p class="error" *ngIf="error">{{ error }}</p>
 
-  <section class="panel">
+  <section class="panel" *ngIf="!isManager">
     <h3>Create Announcement</h3>
     <div class="form-grid">
       <input type="text" [(ngModel)]="title" placeholder="Title" />
@@ -32,7 +32,7 @@
         <p>{{ a.content }}</p>
         <small>{{ a.type }} · {{ a.audience }} · {{ a.createdAt | date:'short' }}</small>
       </div>
-      <button class="btn danger" (click)="deleteAnnouncement(a._id)">Delete</button>
+      <button class="btn danger" *ngIf="!isManager" (click)="deleteAnnouncement(a._id)">Delete</button>
     </div>
     <p *ngIf="!loading && !announcements.length">No announcements found.</p>
   </section>

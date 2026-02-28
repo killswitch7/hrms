@@ -10,7 +10,13 @@ import { EmployeeDashboardService } from '../../../services/employee-dashboard';
   styleUrls: ['./holidays.css'],
 })
 export class Holidays {
-  holidays: Array<{ name: string; date: string | Date; type: string }> = [];
+  holidays: Array<{
+    name: string;
+    date: string | Date;
+    startDate?: string | Date;
+    endDate?: string | Date;
+    type: string;
+  }> = [];
   loading = false;
   error = '';
 
@@ -22,7 +28,9 @@ export class Holidays {
       next: (res) => {
         this.holidays = (res.data || []).map((x) => ({
           name: x.name,
-          date: x.date,
+          date: x.startDate || x.date,
+          startDate: x.startDate || x.date,
+          endDate: x.endDate || x.startDate || x.date,
           type: x.type || 'Company',
         }));
         this.loading = false;

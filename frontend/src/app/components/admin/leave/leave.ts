@@ -13,8 +13,10 @@ import { LeaveService, LeaveRequest, WfhRequest } from '../../../services/leave'
 })
 export class LeaveApprovals implements OnInit {
   activeTab: 'leave' | 'wfh' = 'leave';
-  statusFilter: '' | 'Pending' | 'Approved' | 'Rejected' | 'Cancelled' = 'Pending';
+  statusFilter: '' | 'Pending' | 'Approved' | 'Rejected' | 'Cancelled' = '';
   searchTerm = '';
+  fromDate = '';
+  toDate = '';
 
   // Leave
   leaveRequests: LeaveRequest[] = [];
@@ -43,7 +45,14 @@ export class LeaveApprovals implements OnInit {
     this.loadingLeave = true;
     this.errorLeave = '';
 
-    this.leaveService.getAllLeaveRequests(status || undefined, this.searchTerm.trim() || undefined).subscribe({
+    this.leaveService
+      .getAllLeaveRequests(
+        status || undefined,
+        this.searchTerm.trim() || undefined,
+        this.fromDate || undefined,
+        this.toDate || undefined
+      )
+      .subscribe({
       next: (res) => {
         this.leaveRequests = res.data || [];
         this.loadingLeave = false;
@@ -60,7 +69,14 @@ export class LeaveApprovals implements OnInit {
     this.loadingWfh = true;
     this.errorWfh = '';
 
-    this.leaveService.getAllWfhRequests(status || undefined, this.searchTerm.trim() || undefined).subscribe({
+    this.leaveService
+      .getAllWfhRequests(
+        status || undefined,
+        this.searchTerm.trim() || undefined,
+        this.fromDate || undefined,
+        this.toDate || undefined
+      )
+      .subscribe({
       next: (res) => {
         this.wfhRequests = res.data || [];
         this.loadingWfh = false;
@@ -81,15 +97,17 @@ export class LeaveApprovals implements OnInit {
   }
 
   clearFilters() {
-    this.statusFilter = 'Pending';
+    this.statusFilter = '';
     this.searchTerm = '';
+    this.fromDate = '';
+    this.toDate = '';
     this.applyFilters();
   }
 
   approveLeave(req: LeaveRequest) {
     if (!req._id) return;
     this.leaveService.approveLeave(req._id).subscribe({
-      next: () => this.loadLeaveRequests('Pending'),
+      next: () => this.loadLeaveRequests(this.statusFilter),
       error: (err) => {
         console.error('Error approving leave:', err);
         this.errorLeave = err.error?.message || 'Failed to approve leave.';
@@ -100,7 +118,7 @@ export class LeaveApprovals implements OnInit {
   rejectLeave(req: LeaveRequest) {
     if (!req._id) return;
     this.leaveService.rejectLeave(req._id).subscribe({
-      next: () => this.loadLeaveRequests('Pending'),
+      next: () => this.loadLeaveRequests(this.statusFilter),
       error: (err) => {
         console.error('Error rejecting leave:', err);
         this.errorLeave = err.error?.message || 'Failed to reject leave.';
@@ -111,7 +129,7 @@ export class LeaveApprovals implements OnInit {
   approveWfh(req: WfhRequest) {
     if (!req._id) return;
     this.leaveService.approveWfh(req._id).subscribe({
-      next: () => this.loadWfhRequests('Pending'),
+      next: () => this.loadWfhRequests(this.statusFilter),
       error: (err) => {
         console.error('Error approving WFH:', err);
         this.errorWfh = err.error?.message || 'Failed to approve WFH.';
@@ -122,7 +140,7 @@ export class LeaveApprovals implements OnInit {
   rejectWfh(req: WfhRequest) {
     if (!req._id) return;
     this.leaveService.rejectWfh(req._id).subscribe({
-      next: () => this.loadWfhRequests('Pending'),
+      next: () => this.loadWfhRequests(this.statusFilter),
       error: (err) => {
         console.error('Error rejecting WFH:', err);
         this.errorWfh = err.error?.message || 'Failed to reject WFH.';

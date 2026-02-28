@@ -20,6 +20,8 @@ const {
 const { employeeAttendanceRouter } = require('./attendanceRoutes');
 const { employeeLeaveRouter } = require('./leaveRoutes');
 const { employeeWfhRouter } = require('./wfhRoutes');
+const { managerHolidayRouter } = require('./holidayRoutes');
+const { managerAnnouncementRouter } = require('./announcementRoutes');
 const { selfDocumentRouter } = require('./documentRoutes');
 
 const router = express.Router();
@@ -35,6 +37,8 @@ router.get('/attendance', getAttendance);
 router.use('/my-attendance', employeeAttendanceRouter);
 router.use('/my-leave', employeeLeaveRouter);
 router.use('/my-wfh', employeeWfhRouter);
+router.use('/holidays', managerHolidayRouter);
+router.use('/announcements', managerAnnouncementRouter);
 router.use('/documents', selfDocumentRouter);
 
 router.get('/leave-requests', getLeaveRequests);

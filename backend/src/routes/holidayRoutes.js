@@ -9,10 +9,15 @@ adminHolidayRouter.get('/', getHolidays);
 adminHolidayRouter.post('/', createHoliday);
 adminHolidayRouter.delete('/:id', deleteHoliday);
 
+// Manager can only view holidays.
+const managerHolidayRouter = express.Router();
+managerHolidayRouter.get('/', getHolidays);
+
 const employeeHolidayRouter = express.Router();
 employeeHolidayRouter.get('/', getHolidays);
 
 module.exports = {
   adminHolidayRouter,
+  managerHolidayRouter,
   employeeHolidayRouter,
 };

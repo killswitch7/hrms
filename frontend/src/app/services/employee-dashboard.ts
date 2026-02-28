@@ -14,6 +14,8 @@ export interface EmployeeHoliday {
   _id: string;
   name: string;
   date: string;
+  startDate?: string;
+  endDate?: string;
   type: 'Public' | 'Company' | 'Optional' | 'Festival';
   description?: string;
 }

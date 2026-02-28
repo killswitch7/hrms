@@ -51,7 +51,9 @@ export interface AdminAnalytics {
 export interface AdminHoliday {
   _id: string;
   name: string;
-  date: string;
+  date: string; // old fallback key
+  startDate: string;
+  endDate: string;
   type: 'Public' | 'Company' | 'Optional' | 'Festival';
   description?: string;
 }
@@ -112,7 +114,8 @@ export class Admin {
 
   createHoliday(payload: {
     name: string;
-    date: string;
+    startDate: string;
+    endDate?: string;
     type?: 'Public' | 'Company' | 'Optional' | 'Festival';
     description?: string;
   }): Observable<{ message: string; data: AdminHoliday }> {

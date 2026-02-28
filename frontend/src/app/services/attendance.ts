@@ -67,12 +67,14 @@ export class AttendanceService {
   getAllAttendance(
     from?: string,
     to?: string,
-    employeeId?: string
+    employeeId?: string,
+    role?: string
   ): Observable<{ data: AttendanceRecord[] }> {
     const params: any = {};
     if (from) params.from = from;
     if (to) params.to = to;
     if (employeeId) params.employeeId = employeeId;
+    if (role) params.role = role;
 
     return this.http.get<{ data: AttendanceRecord[] }>(
       `${this.getManageBase()}/attendance`,

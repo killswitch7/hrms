@@ -2,11 +2,12 @@
   <h2 class="page-title">Holiday Management</h2>
   <p class="error" *ngIf="error">{{ error }}</p>
 
-  <section class="panel form-panel">
+  <section class="panel form-panel" *ngIf="!isManager">
     <h3>Add Holiday</h3>
     <div class="form-grid">
       <input type="text" [(ngModel)]="name" placeholder="Holiday name" />
-      <input type="date" [(ngModel)]="date" />
+      <input type="date" [(ngModel)]="startDate" />
+      <input type="date" [(ngModel)]="endDate" placeholder="End date (optional)" />
       <select [(ngModel)]="type">
         <option value="Public">Public</option>
         <option value="Company">Company</option>
@@ -29,10 +30,18 @@
     <div class="holiday" *ngFor="let h of holidays">
       <div class="holiday-info">
         <h3>{{ h.name }}</h3>
-        <p>{{ h.type }} · {{ h.date | date:'fullDate' }}</p>
+        <p>
+          {{ h.type }} ·
+          <ng-container *ngIf="(h.startDate || h.date) === (h.endDate || h.startDate || h.date); else rangeDate">
+            {{ (h.startDate || h.date) | date:'fullDate' }}
+          </ng-container>
+          <ng-template #rangeDate>
+            {{ (h.startDate || h.date) | date:'mediumDate' }} - {{ (h.endDate || h.startDate || h.date) | date:'mediumDate' }}
+          </ng-template>
+        </p>
         <small *ngIf="h.description">{{ h.description }}</small>
       </div>
-      <button class="btn danger" type="button" (click)="deleteHoliday(h._id)">Delete</button>
+      <button class="btn danger" *ngIf="!isManager" type="button" (click)="deleteHoliday(h._id)">Delete</button>
     </div>
     <p class="empty-state" *ngIf="!loading && !holidays.length">No holidays found.</p>
   </section>
