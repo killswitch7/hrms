@@ -5,7 +5,12 @@ const express = require('express');
 const router = express.Router();
 
 const { protect, requireRole } = require('../middleware/auth');
-const { getEmployeeDashboardSummary } = require('../controllers/employeeController');
+const {
+  getEmployeeDashboardSummary,
+  getMyProfile,
+  updateMyProfile,
+  changeMyPassword,
+} = require('../controllers/employeeController');
 const { employeeAttendanceRouter } = require('./attendanceRoutes');
 const { employeeLeaveRouter } = require('./leaveRoutes');
 const { employeeWfhRouter } = require('./wfhRoutes');
@@ -22,6 +27,9 @@ router.get('/ping', (req, res) => {
 });
 
 router.get('/dashboard-summary', getEmployeeDashboardSummary);
+router.get('/profile', getMyProfile);
+router.put('/profile', updateMyProfile);
+router.patch('/change-password', changeMyPassword);
 
 // Feature routes
 router.use('/attendance', employeeAttendanceRouter);

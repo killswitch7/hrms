@@ -69,6 +69,26 @@
       />
     </div>
 
+    <div class="form-group">
+      <label for="annualSalary">Annual Salary (Before Tax) *</label>
+      <input
+        id="annualSalary"
+        name="annualSalary"
+        type="number"
+        [(ngModel)]="annualSalary"
+        min="0"
+        placeholder="Enter annual salary in NPR"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="filingStatus">Tax Filing Status</label>
+      <select id="filingStatus" name="filingStatus" [(ngModel)]="filingStatus">
+        <option value="unmarried">Unmarried</option>
+        <option value="married">Married</option>
+      </select>
+    </div>
+
     <button type="submit" [disabled]="loading">
       {{ loading ? 'Saving...' : 'Register Employee' }}
     </button>

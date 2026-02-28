@@ -1,22 +1,105 @@
-<h2>Payroll</h2>
+<div class="page-shell">
+  <h2>Payroll (Nepali Tax - Fixed)</h2>
+  <p class="error" *ngIf="error">{{ error }}</p>
+  <p class="success" *ngIf="success">{{ success }}</p>
 
-<table class="table">
-  <thead>
-    <tr>
-      <th>Employee</th>
-      <th>Month</th>
-      <th>Basic</th>
-      <th>Allowance</th>
-      <th>Net</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let p of payrolls">
-      <td>{{ p.employee }}</td>
-      <td>{{ p.month }}</td>
-      <td>{{ p.basic }}</td>
-      <td>{{ p.allowance }}</td>
-      <td>{{ p.net }}</td>
-    </tr>
-  </tbody>
-</table>
+  <section class="panel">
+    <h3>Create / Update Payslip</h3>
+    <div class="form-grid">
+      <select [(ngModel)]="form.employee">
+        <option value="">Select Employee</option>
+        <option *ngFor="let e of employees" [value]="e._id">
+          {{ e.employeeId }} - {{ e.firstName }} {{ e.lastName }}
+        </option>
+      </select>
+
+      <input type="month" [(ngModel)]="form.month" />
+
+      <select [(ngModel)]="form.filingStatus">
+        <option value="unmarried">Unmarried</option>
+        <option value="married">Married</option>
+      </select>
+
+      <select [(ngModel)]="form.status">
+        <option value="Pending">Pending</option>
+        <option value="Processed">Processed</option>
+        <option value="Paid">Paid</option>
+      </select>
+
+      <input type="number" [(ngModel)]="form.otherDeductions" min="0" placeholder="Other deductions (monthly)" />
+
+      <input
+        type="text"
+        [value]="selectedEmployee ? ((selectedEmployee.annualSalary || 0) | number:'1.0-0') + ' NPR (annual)' : ''"
+        placeholder="Annual salary from employee profile"
+        readonly
+      />
+    </div>
+
+    <div class="actions">
+      <button class="btn ghost" type="button" (click)="calculatePreview()">Calculate</button>
+      <button class="btn primary" type="button" (click)="savePayroll()">Save Payslip</button>
+    </div>
+
+    <div class="preview">
+      <div><label>Annual Salary (Before Tax)</label><span>{{ preview.annualSalary | number:'1.0-0' }}</span></div>
+      <div><label>Monthly Gross</label><span>{{ preview.grossPay | number:'1.0-0' }}</span></div>
+      <div><label>Monthly Tax</label><span>{{ preview.taxDeduction | number:'1.0-0' }}</span></div>
+      <div><label>Other Deductions</label><span>{{ preview.otherDeductions | number:'1.0-0' }}</span></div>
+      <div><label>Total Deductions</label><span>{{ preview.deductions | number:'1.0-0' }}</span></div>
+      <div><label>Net Pay (Monthly)</label><span>{{ preview.netPay | number:'1.0-0' }}</span></div>
+      <div><label>Annual Taxable</label><span>{{ preview.annualTaxableIncome | number:'1.0-0' }}</span></div>
+      <div><label>Annual Tax</label><span>{{ preview.annualTax | number:'1.0-0' }}</span></div>
+      <div><label>Tax Slab Used</label><span>{{ form.filingStatus }}</span></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="filter-grid">
+      <input type="month" [(ngModel)]="filterMonth" />
+      <input type="text" [(ngModel)]="filterSearch" placeholder="Search by employee id / name / email" />
+      <button class="btn primary" type="button" (click)="loadPayrolls()">Apply</button>
+    </div>
+
+    <p *ngIf="loading">Loading payrolls...</p>
+    <table class="table" *ngIf="!loading && payrolls.length">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Month</th>
+          <th>Annual Salary</th>
+          <th>Monthly Gross</th>
+          <th>Tax</th>
+          <th>Other Ded.</th>
+          <th>Net Pay</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of payrolls">
+          <td>{{ p.employee?.employeeId }}<br />{{ p.employee?.firstName }} {{ p.employee?.lastName }}</td>
+          <td>{{ p.month }}</td>
+          <td>{{ (p.annualSalary || 0) | number:'1.0-0' }}</td>
+          <td>{{ (p.grossPay || 0) | number:'1.0-0' }}</td>
+          <td>{{ (p.taxDeduction || 0) | number:'1.0-0' }}</td>
+          <td>{{ (p.otherDeductions || 0) | number:'1.0-0' }}</td>
+          <td>{{ (p.netPay || 0) | number:'1.0-0' }}</td>
+          <td>{{ p.status }}</td>
+          <td>
+            <button class="btn ghost" type="button" (click)="openPayslip(p._id)">View</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="!loading && !payrolls.length">No payroll records found.</p>
+  </section>
+
+  <section class="panel" *ngIf="selectedPayslipHtml">
+    <div class="head-with-action">
+      <h3>Payslip Template ({{ selectedPayslipMonth }})</h3>
+      <button class="btn danger" type="button" (click)="closePayslip()">Close</button>
+    </div>
+    <div class="html-preview" [innerHTML]="selectedPayslipHtml"></div>
+  </section>
+</div>

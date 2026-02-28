@@ -12,9 +12,23 @@ const payrollSchema = new mongoose.Schema(
       type: String, // e.g. '2025-01'
       required: true,
     },
+    annualSalary: { type: Number, default: 0 }, // yearly salary before tax
     basic:      { type: Number, required: true },
     allowance:  { type: Number, default: 0 },
-    deductions: { type: Number, default: 0 },
+    deductions: { type: Number, default: 0 }, // total deductions (tax + other)
+    taxDeduction: { type: Number, default: 0 },
+    otherDeductions: { type: Number, default: 0 },
+    grossPay: { type: Number, default: 0 },
+    filingStatus: {
+      type: String,
+      enum: ['unmarried', 'married'],
+      default: 'unmarried',
+    },
+    taxMeta: {
+      annualTaxableIncome: { type: Number, default: 0 },
+      annualTax: { type: Number, default: 0 },
+      monthlyTax: { type: Number, default: 0 },
+    },
     netPay:     { type: Number, required: true },
     status: {
       type: String,
@@ -22,6 +36,7 @@ const payrollSchema = new mongoose.Schema(
       default: 'Processed',
     },
     generatedAt: { type: Date, default: Date.now },
+    payslipHtml: { type: String, default: '' }, // rendered from payslip template
   },
   { timestamps: true }
 );

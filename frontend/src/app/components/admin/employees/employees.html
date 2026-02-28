@@ -44,7 +44,11 @@
         <option *ngFor="let d of departments" [value]="d.name">{{ d.name }}</option>
       </select>
       <input type="text" [(ngModel)]="editForm.designation" placeholder="Designation" />
-      <input type="number" [(ngModel)]="editForm.baseSalary" placeholder="Base salary" />
+      <input type="number" [(ngModel)]="editForm.annualSalary" placeholder="Annual salary (before tax)" />
+      <select [(ngModel)]="editForm.filingStatus">
+        <option value="unmarried">unmarried</option>
+        <option value="married">married</option>
+      </select>
       <select [(ngModel)]="editForm.role">
         <option value="employee">employee</option>
         <option value="manager">manager</option>

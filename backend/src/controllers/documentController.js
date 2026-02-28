@@ -18,7 +18,7 @@ const allowedTypes = [
 
 function formatCurrency(value) {
   const num = Number(value || 0);
-  return `INR ${num.toLocaleString('en-IN')}`;
+  return `NPR ${num.toLocaleString('en-NP')}`;
 }
 
 // Employee/manager create own document request
@@ -81,7 +81,7 @@ async function getAdminDocumentRequests(req, res) {
     }
 
     const data = await DocumentRequest.find(filter)
-      .populate('employee', 'employeeId firstName lastName email department designation baseSalary')
+      .populate('employee', 'employeeId firstName lastName email department designation annualSalary')
       .sort({ createdAt: -1 });
 
     return res.json({ data });
@@ -101,7 +101,7 @@ async function approveDocumentRequest(req, res) {
 
     const requestDoc = await DocumentRequest.findById(id).populate(
       'employee',
-      'employeeId firstName lastName email department designation baseSalary'
+      'employeeId firstName lastName email department designation annualSalary'
     );
     if (!requestDoc) return res.status(404).json({ message: 'Request not found.' });
 
@@ -113,7 +113,7 @@ async function approveDocumentRequest(req, res) {
       designation: employee.designation || 'Employee',
       department: employee.department || 'N/A',
       purpose: requestDoc.purpose || 'Official purpose',
-      salary: formatCurrency(employee.baseSalary),
+      salary: formatCurrency(employee.annualSalary),
     };
 
     const html = renderDocumentHtml(requestDoc.type, payload);

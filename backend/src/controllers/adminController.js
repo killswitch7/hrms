@@ -17,8 +17,19 @@ function ping(req, res) {
 async function createEmployee(req, res) {
   try {
     // Read form data from frontend
-    const { name, email, password, department, position, role = 'employee' } = req.body;
+    const {
+      name,
+      email,
+      password,
+      department,
+      position,
+      role = 'employee',
+      annualSalary = 0,
+      filingStatus = 'unmarried',
+    } = req.body;
     const normalizedRole = String(role).trim().toLowerCase();
+    const safeAnnualSalary = Math.max(0, Number(annualSalary) || 0);
+    const safeFilingStatus = String(filingStatus) === 'married' ? 'married' : 'unmarried';
 
     // Basic validation
     if (!name || !email || !password) {
@@ -26,6 +37,9 @@ async function createEmployee(req, res) {
     }
     if (!['employee', 'manager'].includes(normalizedRole)) {
       return res.status(400).json({ message: 'Role must be employee or manager.' });
+    }
+    if (!safeAnnualSalary) {
+      return res.status(400).json({ message: 'Annual salary is required.' });
     }
     if (normalizedRole === 'manager' && !String(department || '').trim()) {
       return res.status(400).json({ message: 'Department is required for manager role.' });
@@ -57,6 +71,9 @@ async function createEmployee(req, res) {
       department: department || '',
       designation: position || (normalizedRole === 'manager' ? 'Manager' : ''),
       status: 'active',
+      annualSalary: safeAnnualSalary,
+      filingStatus: safeFilingStatus,
+      baseSalary: Math.round(safeAnnualSalary / 12),
     });
 
     return res.status(201).json({
@@ -141,7 +158,7 @@ async function updateEmployee(req, res) {
     if (!employee) return res.status(404).json({ message: 'Employee not found' });
 
     // Update fields only if value is sent
-    const { name, email, department, designation, status, phone, baseSalary, role } = req.body;
+    const { name, email, department, designation, status, phone, annualSalary, filingStatus, role } = req.body;
 
     if (name !== undefined) {
       const { firstName, lastName } = splitName(name);
@@ -164,7 +181,14 @@ async function updateEmployee(req, res) {
     if (department !== undefined) employee.department = String(department).trim();
     if (designation !== undefined) employee.designation = String(designation).trim();
     if (phone !== undefined) employee.phone = String(phone).trim();
-    if (baseSalary !== undefined) employee.baseSalary = Number(baseSalary) || 0;
+    if (annualSalary !== undefined) {
+      const safeAnnualSalary = Math.max(0, Number(annualSalary) || 0);
+      employee.annualSalary = safeAnnualSalary;
+      employee.baseSalary = Math.round(safeAnnualSalary / 12);
+    }
+    if (filingStatus !== undefined) {
+      employee.filingStatus = String(filingStatus) === 'married' ? 'married' : 'unmarried';
+    }
 
     if (status !== undefined) {
       if (!['active', 'inactive'].includes(String(status))) {

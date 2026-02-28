@@ -29,6 +29,17 @@ const employeeSchema = new mongoose.Schema(
       default: 'active',
     },
 
+    // Salary entered by admin during register/edit (before tax, yearly amount)
+    annualSalary: { type: Number, default: 0 },
+    // Tax filing type used in Nepali tax slabs
+    filingStatus: {
+      type: String,
+      enum: ['unmarried', 'married'],
+      default: 'unmarried',
+    },
+
+    // Old field kept so old code/data does not break.
+    // We keep monthly amount here (annualSalary / 12).
     baseSalary: { type: Number, default: 0 },
   },
   { timestamps: true }

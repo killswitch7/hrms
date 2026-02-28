@@ -22,6 +22,8 @@ import { ManagerDashboard } from './components/manager/dashboard/dashboard';
 import { ManagerAttendance } from './components/manager/attendance/attendance';
 import { ManagerLeave } from './components/manager/leave/leave';
 import { ManagerDocuments } from './components/manager/documents/documents';
+import { EditProfilePage } from './components/account/edit-profile/edit-profile';
+import { ChangePasswordPage } from './components/account/change-password/change-password';
 
 // Employee pages
 import { Attendance } from './components/employee/attendance/attendance';
@@ -136,6 +138,11 @@ export const routes: Routes = [
     component: ManagerDocuments,
     canActivate: [authGuard, roleGuard(['manager'])],
   },
+  {
+    path: 'manager-payslip',
+    component: Payslip,
+    canActivate: [authGuard, roleGuard(['manager'])],
+  },
 
   // Employee pages
   {
@@ -162,6 +169,16 @@ export const routes: Routes = [
     path: 'employee-profile',
     component: Profile,
     canActivate: [authGuard, roleGuard(['employee'])],
+  },
+  {
+    path: 'edit-profile',
+    component: EditProfilePage,
+    canActivate: [authGuard, roleGuard(['employee', 'manager'])],
+  },
+  {
+    path: 'change-password',
+    component: ChangePasswordPage,
+    canActivate: [authGuard, roleGuard(['employee', 'manager'])],
   },
   {
     path: 'employee-notifications',

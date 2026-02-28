@@ -1,26 +1,74 @@
-<h2>My Payslips</h2>
+<div class="page-shell">
+  <section class="panel">
+    <div class="header-row">
+      <div>
+        <h2>{{ roleLabel }} Payslips</h2>
+        <p>Monthly salary details with Nepali tax calculation.</p>
+      </div>
+      <div class="filter-row">
+        <input type="month" [(ngModel)]="monthFilter" />
+        <button class="btn ghost" type="button" (click)="applyMonthFilter()">Apply</button>
+        <button class="btn ghost" type="button" (click)="clearMonthFilter()">Clear</button>
+      </div>
+    </div>
 
-<table class="table">
-  <thead>
-    <tr>
-      <th>Month</th>
-      <th>Basic</th>
-      <th>Allowance</th>
-      <th>Deductions</th>
-      <th>Net Pay</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let p of payslips">
-      <td>{{ p.month }}</td>
-      <td>{{ p.basic }}</td>
-      <td>{{ p.allowance }}</td>
-      <td>{{ p.deductions }}</td>
-      <td>{{ p.net }}</td>
-      <td>
-        <button class="btn" disabled>Download</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <label>Total Payslips</label>
+        <strong>{{ filteredPayslips.length }}</strong>
+      </div>
+      <div class="summary-card">
+        <label>Total Net Pay</label>
+        <strong>{{ totalNetPay | number:'1.0-0' }}</strong>
+      </div>
+      <div class="summary-card">
+        <label>Total Tax Deduction</label>
+        <strong>{{ totalTax | number:'1.0-0' }}</strong>
+      </div>
+    </div>
+
+    <p class="error" *ngIf="error">{{ error }}</p>
+    <p *ngIf="loading">Loading payslips...</p>
+
+    <table class="table" *ngIf="!loading && filteredPayslips.length">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Annual Salary</th>
+          <th>Gross (Monthly)</th>
+          <th>Tax</th>
+          <th>Other Ded.</th>
+          <th>Net Pay</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of filteredPayslips">
+          <td>{{ p.month }}</td>
+          <td>{{ (p.annualSalary || 0) | number:'1.0-0' }}</td>
+          <td>{{ (p.grossPay || 0) | number:'1.0-0' }}</td>
+          <td>{{ (p.taxDeduction || 0) | number:'1.0-0' }}</td>
+          <td>{{ (p.otherDeductions || 0) | number:'1.0-0' }}</td>
+          <td>{{ p.netPay | number:'1.0-0' }}</td>
+          <td>
+            <span class="status-chip">{{ p.status || '-' }}</span>
+          </td>
+          <td>
+            <button class="btn" type="button" (click)="viewPayslip(p._id)">View</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p *ngIf="!loading && !filteredPayslips.length">No payslips found.</p>
+  </section>
+
+  <section class="preview-card" *ngIf="selectedHtml">
+    <div class="preview-head">
+      <h3>Payslip {{ selectedMonth }}</h3>
+      <button class="close-btn" type="button" (click)="closeView()">Close</button>
+    </div>
+    <div class="preview-body" [innerHTML]="selectedHtml"></div>
+  </section>
+</div>

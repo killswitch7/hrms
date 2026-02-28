@@ -115,7 +115,8 @@ export class Employees {
       designation: emp.designation || '',
       status: emp.status,
       role: (emp.user?.role as 'employee' | 'manager') || 'employee',
-      baseSalary: emp.baseSalary || 0,
+      annualSalary: emp.annualSalary || 0,
+      filingStatus: emp.filingStatus || 'unmarried',
     };
   }
 

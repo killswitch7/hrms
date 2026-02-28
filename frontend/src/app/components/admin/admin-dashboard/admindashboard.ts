@@ -72,6 +72,8 @@ export class AdminDashboard implements OnInit {
   managerMenuItems = [
     { icon: 'access_time', label: 'My Attendance', page: '/manager-attendance' },
     { icon: 'home_work', label: 'My Leave & WFH', page: '/manager-leave' },
+    { icon: 'receipt_long', label: 'My Payslips', page: '/manager-payslip' },
+    { icon: 'campaign', label: 'Announcements', page: '/announcements' },
     { icon: 'description', label: 'My Documents', page: '/manager-documents' },
     { icon: 'groups', label: 'Employees', page: '/employees' },
     { icon: 'event_note', label: 'Attendance Logs', page: '/attendance' },

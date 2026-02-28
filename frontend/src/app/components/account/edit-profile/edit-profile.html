@@ -1,0 +1,24 @@
+<div class="page-shell">
+  <div class="card">
+    <div class="head">
+      <h2>Edit Profile</h2>
+      <button class="btn ghost" type="button" (click)="backToProfile()">Back</button>
+    </div>
+
+    <p class="error" *ngIf="error">{{ error }}</p>
+    <p class="success" *ngIf="success">{{ success }}</p>
+    <p *ngIf="loading">Loading...</p>
+
+    <div class="form-grid" *ngIf="!loading">
+      <input [(ngModel)]="form.firstName" placeholder="First name" />
+      <input [(ngModel)]="form.lastName" placeholder="Last name" />
+      <input [(ngModel)]="form.phone" placeholder="Phone" />
+      <input [(ngModel)]="form.designation" placeholder="Designation" />
+    </div>
+
+    <button class="btn primary" type="button" (click)="save()" [disabled]="saving || loading">
+      {{ saving ? 'Saving...' : 'Save Profile' }}
+    </button>
+  </div>
+</div>
+

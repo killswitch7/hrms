@@ -11,6 +11,8 @@ interface CreateEmployeeDto {
   role?: 'employee' | 'manager';
   department?: string;
   position?: string;
+  annualSalary?: number;
+  filingStatus?: 'unmarried' | 'married';
 }
 
 export interface EmployeeItem {
@@ -23,6 +25,8 @@ export interface EmployeeItem {
   department?: string;
   designation?: string;
   status: 'active' | 'inactive';
+  annualSalary?: number;
+  filingStatus?: 'unmarried' | 'married';
   baseSalary?: number;
   joinDate?: string;
   createdAt?: string;
@@ -53,7 +57,8 @@ export interface UpdateEmployeeDto {
   designation?: string;
   status?: 'active' | 'inactive';
   role?: 'employee' | 'manager';
-  baseSalary?: number;
+  annualSalary?: number;
+  filingStatus?: 'unmarried' | 'married';
 }
 
 @Injectable({

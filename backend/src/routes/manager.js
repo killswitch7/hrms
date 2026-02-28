@@ -17,9 +17,11 @@ const {
   approveWfh,
   rejectWfh,
 } = require('../controllers/managerController');
+const { getMyProfile, updateMyProfile, changeMyPassword } = require('../controllers/employeeController');
 const { employeeAttendanceRouter } = require('./attendanceRoutes');
 const { employeeLeaveRouter } = require('./leaveRoutes');
 const { employeeWfhRouter } = require('./wfhRoutes');
+const { employeePayrollRouter } = require('./payrollRoutes');
 const { managerHolidayRouter } = require('./holidayRoutes');
 const { managerAnnouncementRouter } = require('./announcementRoutes');
 const { selfDocumentRouter } = require('./documentRoutes');
@@ -32,11 +34,15 @@ router.use(protect);
 router.use(requireRole('manager'));
 
 router.get('/dashboard-summary', dashboardSummary);
+router.get('/profile', getMyProfile);
+router.put('/profile', updateMyProfile);
+router.patch('/change-password', changeMyPassword);
 router.get('/employees', getEmployees);
 router.get('/attendance', getAttendance);
 router.use('/my-attendance', employeeAttendanceRouter);
 router.use('/my-leave', employeeLeaveRouter);
 router.use('/my-wfh', employeeWfhRouter);
+router.use('/my-payroll', employeePayrollRouter);
 router.use('/holidays', managerHolidayRouter);
 router.use('/announcements', managerAnnouncementRouter);
 router.use('/documents', selfDocumentRouter);

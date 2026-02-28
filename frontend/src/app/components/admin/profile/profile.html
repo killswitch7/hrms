@@ -27,6 +27,32 @@
       <div class="row"><label>Email</label><span>{{ profile.email }}</span></div>
       <div class="row"><label>Role</label><span>{{ profile.role }}</span></div>
       <div class="row"><label>Last Login</label><span>{{ profile.lastLogin }}</span></div>
+
+      <div class="profile-actions" *ngIf="isManager">
+        <a class="link-btn" routerLink="/edit-profile">Edit Profile</a>
+        <a class="link-btn" routerLink="/change-password">Change Password</a>
+      </div>
+
+      <div class="sub-card" *ngIf="isManager">
+        <h3>Leave Info</h3>
+        <div class="row"><label>Annual Allowance</label><span>{{ leaveInfo.annualAllowance }} days</span></div>
+        <div class="row"><label>Used</label><span>{{ leaveInfo.used }} days</span></div>
+        <div class="row"><label>Remaining</label><span>{{ leaveInfo.remaining }} days</span></div>
+      </div>
+
+      <div class="sub-card" *ngIf="isManager">
+        <h3>Salary Info</h3>
+        <div class="row"><label>Annual Salary</label><span>{{ salaryInfo.annualSalary | currency:'NPR':'symbol':'1.0-0' }}</span></div>
+        <div class="row"><label>Monthly Before Tax</label><span>{{ salaryInfo.monthlyBeforeTax | currency:'NPR':'symbol':'1.0-0' }}</span></div>
+        <div class="row"><label>Filing Status</label><span>{{ salaryInfo.filingStatus }}</span></div>
+        <div class="row"><label>Latest Payroll Month</label><span>{{ salaryInfo.latestMonth || '-' }}</span></div>
+        <div class="row"><label>Latest Gross</label><span>{{ salaryInfo.latestGrossPay ? (salaryInfo.latestGrossPay | currency:'NPR':'symbol':'1.0-0') : '-' }}</span></div>
+        <div class="row"><label>Latest Tax</label><span>{{ salaryInfo.latestTax ? (salaryInfo.latestTax | currency:'NPR':'symbol':'1.0-0') : '-' }}</span></div>
+        <div class="row"><label>Latest Deductions</label><span>{{ salaryInfo.latestDeductions ? (salaryInfo.latestDeductions | currency:'NPR':'symbol':'1.0-0') : '-' }}</span></div>
+        <div class="row"><label>Latest Net Pay</label><span>{{ salaryInfo.latestNetPay ? (salaryInfo.latestNetPay | currency:'NPR':'symbol':'1.0-0') : '-' }}</span></div>
+        <div class="row"><label>Payroll Status</label><span>{{ salaryInfo.latestStatus || '-' }}</span></div>
+      </div>
+
     </div>
   </mat-card>
 </div>

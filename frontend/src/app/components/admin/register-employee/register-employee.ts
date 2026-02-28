@@ -20,6 +20,8 @@ export class RegisterEmployee {
   role: 'employee' | 'manager' = 'employee';
   department = '';
   position = '';
+  annualSalary = 0;
+  filingStatus: 'unmarried' | 'married' = 'unmarried';
   departments: DepartmentItem[] = [];
 
   error = '';
@@ -59,6 +61,10 @@ export class RegisterEmployee {
       this.error = 'Please select a department.';
       return;
     }
+    if (!Number(this.annualSalary)) {
+      this.error = 'Please enter annual salary.';
+      return;
+    }
 
     this.loading = true;
 
@@ -70,6 +76,8 @@ export class RegisterEmployee {
         role: this.role,
         department: this.department,
         position: this.position,
+        annualSalary: this.annualSalary,
+        filingStatus: this.filingStatus,
       })
       .subscribe({
         next: (res) => {
@@ -83,6 +91,8 @@ export class RegisterEmployee {
           this.role = 'employee';
           this.department = '';
           this.position = '';
+          this.annualSalary = 0;
+          this.filingStatus = 'unmarried';
         },
         error: (err) => {
           this.loading = false;
