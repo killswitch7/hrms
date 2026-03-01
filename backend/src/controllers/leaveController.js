@@ -7,6 +7,7 @@ const LeaveRequest = require('../models/LeaveRequest');
 const Employee = require('../models/Employee');
 const User = require('../models/User');
 const { getOrCreateEmployeeForUser } = require('./employeeController');
+const { notifyLeaveOrWfhDecision } = require('../services/mailService');
 
 // Get employee profile ids for users with a given role
 async function getEmployeeIdsByUserRole(role) {
@@ -100,7 +101,7 @@ async function approveLeave(req, res) {
   try {
     const request = await LeaveRequest.findOne({ _id: req.params.id, type: { $ne: 'WFH' } }).populate(
       'employee',
-      'user'
+      'user firstName lastName email'
     );
     if (!request) return res.status(404).json({ message: 'Leave request not found' });
 
@@ -114,6 +115,16 @@ async function approveLeave(req, res) {
     request.approvedBy = req.user._id;
     request.approvedAt = new Date();
     await request.save();
+    await notifyLeaveOrWfhDecision({
+      requestType: 'Leave',
+      status: 'Approved',
+      employeeName: `${request.employee?.firstName || ''} ${request.employee?.lastName || ''}`.trim() || 'Employee',
+      employeeEmail: request.employee?.email || '-',
+      fromDate: request.from,
+      toDate: request.to,
+      reason: request.reason || '',
+      decidedByRole: 'admin',
+    });
     const updated = request;
     return res.json({ message: 'Leave approved', data: updated });
   } catch (err) {
@@ -126,7 +137,7 @@ async function rejectLeave(req, res) {
   try {
     const request = await LeaveRequest.findOne({ _id: req.params.id, type: { $ne: 'WFH' } }).populate(
       'employee',
-      'user'
+      'user firstName lastName email'
     );
     if (!request) return res.status(404).json({ message: 'Leave request not found' });
 
@@ -140,6 +151,16 @@ async function rejectLeave(req, res) {
     request.approvedBy = req.user._id;
     request.approvedAt = new Date();
     await request.save();
+    await notifyLeaveOrWfhDecision({
+      requestType: 'Leave',
+      status: 'Rejected',
+      employeeName: `${request.employee?.firstName || ''} ${request.employee?.lastName || ''}`.trim() || 'Employee',
+      employeeEmail: request.employee?.email || '-',
+      fromDate: request.from,
+      toDate: request.to,
+      reason: request.reason || '',
+      decidedByRole: 'admin',
+    });
     const updated = request;
     return res.json({ message: 'Leave rejected', data: updated });
   } catch (err) {

@@ -9,6 +9,7 @@ const User = require('../models/User');
 const Attendance = require('../models/Attendance');
 const LeaveRequest = require('../models/LeaveRequest');
 const { normalizeDate } = require('./employeeController');
+const { notifyLeaveOrWfhDecision } = require('../services/mailService');
 
 // Start of day helper (00:00:00)
 function startOfDay(input = new Date()) {
@@ -365,6 +366,16 @@ async function approveLeave(req, res) {
     request.approvedBy = req.user._id;
     request.approvedAt = new Date();
     await request.save();
+    await notifyLeaveOrWfhDecision({
+      requestType: 'Leave',
+      status: 'Approved',
+      employeeName: `${request.employee?.firstName || ''} ${request.employee?.lastName || ''}`.trim() || 'Employee',
+      employeeEmail: request.employee?.email || '-',
+      fromDate: request.from,
+      toDate: request.to,
+      reason: request.reason || '',
+      decidedByRole: 'manager',
+    });
     return res.json({ message: 'Leave approved', data: request });
   } catch (err) {
     console.error('manager approveLeave error:', err);
@@ -397,6 +408,16 @@ async function rejectLeave(req, res) {
     request.approvedBy = req.user._id;
     request.approvedAt = new Date();
     await request.save();
+    await notifyLeaveOrWfhDecision({
+      requestType: 'Leave',
+      status: 'Rejected',
+      employeeName: `${request.employee?.firstName || ''} ${request.employee?.lastName || ''}`.trim() || 'Employee',
+      employeeEmail: request.employee?.email || '-',
+      fromDate: request.from,
+      toDate: request.to,
+      reason: request.reason || '',
+      decidedByRole: 'manager',
+    });
     return res.json({ message: 'Leave rejected', data: request });
   } catch (err) {
     console.error('manager rejectLeave error:', err);
@@ -429,6 +450,16 @@ async function approveWfh(req, res) {
     request.approvedBy = req.user._id;
     request.approvedAt = new Date();
     await request.save();
+    await notifyLeaveOrWfhDecision({
+      requestType: 'WFH',
+      status: 'Approved',
+      employeeName: `${request.employee?.firstName || ''} ${request.employee?.lastName || ''}`.trim() || 'Employee',
+      employeeEmail: request.employee?.email || '-',
+      fromDate: request.from,
+      toDate: request.to,
+      reason: request.reason || '',
+      decidedByRole: 'manager',
+    });
     return res.json({ message: 'WFH approved', data: request });
   } catch (err) {
     console.error('manager approveWfh error:', err);
@@ -461,6 +492,16 @@ async function rejectWfh(req, res) {
     request.approvedBy = req.user._id;
     request.approvedAt = new Date();
     await request.save();
+    await notifyLeaveOrWfhDecision({
+      requestType: 'WFH',
+      status: 'Rejected',
+      employeeName: `${request.employee?.firstName || ''} ${request.employee?.lastName || ''}`.trim() || 'Employee',
+      employeeEmail: request.employee?.email || '-',
+      fromDate: request.from,
+      toDate: request.to,
+      reason: request.reason || '',
+      decidedByRole: 'manager',
+    });
     return res.json({ message: 'WFH rejected', data: request });
   } catch (err) {
     console.error('manager rejectWfh error:', err);

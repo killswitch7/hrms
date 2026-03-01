@@ -9,6 +9,7 @@ const Payroll = require('../models/Payroll');
 const Employee = require('../models/Employee');
 const { getOrCreateEmployeeForUser } = require('./employeeController');
 const { NEPAL_TAX_SLABS, normalizeFilingStatus, calculateMonthlyPayrollFromAnnual, renderPayslipHtml } = require('../services/payrollService');
+const { notifyPayslipDone } = require('../services/mailService');
 
 function toNumber(v, fallback = 0) {
   const n = Number(v);
@@ -160,6 +161,19 @@ async function createPayroll(req, res) {
       row,
       { new: true, upsert: true, setDefaultsOnInsert: true }
     ).populate('employee', 'employeeId firstName lastName email');
+
+    await notifyPayslipDone({
+      employeeName: `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || employee.email || 'Employee',
+      employeeId: employee.employeeId || '-',
+      employeeEmail: employee.email || '-',
+      month: row.month,
+      annualSalary: row.annualSalary,
+      grossPay: row.grossPay,
+      taxDeduction: row.taxDeduction,
+      deductions: row.deductions,
+      netPay: row.netPay,
+      status: row.status,
+    });
 
     return res.status(201).json({ message: 'Payslip saved successfully', data });
   } catch (err) {
