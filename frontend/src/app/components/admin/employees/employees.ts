@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   EmployeeItem,
+  EmployeeProfileResponse,
   EmployeeService,
   UpdateEmployeeDto,
 } from '../../../services/employee';
@@ -36,6 +37,8 @@ export class Employees {
 
   editId = '';
   editForm: UpdateEmployeeDto & { name?: string } = {};
+  profileLoading = false;
+  selectedProfile: EmployeeProfileResponse['data'] | null = null;
 
   constructor(
     private employeeService: EmployeeService,
@@ -148,6 +151,27 @@ export class Employees {
         this.loading = false;
       },
     });
+  }
+
+  viewProfile(emp: EmployeeItem) {
+    this.profileLoading = true;
+    this.error = '';
+    this.selectedProfile = null;
+
+    this.employeeService.getEmployeeProfile(emp._id).subscribe({
+      next: (res) => {
+        this.selectedProfile = res.data;
+        this.profileLoading = false;
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to load employee profile.';
+        this.profileLoading = false;
+      },
+    });
+  }
+
+  closeProfile() {
+    this.selectedProfile = null;
   }
 
   deleteEmployee(emp: EmployeeItem) {

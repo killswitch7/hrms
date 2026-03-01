@@ -3,6 +3,8 @@ import { Routes } from '@angular/router';
 
 // Login and main dashboard pages
 import { Login } from './components/auth/login/login';
+import { VerifyOtp } from './components/auth/verify-otp/verify-otp';
+import { ForgotPassword } from './components/auth/forgot-password/forgot-password';
 import { AdminDashboard } from './components/admin/admin-dashboard/admindashboard';
 import { Dashboard } from './components/employee/dashboard/dashboard';
 
@@ -43,6 +45,16 @@ export const routes: Routes = [
   {
     path: 'login',
     component: Login,
+    canActivate: [loginGuard],
+  },
+  {
+    path: 'verify-otp',
+    component: VerifyOtp,
+    canActivate: [loginGuard],
+  },
+  {
+    path: 'forgot-password',
+    component: ForgotPassword,
     canActivate: [loginGuard],
   },
 

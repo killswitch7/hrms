@@ -6,6 +6,7 @@ const User = require('../models/User');
 const Employee = require('../models/Employee');
 const Attendance = require('../models/Attendance');
 const LeaveRequest = require('../models/LeaveRequest');
+const Payroll = require('../models/Payroll');
 const { splitName, normalizeDate } = require('./employeeController');
 
 function ping(req, res) {
@@ -245,6 +246,80 @@ async function deleteEmployee(req, res) {
   }
 }
 
+// ---------------- Employee profile view (admin only) ----------------
+
+async function getEmployeeProfile(req, res) {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid employee id' });
+    }
+
+    const employee = await Employee.findById(req.params.id).populate('user', 'name email role');
+    if (!employee) return res.status(404).json({ message: 'Employee not found' });
+
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const endOfYear = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+
+    const approvedLeaves = await LeaveRequest.find({
+      employee: employee._id,
+      type: { $ne: 'WFH' },
+      status: 'Approved',
+      from: { $lte: endOfYear },
+      to: { $gte: startOfYear },
+    }).select('from to');
+
+    const annualAllowance = 24;
+    const usedLeaveDays = approvedLeaves.reduce((sum, leave) => {
+      const from = normalizeDate(leave.from);
+      const to = normalizeDate(leave.to);
+      const diff = Math.floor((to - from) / (1000 * 60 * 60 * 24)) + 1;
+      return sum + (diff > 0 ? diff : 0);
+    }, 0);
+
+    const latestPayroll = await Payroll.findOne({ employee: employee._id }).sort({ month: -1, createdAt: -1 });
+    const annualSalary = Number(employee.annualSalary || 0) || Math.round(Number(employee.baseSalary || 0) * 12);
+
+    return res.json({
+      data: {
+        _id: employee._id,
+        name: `${employee.firstName || ''} ${employee.lastName || ''}`.trim(),
+        email: employee.email,
+        role: employee.user?.role || 'employee',
+        employeeId: employee.employeeId,
+        department: employee.department || 'N/A',
+        designation: employee.designation || 'N/A',
+        phone: employee.phone || '',
+        status: employee.status,
+        joinDate: employee.joinDate || employee.createdAt,
+        salary: {
+          annualSalary,
+          monthlyBeforeTax: Math.round(annualSalary / 12),
+          filingStatus: employee.filingStatus || 'unmarried',
+          latestPayroll: latestPayroll
+            ? {
+                month: latestPayroll.month,
+                grossPay: latestPayroll.grossPay || 0,
+                taxDeduction: latestPayroll.taxDeduction || 0,
+                deductions: latestPayroll.deductions || 0,
+                netPay: latestPayroll.netPay || 0,
+                status: latestPayroll.status || 'Processed',
+              }
+            : null,
+        },
+        leave: {
+          annualAllowance,
+          used: usedLeaveDays,
+          remaining: Math.max(0, annualAllowance - usedLeaveDays),
+        },
+      },
+    });
+  } catch (err) {
+    console.error('getEmployeeProfile error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+}
+
 // ---------------- Dashboard / analytics ----------------
 
 async function dashboardSummary(req, res) {
@@ -348,6 +423,7 @@ module.exports = {
   ping,
   createEmployee,
   getEmployees,
+  getEmployeeProfile,
   updateEmployee,
   deleteEmployee,
   dashboardSummary,

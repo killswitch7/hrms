@@ -43,6 +43,38 @@
   gap: 10px;
 }
 
+.profile-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.profile-head h2 {
+  margin: 0;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.profile-row {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+}
+
+.profile-row label {
+  display: block;
+  color: #64748b;
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+
 input,
 select {
   width: 100%;

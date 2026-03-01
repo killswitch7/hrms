@@ -37,6 +37,25 @@ export class Login {
       next: (res) => {
         this.loading = false;
 
+        if (res.requiresOtp) {
+          if (!res.email || !res.tempToken) {
+            this.error = 'OTP session not ready. Please try login again.';
+            return;
+          }
+          // store temporary login OTP info
+          if (typeof window !== 'undefined') {
+            window.sessionStorage.setItem('loginOtpEmail', res.email);
+            window.sessionStorage.setItem('loginOtpTempToken', res.tempToken);
+          }
+          this.router.navigate(['/verify-otp'], { replaceUrl: true });
+          return;
+        }
+
+        if (!res.token || !res.user) {
+          this.error = 'Login response is invalid.';
+          return;
+        }
+
         // saveSession is already called inside login(), but this is safe too:
         this.authService.saveSession(res.token, res.user.role, res.user.email);
 

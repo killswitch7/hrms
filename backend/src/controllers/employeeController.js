@@ -9,6 +9,7 @@ const Announcement = require('../models/Announcement');
 const Holiday = require('../models/Holiday');
 const Payroll = require('../models/Payroll');
 const User = require('../models/User');
+const { createAndSendOtp, verifyOtp } = require('../services/otpService');
 
 function splitName(fullName = '') {
   // Split full name into first and last name
@@ -268,9 +269,9 @@ async function updateMyProfile(req, res) {
 // Employee/Manager: change password
 async function changeMyPassword(req, res) {
   try {
-    const { currentPassword = '', newPassword = '' } = req.body;
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: 'Current password and new password are required.' });
+    const { currentPassword = '', newPassword = '', otp = '' } = req.body;
+    if (!currentPassword || !newPassword || !otp) {
+      return res.status(400).json({ message: 'Current password, new password and OTP are required.' });
     }
     if (String(newPassword).length < 6) {
       return res.status(400).json({ message: 'New password must be at least 6 characters.' });
@@ -282,12 +283,41 @@ async function changeMyPassword(req, res) {
     const ok = await user.comparePassword(currentPassword);
     if (!ok) return res.status(400).json({ message: 'Current password is incorrect.' });
 
+    const otpOk = await verifyOtp({
+      email: String(user.email || '').toLowerCase(),
+      purpose: 'change_password',
+      code: otp,
+    });
+    if (!otpOk) {
+      return res.status(400).json({ message: 'Invalid or expired OTP.' });
+    }
+
     user.password = newPassword;
     await user.save();
 
     return res.json({ message: 'Password changed successfully' });
   } catch (err) {
     console.error('changeMyPassword error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+}
+
+// Send OTP before password change
+async function requestChangePasswordOtp(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    await createAndSendOtp({
+      email: String(user.email || '').toLowerCase(),
+      userId: user._id,
+      purpose: 'change_password',
+      minutes: 10,
+    });
+
+    return res.json({ message: 'OTP sent to your email.' });
+  } catch (err) {
+    console.error('requestChangePasswordOtp error:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 }
@@ -299,5 +329,6 @@ module.exports = {
   getEmployeeDashboardSummary,
   getMyProfile,
   updateMyProfile,
+  requestChangePasswordOtp,
   changeMyPassword,
 };

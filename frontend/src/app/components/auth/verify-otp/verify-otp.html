@@ -1,0 +1,22 @@
+<div class="otp-shell">
+  <div class="otp-card">
+    <h2>Verify OTP</h2>
+    <p>We sent OTP to: <b>{{ email }}</b></p>
+
+    <div class="form-group">
+      <label>OTP</label>
+      <input type="text" [(ngModel)]="otp" maxlength="6" placeholder="Enter 6 digit OTP" />
+    </div>
+
+    <div class="error" *ngIf="error">{{ error }}</div>
+    <div class="success" *ngIf="success">{{ success }}</div>
+
+    <div class="actions">
+      <button (click)="verify()" [disabled]="loading">
+        {{ loading ? 'Verifying...' : 'Verify OTP' }}
+      </button>
+      <button class="ghost" (click)="resend()" [disabled]="loading">Resend OTP</button>
+      <button class="ghost" (click)="backToLogin()" [disabled]="loading">Back</button>
+    </div>
+  </div>
+</div>

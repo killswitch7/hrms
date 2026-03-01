@@ -64,7 +64,12 @@ export class ProfileService {
   changeMyPassword(payload: {
     currentPassword: string;
     newPassword: string;
+    otp: string;
   }): Observable<{ message: string }> {
     return this.http.patch<{ message: string }>(`${this.getBase()}/change-password`, payload);
+  }
+
+  requestChangePasswordOtp(): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.getBase()}/change-password/request-otp`, {});
   }
 }

@@ -14,12 +14,14 @@ import { AuthService } from '../../../services/auth';
 })
 export class ChangePasswordPage {
   changing = false;
+  sendingOtp = false;
   error = '';
   success = '';
 
   form = {
     currentPassword: '',
     newPassword: '',
+    otp: '',
   };
 
   constructor(
@@ -29,8 +31,8 @@ export class ChangePasswordPage {
   ) {}
 
   submit() {
-    if (!this.form.currentPassword || !this.form.newPassword) {
-      this.error = 'Current password and new password are required.';
+    if (!this.form.currentPassword || !this.form.newPassword || !this.form.otp) {
+      this.error = 'Current password, new password and OTP are required.';
       return;
     }
     this.changing = true;
@@ -42,11 +44,28 @@ export class ChangePasswordPage {
         this.success = res.message || 'Password changed successfully.';
         this.form.currentPassword = '';
         this.form.newPassword = '';
+        this.form.otp = '';
         this.changing = false;
       },
       error: (err) => {
         this.error = err?.error?.message || 'Failed to change password.';
         this.changing = false;
+      },
+    });
+  }
+
+  sendOtp() {
+    this.error = '';
+    this.success = '';
+    this.sendingOtp = true;
+    this.profileService.requestChangePasswordOtp().subscribe({
+      next: (res) => {
+        this.success = res.message || 'OTP sent.';
+        this.sendingOtp = false;
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to send OTP.';
+        this.sendingOtp = false;
       },
     });
   }
@@ -60,4 +79,3 @@ export class ChangePasswordPage {
     this.router.navigate(['/employee-profile']);
   }
 }
-

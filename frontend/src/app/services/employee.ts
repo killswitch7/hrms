@@ -61,6 +61,39 @@ export interface UpdateEmployeeDto {
   filingStatus?: 'unmarried' | 'married';
 }
 
+export interface EmployeeProfileResponse {
+  data: {
+    _id: string;
+    name: string;
+    email: string;
+    role: 'employee' | 'manager' | 'admin';
+    employeeId: string;
+    department: string;
+    designation: string;
+    phone: string;
+    status: 'active' | 'inactive';
+    joinDate: string;
+    salary: {
+      annualSalary: number;
+      monthlyBeforeTax: number;
+      filingStatus: 'unmarried' | 'married';
+      latestPayroll: null | {
+        month: string;
+        grossPay: number;
+        taxDeduction: number;
+        deductions: number;
+        netPay: number;
+        status: string;
+      };
+    };
+    leave: {
+      annualAllowance: number;
+      used: number;
+      remaining: number;
+    };
+  };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -123,6 +156,12 @@ export class EmployeeService {
 
   deleteEmployee(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.baseUrl}/admin/employees/${id}`, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  getEmployeeProfile(id: string): Observable<EmployeeProfileResponse> {
+    return this.http.get<EmployeeProfileResponse>(`${this.baseUrl}/admin/employees/${id}/profile`, {
       headers: this.getAuthHeaders(),
     });
   }

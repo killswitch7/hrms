@@ -9,6 +9,7 @@ const {
   getEmployeeDashboardSummary,
   getMyProfile,
   updateMyProfile,
+  requestChangePasswordOtp,
   changeMyPassword,
 } = require('../controllers/employeeController');
 const { employeeAttendanceRouter } = require('./attendanceRoutes');
@@ -29,6 +30,7 @@ router.get('/ping', (req, res) => {
 router.get('/dashboard-summary', getEmployeeDashboardSummary);
 router.get('/profile', getMyProfile);
 router.put('/profile', updateMyProfile);
+router.post('/change-password/request-otp', requestChangePasswordOtp);
 router.patch('/change-password', changeMyPassword);
 
 // Feature routes

@@ -35,6 +35,10 @@
         {{ error }}
       </div>
 
+      <div class="forgot-row">
+        <a routerLink="/forgot-password">Forgot Password?</a>
+      </div>
+
       <button type="submit" [disabled]="loading">
         {{ loading ? 'Logging in...' : 'Login' }}
       </button>

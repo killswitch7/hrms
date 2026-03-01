@@ -64,6 +64,29 @@
     </div>
   </section>
 
+  <section class="panel" *ngIf="!isManager && (profileLoading || selectedProfile)">
+    <div class="profile-head">
+      <h2>Employee Profile</h2>
+      <button class="btn ghost" (click)="closeProfile()" *ngIf="selectedProfile">Close</button>
+    </div>
+    <p *ngIf="profileLoading">Loading profile...</p>
+
+    <div *ngIf="selectedProfile" class="profile-grid">
+      <div class="profile-row"><label>Name</label><span>{{ selectedProfile.name }}</span></div>
+      <div class="profile-row"><label>Email</label><span>{{ selectedProfile.email }}</span></div>
+      <div class="profile-row"><label>Role</label><span>{{ selectedProfile.role }}</span></div>
+      <div class="profile-row"><label>Employee ID</label><span>{{ selectedProfile.employeeId }}</span></div>
+      <div class="profile-row"><label>Department</label><span>{{ selectedProfile.department }}</span></div>
+      <div class="profile-row"><label>Designation</label><span>{{ selectedProfile.designation }}</span></div>
+      <div class="profile-row"><label>Status</label><span>{{ selectedProfile.status }}</span></div>
+      <div class="profile-row"><label>Join Date</label><span>{{ selectedProfile.joinDate | date:'mediumDate' }}</span></div>
+      <div class="profile-row"><label>Annual Salary</label><span>{{ selectedProfile.salary.annualSalary | number:'1.0-0' }}</span></div>
+      <div class="profile-row"><label>Monthly Before Tax</label><span>{{ selectedProfile.salary.monthlyBeforeTax | number:'1.0-0' }}</span></div>
+      <div class="profile-row"><label>Leave Remaining</label><span>{{ selectedProfile.leave.remaining }} / {{ selectedProfile.leave.annualAllowance }} days</span></div>
+      <div class="profile-row"><label>Latest Net Pay</label><span>{{ selectedProfile.salary.latestPayroll?.netPay || '-' }}</span></div>
+    </div>
+  </section>
+
   <section class="panel">
     <p class="success" *ngIf="success">{{ success }}</p>
     <p class="error" *ngIf="error">{{ error }}</p>
@@ -99,6 +122,7 @@
             </td>
             <td>{{ emp.joinDate | date:'mediumDate' }}</td>
             <td class="actions" *ngIf="!isManager">
+              <button class="btn ghost" (click)="viewProfile(emp)">View</button>
               <button class="btn ghost" (click)="startEdit(emp)">Edit</button>
               <button class="btn danger" (click)="deleteEmployee(emp)">Delete</button>
             </td>

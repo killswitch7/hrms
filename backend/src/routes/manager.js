@@ -17,7 +17,12 @@ const {
   approveWfh,
   rejectWfh,
 } = require('../controllers/managerController');
-const { getMyProfile, updateMyProfile, changeMyPassword } = require('../controllers/employeeController');
+const {
+  getMyProfile,
+  updateMyProfile,
+  requestChangePasswordOtp,
+  changeMyPassword,
+} = require('../controllers/employeeController');
 const { employeeAttendanceRouter } = require('./attendanceRoutes');
 const { employeeLeaveRouter } = require('./leaveRoutes');
 const { employeeWfhRouter } = require('./wfhRoutes');
@@ -36,6 +41,7 @@ router.use(requireRole('manager'));
 router.get('/dashboard-summary', dashboardSummary);
 router.get('/profile', getMyProfile);
 router.put('/profile', updateMyProfile);
+router.post('/change-password/request-otp', requestChangePasswordOtp);
 router.patch('/change-password', changeMyPassword);
 router.get('/employees', getEmployees);
 router.get('/attendance', getAttendance);

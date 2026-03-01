@@ -12,8 +12,11 @@ export interface AuthUser {
 
 export interface AuthResponse {
   message: string;
-  token: string;
-  user: AuthUser;
+  token?: string;
+  user?: AuthUser;
+  requiresOtp?: boolean;
+  email?: string;
+  tempToken?: string;
 }
 
 @Injectable({
@@ -65,9 +68,39 @@ export class AuthService {
       .post<AuthResponse>(`${this.apiUrl}/auth/login`, { email, password })
       .pipe(
         tap((res) => {
-          this.saveSession(res.token, res.user.role, res.user.email);
+          if (!res.requiresOtp && res.token && res.user) {
+            this.saveSession(res.token, res.user.role, res.user.email);
+          }
         })
       );
+  }
+
+  verifyLoginOtp(email: string, otp: string, tempToken: string): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/auth/verify-login-otp`, { email, otp, tempToken })
+      .pipe(
+        tap((res) => {
+          if (res.token && res.user) {
+            this.saveSession(res.token, res.user.role, res.user.email);
+          }
+        })
+      );
+  }
+
+  resendLoginOtp(email: string, tempToken: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/request-login-otp`, { email, tempToken });
+  }
+
+  requestForgotPasswordOtp(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/forgot-password/request-otp`, { email });
+  }
+
+  resetForgotPassword(payload: {
+    email: string;
+    otp: string;
+    newPassword: string;
+  }): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/forgot-password/reset`, payload);
   }
 
   register(body: {
@@ -81,7 +114,9 @@ export class AuthService {
       .post<AuthResponse>(`${this.apiUrl}/auth/register`, body)
       .pipe(
         tap((res) => {
-          this.saveSession(res.token, res.user.role, res.user.email);
+          if (res.token && res.user) {
+            this.saveSession(res.token, res.user.role, res.user.email);
+          }
         })
       );
   }
