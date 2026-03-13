@@ -17,6 +17,7 @@ export class RegisterEmployee {
   name = '';
   email = '';
   password = '';
+  phone = '';
   role: 'employee' | 'manager' = 'employee';
   department = '';
   position = '';
@@ -73,6 +74,7 @@ export class RegisterEmployee {
         name: this.name,
         email: this.email,
         password: this.password,
+        phone: this.phone,
         role: this.role,
         department: this.department,
         position: this.position,
@@ -88,6 +90,7 @@ export class RegisterEmployee {
           this.name = '';
           this.email = '';
           this.password = '';
+          this.phone = '';
           this.role = 'employee';
           this.department = '';
           this.position = '';

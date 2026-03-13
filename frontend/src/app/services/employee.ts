@@ -8,6 +8,7 @@ interface CreateEmployeeDto {
   name: string;
   email: string;
   password: string;
+  phone?: string;
   role?: 'employee' | 'manager';
   department?: string;
   position?: string;

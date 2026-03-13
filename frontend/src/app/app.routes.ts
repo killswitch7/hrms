@@ -17,6 +17,7 @@ import { Announcements } from './components/admin/announcements/announcements';
 import { Analytics } from './components/admin/analytics/analytics';
 import { RegisterEmployee } from './components/admin/register-employee/register-employee';
 import { AdminProfile } from './components/admin/profile/profile';
+import { AdminEmployeeProfile } from './components/admin/employee-profile/employee-profile';
 import { AdminHolidays } from './components/admin/holidays/holidays';
 import { AdminDepartments } from './components/admin/departments/departments';
 import { Hrdocuments } from './components/admin/hrdocuments/hrdocuments';
@@ -132,6 +133,11 @@ export const routes: Routes = [
     path: 'admin-profile',
     component: AdminProfile,
     canActivate: [authGuard, roleGuard(['admin', 'manager'])],
+  },
+  {
+    path: 'admin-employee-profile/:id',
+    component: AdminEmployeeProfile,
+    canActivate: [authGuard, roleGuard(['admin'])],
   },
 
   // Manager personal pages

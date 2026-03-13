@@ -1,0 +1,51 @@
+<div class="profile-shell">
+  <mat-card class="profile-card">
+    <div class="avatar-block">
+      <div class="avatar-wrap">
+        <img *ngIf="avatarUrl; else fallback" [src]="avatarUrl" alt="Profile photo" />
+        <ng-template #fallback>
+          <mat-icon>person</mat-icon>
+        </ng-template>
+      </div>
+      <button mat-stroked-button type="button" (click)="back()">Back to Employees</button>
+    </div>
+
+    <div class="details">
+      <h2>{{ profile?.role === 'manager' ? 'Manager Profile' : 'Employee Profile' }}</h2>
+      <p class="error" *ngIf="error">{{ error }}</p>
+      <p *ngIf="loading">Loading profile...</p>
+
+      <ng-container *ngIf="!loading && profile">
+        <div class="row"><label>Name</label><span>{{ profile.name }}</span></div>
+        <div class="row"><label>Email</label><span>{{ profile.email }}</span></div>
+        <div class="row"><label>Role</label><span>{{ profile.role }}</span></div>
+        <div class="row"><label>Employee ID</label><span>{{ profile.employeeId }}</span></div>
+        <div class="row"><label>Department</label><span>{{ profile.department }}</span></div>
+        <div class="row"><label>Designation</label><span>{{ profile.designation }}</span></div>
+        <div class="row"><label>Phone</label><span>{{ profile.phone || '-' }}</span></div>
+        <div class="row"><label>Status</label><span>{{ profile.status }}</span></div>
+        <div class="row"><label>Join Date</label><span>{{ profile.joinDate | date:'longDate' }}</span></div>
+
+        <div class="sub-card">
+          <h3>Leave Info</h3>
+          <div class="row"><label>Annual Allowance</label><span>{{ profile.leave.annualAllowance }} days</span></div>
+          <div class="row"><label>Used</label><span>{{ profile.leave.used }} days</span></div>
+          <div class="row"><label>Remaining</label><span>{{ profile.leave.remaining }} days</span></div>
+        </div>
+
+        <div class="sub-card">
+          <h3>Salary Info</h3>
+          <div class="row"><label>Annual Salary</label><span>{{ profile.salary.annualSalary | currency:'NPR':'symbol':'1.0-0' }}</span></div>
+          <div class="row"><label>Monthly Before Tax</label><span>{{ profile.salary.monthlyBeforeTax | currency:'NPR':'symbol':'1.0-0' }}</span></div>
+          <div class="row"><label>Filing Status</label><span>{{ profile.salary.filingStatus }}</span></div>
+          <div class="row"><label>Latest Payroll Month</label><span>{{ profile.salary.latestPayroll?.month || '-' }}</span></div>
+          <div class="row"><label>Latest Gross</label><span>{{ profile.salary.latestPayroll?.grossPay ? (profile.salary.latestPayroll?.grossPay | currency:'NPR':'symbol':'1.0-0') : '-' }}</span></div>
+          <div class="row"><label>Latest Tax</label><span>{{ profile.salary.latestPayroll?.taxDeduction ? (profile.salary.latestPayroll?.taxDeduction | currency:'NPR':'symbol':'1.0-0') : '-' }}</span></div>
+          <div class="row"><label>Latest Deductions</label><span>{{ profile.salary.latestPayroll?.deductions ? (profile.salary.latestPayroll?.deductions | currency:'NPR':'symbol':'1.0-0') : '-' }}</span></div>
+          <div class="row"><label>Latest Net Pay</label><span>{{ profile.salary.latestPayroll?.netPay ? (profile.salary.latestPayroll?.netPay | currency:'NPR':'symbol':'1.0-0') : '-' }}</span></div>
+          <div class="row"><label>Payroll Status</label><span>{{ profile.salary.latestPayroll?.status || '-' }}</span></div>
+        </div>
+      </ng-container>
+    </div>
+  </mat-card>
+</div>
