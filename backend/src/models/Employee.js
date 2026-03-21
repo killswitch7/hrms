@@ -25,7 +25,7 @@ const employeeSchema = new mongoose.Schema(
     joinDate: { type: Date, default: Date.now },
     status: {
       type: String,
-      enum: ['active', 'inactive'],
+      enum: ['active', 'inactive', 'layoff'],
       default: 'active',
     },
 

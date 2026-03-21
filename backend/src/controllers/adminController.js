@@ -7,7 +7,9 @@ const Employee = require('../models/Employee');
 const Attendance = require('../models/Attendance');
 const LeaveRequest = require('../models/LeaveRequest');
 const Payroll = require('../models/Payroll');
+const DocumentRequest = require('../models/DocumentRequest');
 const { splitName, normalizeDate } = require('./employeeController');
+const { notifyTerminationAction } = require('../services/mailService');
 
 function ping(req, res) {
   return res.json({ message: 'Admin route working' });
@@ -103,7 +105,7 @@ async function getEmployees(req, res) {
 
     // Build mongo filter object
     const filter = {};
-    if (status && ['active', 'inactive'].includes(String(status))) {
+    if (status && ['active', 'inactive', 'layoff'].includes(String(status))) {
       filter.status = status;
     }
     if (department) {
@@ -194,7 +196,7 @@ async function updateEmployee(req, res) {
     }
 
     if (status !== undefined) {
-      if (!['active', 'inactive'].includes(String(status))) {
+      if (!['active', 'inactive', 'layoff'].includes(String(status))) {
         return res.status(400).json({ message: 'Invalid status value' });
       }
       employee.status = status;
@@ -231,17 +233,52 @@ async function deleteEmployee(req, res) {
       return res.status(400).json({ message: 'Invalid employee id' });
     }
 
-    const employee = await Employee.findById(req.params.id);
+    const employee = await Employee.findById(req.params.id).populate('user', 'email role');
     if (!employee) return res.status(404).json({ message: 'Employee not found' });
 
+    const action = String(req.body?.action || req.query?.action || '').trim().toLowerCase();
+    if (!['layoff', 'fire'].includes(action)) {
+      return res.status(400).json({ message: 'Action is required: layoff or fire.' });
+    }
+
+    const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || employee.email;
+    const empEmail = employee.email || employee.user?.email || '';
+
+    if (action === 'layoff') {
+      employee.status = 'layoff';
+      await employee.save();
+
+      if (empEmail) {
+        await notifyTerminationAction({
+          action: 'layoff',
+          employeeName: fullName,
+          employeeEmail: empEmail,
+          employeeId: employee.employeeId || '-',
+        });
+      }
+
+      return res.json({ message: 'Employee marked as laid off.' });
+    }
+
     await Promise.all([
-      User.findByIdAndDelete(employee.user),
+      User.findByIdAndDelete(employee.user?._id || employee.user),
       Employee.findByIdAndDelete(employee._id),
       Attendance.deleteMany({ employee: employee._id }),
       LeaveRequest.deleteMany({ employee: employee._id }),
+      Payroll.deleteMany({ employee: employee._id }),
+      DocumentRequest.deleteMany({ employee: employee._id }),
     ]);
 
-    return res.json({ message: 'Employee deleted successfully' });
+    if (empEmail) {
+      await notifyTerminationAction({
+        action: 'fire',
+        employeeName: fullName,
+        employeeEmail: empEmail,
+        employeeId: employee.employeeId || '-',
+      });
+    }
+
+    return res.json({ message: 'Employee fired and deleted successfully.' });
   } catch (err) {
     console.error('deleteEmployee error:', err);
     return res.status(500).json({ message: 'Server error' });

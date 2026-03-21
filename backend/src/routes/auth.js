@@ -84,9 +84,9 @@ router.post('/login', async (req, res) => {
     // If admin switches status back to active, login works again.
     if (user.role === 'employee' || user.role === 'manager') {
       const employeeProfile = await Employee.findOne({ user: user._id }).select('status');
-      if (employeeProfile && employeeProfile.status === 'inactive') {
+      if (employeeProfile && ['inactive', 'layoff'].includes(employeeProfile.status)) {
         return res.status(403).json({
-          message: 'Your account is inactive. Please contact admin.',
+          message: 'Your account is not active. Please contact admin.',
         });
       }
     }

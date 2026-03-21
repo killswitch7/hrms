@@ -25,7 +25,7 @@ export interface EmployeeItem {
   phone?: string;
   department?: string;
   designation?: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'layoff';
   annualSalary?: number;
   filingStatus?: 'unmarried' | 'married';
   baseSalary?: number;
@@ -56,7 +56,7 @@ export interface UpdateEmployeeDto {
   phone?: string;
   department?: string;
   designation?: string;
-  status?: 'active' | 'inactive';
+  status?: 'active' | 'inactive' | 'layoff';
   role?: 'employee' | 'manager';
   annualSalary?: number;
   filingStatus?: 'unmarried' | 'married';
@@ -72,7 +72,7 @@ export interface EmployeeProfileResponse {
     department: string;
     designation: string;
     phone: string;
-    status: 'active' | 'inactive';
+    status: 'active' | 'inactive' | 'layoff';
     joinDate: string;
     salary: {
       annualSalary: number;
@@ -128,7 +128,7 @@ export class EmployeeService {
 
   getEmployees(params?: {
     search?: string;
-    status?: 'active' | 'inactive' | '';
+    status?: 'active' | 'inactive' | 'layoff' | '';
     role?: 'employee' | 'manager' | '';
     department?: string;
     page?: number;
@@ -155,9 +155,10 @@ export class EmployeeService {
     );
   }
 
-  deleteEmployee(id: string): Observable<{ message: string }> {
+  deleteEmployee(id: string, action: 'layoff' | 'fire'): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.baseUrl}/admin/employees/${id}`, {
       headers: this.getAuthHeaders(),
+      body: { action },
     });
   }
 

@@ -120,8 +120,42 @@ async function notifyPayslipDone({
   return sendMail({ subject, text, html });
 }
 
+async function notifyTerminationAction({
+  action = 'layoff',
+  employeeName = 'Employee',
+  employeeEmail = '',
+  employeeId = '-',
+}) {
+  const humanAction = action === 'fire' ? 'Termination Notice' : 'Layoff Notice';
+  const subject = `[HRMS] ${humanAction} - ${employeeName}`;
+  const text =
+    `${humanAction}\n` +
+    `Employee: ${employeeName}\n` +
+    `Employee ID: ${employeeId}\n` +
+    `Email: ${employeeEmail}\n\n` +
+    (action === 'fire'
+      ? 'Your employment has been terminated effective immediately.'
+      : 'Your employment status has been changed to laid off.');
+
+  const html = `
+    <h3>${humanAction}</h3>
+    <p><b>Employee:</b> ${employeeName}</p>
+    <p><b>Employee ID:</b> ${employeeId}</p>
+    <p><b>Email:</b> ${employeeEmail}</p>
+    <p>${
+      action === 'fire'
+        ? 'Your employment has been terminated effective immediately.'
+        : 'Your employment status has been changed to <b>laid off</b>.'
+    }</p>
+  `;
+
+  // Send to employee's own email.
+  return sendMail({ subject, text, html, to: employeeEmail });
+}
+
 module.exports = {
   sendMail,
   notifyLeaveOrWfhDecision,
   notifyPayslipDone,
+  notifyTerminationAction,
 };

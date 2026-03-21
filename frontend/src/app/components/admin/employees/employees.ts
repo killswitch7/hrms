@@ -24,18 +24,21 @@ export class Employees {
   success = '';
 
   search = '';
-  statusFilter: '' | 'active' | 'inactive' = '';
+  statusFilter: '' | 'active' | 'inactive' | 'layoff' = '';
   roleFilter: '' | 'employee' | 'manager' = '';
   departmentFilter = '';
   page = 1;
-  limit = 20;
+  limit = 5;
   total = 0;
+  pages = 1;
   departments: DepartmentItem[] = [];
 
   isManager = false;
 
   editId = '';
   editForm: UpdateEmployeeDto & { name?: string } = {};
+  terminationAction: Record<string, '' | 'layoff' | 'fire'> = {};
+  openTerminationId = '';
 
   constructor(
     private employeeService: EmployeeService,
@@ -79,6 +82,7 @@ export class Employees {
           this.employees = res.data || [];
           this.total = res.pagination?.total || 0;
           this.page = res.pagination?.page || 1;
+          this.pages = res.pagination?.pages || 1;
           this.loading = false;
         },
         error: (err) => {
@@ -154,19 +158,46 @@ export class Employees {
     this.router.navigate(['/admin-employee-profile', emp._id]);
   }
 
+  openTerminationMenu(emp: EmployeeItem) {
+    if (this.isManager) return;
+    this.error = '';
+    this.success = '';
+    this.openTerminationId = emp._id;
+    if (!this.terminationAction[emp._id]) {
+      this.terminationAction[emp._id] = '';
+    }
+  }
+
+  closeTerminationMenu(empId: string) {
+    this.openTerminationId = '';
+    this.terminationAction[empId] = '';
+  }
+
   deleteEmployee(emp: EmployeeItem) {
     if (this.isManager) return;
-    const fullName = [emp.firstName, emp.lastName].filter(Boolean).join(' ');
-    const ok = window.confirm(`Delete ${fullName || emp.email}? This action cannot be undone.`);
-    if (!ok) return;
+    const fullName = [emp.firstName, emp.lastName].filter(Boolean).join(' ') || emp.email;
+    const action = this.terminationAction[emp._id];
+    if (!action) {
+      this.error = 'Please select action: layoff or fire.';
+      return;
+    }
+
+    if (action === 'fire') {
+      const confirmFire = window.confirm(`Confirm FIRE for ${fullName}? This will permanently delete this user.`);
+      if (!confirmFire) return;
+    }
 
     this.loading = true;
     this.error = '';
     this.success = '';
 
-    this.employeeService.deleteEmployee(emp._id).subscribe({
+    this.employeeService.deleteEmployee(emp._id, action).subscribe({
       next: () => {
-        this.success = 'Employee deleted successfully.';
+        this.success = action === 'layoff'
+          ? 'Employee marked as laid off and email sent.'
+          : 'Employee fired, deleted, and email sent.';
+        delete this.terminationAction[emp._id];
+        this.openTerminationId = '';
         if (this.employees.length === 1 && this.page > 1) {
           this.page -= 1;
         }
@@ -180,7 +211,7 @@ export class Employees {
   }
 
   nextPage() {
-    if (this.page * this.limit >= this.total) return;
+    if (this.page >= this.pages) return;
     this.page += 1;
     this.loadEmployees();
   }

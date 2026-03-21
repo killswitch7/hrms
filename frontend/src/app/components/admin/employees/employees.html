@@ -18,6 +18,7 @@
         <option value="">All Status</option>
         <option value="active">Active</option>
         <option value="inactive">Inactive</option>
+        <option value="layoff">Laid Off</option>
       </select>
       <select [(ngModel)]="roleFilter">
         <option value="">All Roles</option>
@@ -56,6 +57,7 @@
       <select [(ngModel)]="editForm.status">
         <option value="active">active</option>
         <option value="inactive">inactive</option>
+        <option value="layoff">layoff</option>
       </select>
     </div>
     <div class="actions">
@@ -93,15 +95,39 @@
             <td>{{ emp.designation || '-' }}</td>
             <td>{{ emp.user?.role || 'employee' }}</td>
             <td>
-              <span class="status" [class.active]="emp.status === 'active'" [class.inactive]="emp.status === 'inactive'">
+              <span
+                class="status"
+                [class.active]="emp.status === 'active'"
+                [class.inactive]="emp.status === 'inactive' || emp.status === 'layoff'"
+              >
                 {{ emp.status }}
               </span>
             </td>
             <td>{{ emp.joinDate | date:'mediumDate' }}</td>
-            <td class="actions" *ngIf="!isManager">
-              <button class="btn ghost" (click)="viewProfile(emp)">View</button>
-              <button class="btn ghost" (click)="startEdit(emp)">Edit</button>
-              <button class="btn danger" (click)="deleteEmployee(emp)">Delete</button>
+            <td class="row-actions" *ngIf="!isManager">
+              <div class="row-actions-top">
+                <button class="btn ghost" (click)="viewProfile(emp)">View</button>
+                <button class="btn ghost" (click)="startEdit(emp)">Edit</button>
+                <button
+                  class="btn danger"
+                  *ngIf="openTerminationId !== emp._id"
+                  (click)="openTerminationMenu(emp)"
+                >
+                  Delete
+                </button>
+              </div>
+
+              <div class="terminate-wrap" *ngIf="openTerminationId === emp._id">
+                <select class="action-select" [(ngModel)]="terminationAction[emp._id]">
+                  <option value="">Select action</option>
+                  <option value="layoff">Layoff</option>
+                  <option value="fire">Fire</option>
+                </select>
+                <div class="terminate-actions">
+                  <button class="btn danger" (click)="deleteEmployee(emp)">Apply</button>
+                  <button class="btn ghost" (click)="closeTerminationMenu(emp._id)">Cancel</button>
+                </div>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -114,8 +140,8 @@
 
     <div class="pagination">
       <button class="btn ghost" (click)="prevPage()" [disabled]="page <= 1">Previous</button>
-      <span>Page {{ page }} · Total {{ total }}</span>
-      <button class="btn ghost" (click)="nextPage()" [disabled]="page * limit >= total">Next</button>
+      <span>Page {{ page }} of {{ pages }} · Total {{ total }}</span>
+      <button class="btn ghost" (click)="nextPage()" [disabled]="page >= pages">Next</button>
     </div>
   </section>
 </div>
