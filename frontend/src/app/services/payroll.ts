@@ -118,8 +118,23 @@ export class Payroll {
     return this.http.get<{ data: { html: string; month: string } }>(`${this.adminBase}/${id}/html`);
   }
 
+  downloadAdminPayrollPdf(id: string) {
+    return this.http.get(`${this.adminBase}/${id}/download`, {
+      responseType: 'blob',
+      observe: 'response',
+    });
+  }
+
   getMyPayrollHtml(id: string): Observable<{ data: { html: string; month: string } }> {
     const url = this.auth.getRole() === 'manager' ? this.managerBase : this.employeeBase;
     return this.http.get<{ data: { html: string; month: string } }>(`${url}/${id}/html`);
+  }
+
+  downloadMyPayrollPdf(id: string) {
+    const url = this.auth.getRole() === 'manager' ? this.managerBase : this.employeeBase;
+    return this.http.get(`${url}/${id}/download`, {
+      responseType: 'blob',
+      observe: 'response',
+    });
   }
 }

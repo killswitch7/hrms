@@ -69,6 +69,29 @@ export class Payslip {
     });
   }
 
+  downloadPayslip(payrollId?: string) {
+    if (!payrollId) return;
+    this.error = '';
+    this.payrollService.downloadMyPayrollPdf(payrollId).subscribe({
+      next: (res) => {
+        const blob = res.body;
+        if (!blob) return;
+        const header = res.headers.get('content-disposition') || '';
+        const match = header.match(/filename="([^"]+)"/i);
+        const filename = match?.[1] || 'payslip.pdf';
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to download payslip.';
+      },
+    });
+  }
+
   closeView() {
     this.selectedHtml = '';
     this.selectedMonth = '';

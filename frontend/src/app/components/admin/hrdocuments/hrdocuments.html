@@ -52,6 +52,7 @@
               <button class="btn mini" *ngIf="req.status === 'Pending'" (click)="approve(req._id)">Approve</button>
               <button class="btn mini danger" *ngIf="req.status === 'Pending'" (click)="reject(req._id)">Reject</button>
               <button class="btn mini ghost" *ngIf="req.status === 'Approved'" (click)="viewDoc(req._id)">View</button>
+              <button class="btn mini ghost" *ngIf="req.status === 'Approved'" (click)="downloadDoc(req._id)">Download PDF</button>
             </div>
           </td>
         </tr>

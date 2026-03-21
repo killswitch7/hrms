@@ -2,15 +2,16 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid #dbe5f2;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #d6e2f1;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
 }
 
 .header-inner {
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 10px 16px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -26,8 +27,8 @@
 }
 
 .avatar {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   overflow: hidden;
   display: grid;
@@ -45,15 +46,18 @@
 
 .identity h1 {
   margin: 0;
-  font-size: 1.05rem;
-  line-height: 1;
-  color: #111827;
+  font-size: 1.65rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #0f172a;
+  font-weight: 800;
 }
 
 .identity p {
-  margin: 5px 0 0;
+  margin: 6px 0 0;
   color: #334155;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .actions {
@@ -65,13 +69,20 @@
 
 .btn {
   border-radius: 999px;
-  border: 1px solid #9aa4b2;
+  border: 1px solid #9fb1c8;
   background: #fff;
   color: #1f2937;
   font-weight: 700;
   font-size: 0.92rem;
-  padding: 7px 12px;
+  padding: 8px 14px;
   cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  border-color: #7f93ac;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
 }
 
 .btn.primary {
@@ -88,11 +99,11 @@
   }
 
   .identity h1 {
-    font-size: 1rem;
+    font-size: 1.25rem;
   }
 
   .identity p {
-    font-size: 0.82rem;
+    font-size: 0.86rem;
   }
 
   .actions {
@@ -100,7 +111,7 @@
   }
 
   .btn {
-    font-size: 0.88rem;
-    padding: 6px 10px;
+    font-size: 0.84rem;
+    padding: 7px 10px;
   }
 }

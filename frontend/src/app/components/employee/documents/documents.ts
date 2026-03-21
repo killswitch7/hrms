@@ -83,6 +83,28 @@ export class EmployeeDocuments {
     });
   }
 
+  downloadDoc(id: string) {
+    this.error = '';
+    this.documentsService.downloadMyApprovedDocument(id).subscribe({
+      next: (res) => {
+        const blob = res.body;
+        if (!blob) return;
+        const header = res.headers.get('content-disposition') || '';
+        const match = header.match(/filename="([^"]+)"/i);
+        const filename = match?.[1] || 'document.pdf';
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to download document.';
+      },
+    });
+  }
+
   closePreview() {
     this.selectedHtml = '';
     this.selectedType = '';

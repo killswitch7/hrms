@@ -43,6 +43,13 @@
             >
               View
             </button>
+            <button
+              class="btn mini ghost"
+              *ngIf="req.status === 'Approved'"
+              (click)="downloadDoc(req._id)"
+            >
+              Download PDF
+            </button>
             <span *ngIf="req.status !== 'Approved'">-</span>
           </td>
         </tr>

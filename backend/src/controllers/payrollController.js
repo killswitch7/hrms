@@ -10,6 +10,7 @@ const Employee = require('../models/Employee');
 const { getOrCreateEmployeeForUser } = require('./employeeController');
 const { NEPAL_TAX_SLABS, normalizeFilingStatus, calculateMonthlyPayrollFromAnnual, renderPayslipHtml } = require('../services/payrollService');
 const { notifyPayslipDone } = require('../services/mailService');
+const { htmlToPdfBuffer } = require('../services/htmlPdfService');
 
 function toNumber(v, fallback = 0) {
   const n = Number(v);
@@ -250,6 +251,71 @@ async function getMyPayrollHtml(req, res) {
   }
 }
 
+async function downloadAdminPayrollPdf(req, res) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid payroll id.' });
+    }
+
+    const row = await Payroll.findById(id).populate('employee', 'employeeId firstName lastName email department designation');
+    if (!row) return res.status(404).json({ message: 'Payslip not found.' });
+
+    let html = row.payslipHtml || '';
+    if (!html) {
+      html = renderPayslipHtml({
+        employee: row.employee || {},
+        payroll: row,
+        month: row.month,
+      });
+      row.payslipHtml = html;
+      await row.save();
+    }
+
+    const pdf = await htmlToPdfBuffer(html);
+    const filename = `payslip-${row.employee?.employeeId || 'EMP'}-${row.month || 'month'}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.send(pdf);
+  } catch (err) {
+    console.error('downloadAdminPayrollPdf error:', err);
+    return res.status(500).json({ message: 'Failed to generate PDF. Install puppeteer in backend.' });
+  }
+}
+
+async function downloadMyPayrollPdf(req, res) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid payroll id.' });
+    }
+
+    const employee = await getOrCreateEmployeeForUser(req.user);
+    const row = await Payroll.findOne({ _id: id, employee: employee._id });
+    if (!row) return res.status(404).json({ message: 'Payslip not found.' });
+
+    let html = row.payslipHtml || '';
+    if (!html) {
+      html = renderPayslipHtml({
+        employee,
+        payroll: row,
+        month: row.month,
+      });
+      row.payslipHtml = html;
+      await row.save();
+    }
+
+    const pdf = await htmlToPdfBuffer(html);
+    const filename = `payslip-${employee.employeeId || 'EMP'}-${row.month || 'month'}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.send(pdf);
+  } catch (err) {
+    console.error('downloadMyPayrollPdf error:', err);
+    return res.status(500).json({ message: 'Failed to generate PDF. Install puppeteer in backend.' });
+  }
+}
+
 module.exports = {
   getAdminPayrolls,
   createPayroll,
@@ -258,4 +324,6 @@ module.exports = {
   calculatePayroll,
   getAdminPayrollHtml,
   getMyPayrollHtml,
+  downloadAdminPayrollPdf,
+  downloadMyPayrollPdf,
 };

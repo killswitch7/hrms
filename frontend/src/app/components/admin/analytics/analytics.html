@@ -4,43 +4,47 @@
   <p *ngIf="loading">Loading analytics...</p>
 
   <div class="metrics" *ngIf="!loading && data">
-    <div class="metric">
-      <span class="name">Active Employees</span>
-      <span class="value">{{ data.activeEmployees }}</span>
+    <div class="metric-card">
+      <div class="metric-head">
+        <span class="name">Total Employees</span>
+        <span class="icon">👥</span>
+      </div>
+      <div class="value">{{ data.totalEmployees }}</div>
+      <p>Active employees</p>
     </div>
-    <div class="metric">
-      <span class="name">Total Employees</span>
-      <span class="value">{{ data.totalEmployees }}</span>
+    <div class="metric-card">
+      <div class="metric-head">
+        <span class="name">Attendance Rate</span>
+        <span class="icon">📈</span>
+      </div>
+      <div class="value">{{ data.attendanceRate }}%</div>
+      <p>Today</p>
     </div>
-    <div class="metric">
-      <span class="name">Present Today</span>
-      <span class="value">{{ data.presentToday }}</span>
+    <div class="metric-card">
+      <div class="metric-head">
+        <span class="name">Present Today</span>
+        <span class="icon">📅</span>
+      </div>
+      <div class="value">{{ data.presentToday }}</div>
+      <p>Checked in</p>
     </div>
-    <div class="metric">
-      <span class="name">Attendance Rate</span>
-      <span class="value">{{ data.attendanceRate }}%</span>
-    </div>
-    <div class="metric">
-      <span class="name">Pending Leaves</span>
-      <span class="value">{{ data.leave.pending }}</span>
-    </div>
-    <div class="metric">
-      <span class="name">Approved Leaves</span>
-      <span class="value">{{ data.leave.approved }}</span>
-    </div>
-    <div class="metric">
-      <span class="name">Rejected Leaves</span>
-      <span class="value">{{ data.leave.rejected }}</span>
+    <div class="metric-card">
+      <div class="metric-head">
+        <span class="name">Pending Leaves</span>
+        <span class="icon">📄</span>
+      </div>
+      <div class="value">{{ data.leave.pending }}</div>
+      <p>Awaiting approval</p>
     </div>
   </div>
 
   <div class="charts" *ngIf="!loading && data">
     <div class="chart-card">
-      <h3>Attendance Overview</h3>
+      <h3>Today's Attendance</h3>
       <div class="chart-wrap">
         <canvas
           baseChart
-          [type]="'doughnut'"
+          [type]="'pie'"
           [data]="attendanceChartData"
           [options]="attendanceChartOptions">
         </canvas>
@@ -48,7 +52,7 @@
     </div>
 
     <div class="chart-card">
-      <h3>Leave Request Summary</h3>
+      <h3>Leave Requests</h3>
       <div class="chart-wrap">
         <canvas
           baseChart

@@ -30,23 +30,31 @@
 
   <section class="panel">
     <div class="filter-row">
-      <select [(ngModel)]="statusFilter">
+      <div class="field status-col">
+        <select [(ngModel)]="statusFilter">
         <option value="">All Status</option>
         <option value="Pending">Pending</option>
         <option value="Approved">Approved</option>
         <option value="Rejected">Rejected</option>
         <option value="Cancelled">Cancelled</option>
-      </select>
-      <input
-        type="text"
-        [(ngModel)]="searchTerm"
-        placeholder="Search by employee id, name, or email"
-      />
-      <input type="date" [(ngModel)]="fromDate" />
-      <input type="date" [(ngModel)]="toDate" />
+        </select>
+      </div>
+      <div class="field search-col">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="Search by employee id, name, or email"
+        />
+      </div>
+      <div class="field date-col">
+        <input type="date" [(ngModel)]="fromDate" />
+      </div>
+      <div class="field date-col">
+        <input type="date" [(ngModel)]="toDate" />
+      </div>
       <div class="filter-actions">
-        <button class="tab-btn active" (click)="applyFilters()">Apply</button>
-        <button class="tab-btn" (click)="clearFilters()">Clear</button>
+        <button class="action-btn action-apply" (click)="applyFilters()">Apply</button>
+        <button class="action-btn action-clear" (click)="clearFilters()">Clear</button>
       </div>
     </div>
   </section>

@@ -22,13 +22,24 @@
 
       <div class="form-group">
         <label>Password</label>
-        <input
-          type="password"
-          [(ngModel)]="password"
-          name="password"
-          required
-          placeholder="Enter your password"
-        />
+        <div class="password-wrap">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            [(ngModel)]="password"
+            name="password"
+            required
+            placeholder="Enter your password"
+          />
+          <button
+            type="button"
+            class="eye-btn"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            [title]="showPassword ? 'Hide password' : 'Show password'"
+          >
+            {{ showPassword ? '🙈' : '👁️' }}
+          </button>
+        </div>
       </div>
 
       <div class="error" *ngIf="error">
@@ -39,7 +50,7 @@
         <a routerLink="/forgot-password">Forgot Password?</a>
       </div>
 
-      <button type="submit" [disabled]="loading">
+      <button type="submit" class="submit-btn" [disabled]="loading">
         {{ loading ? 'Logging in...' : 'Login' }}
       </button>
     </form>

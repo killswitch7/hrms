@@ -1,26 +1,19 @@
-<div class="leave-wfh-container" style="padding-top: 12px;">
-  <div class="page-pad" style="max-width: 1240px; margin: 0 auto; padding: 26px 18px 34px;">
+<div class="leave-wfh-container">
+  <div class="page-pad">
     <div class="page-head">
       <h1>Leave & Work From Home</h1>
       <p>Submit and track leave and WFH requests from one place.</p>
     </div>
 
-    <div class="grid-two" style="display: grid; grid-template-columns: repeat(auto-fit,minmax(420px,1fr)); gap: 16px; align-items: start;">
+    <div class="grid-two">
       <!-- ========== NORMAL LEAVE ========== -->
-      <div
-        class="card form-card"
-        style="border-radius: 18px; border: 1px solid #d7e3f3; box-shadow: 0 10px 24px rgba(15,23,42,0.08); background: rgba(255,255,255,0.95); padding: 16px;"
-      >
+      <div class="card form-card">
         <h2>Request Leave</h2>
 
         <form (ngSubmit)="submitLeave()">
           <div class="form-row">
             <label for="leaveType">Leave Type</label>
-            <select
-              id="leaveType"
-              [(ngModel)]="leaveType"
-              name="leaveType"
-            >
+            <select id="leaveType" [(ngModel)]="leaveType" name="leaveType">
               <option value="Annual">Annual</option>
               <option value="Sick">Sick</option>
               <option value="Casual">Casual</option>
@@ -71,9 +64,7 @@
 
         <h3>My Leave Requests</h3>
 
-        <div *ngIf="loadingLeave && !leaveRequests.length">
-          Loading...
-        </div>
+        <div *ngIf="loadingLeave && !leaveRequests.length">Loading...</div>
 
         <div *ngIf="!loadingLeave && !leaveRequests.length" class="empty-state">
           <p>No leave requests yet.</p>
@@ -98,9 +89,7 @@
                 <td>{{ req.to | date: 'mediumDate' }}</td>
                 <td>{{ req.reason || '-' }}</td>
                 <td>
-                  <span class="status" [ngClass]="req.status?.toLowerCase()">
-                    {{ req.status }}
-                  </span>
+                  <span class="status" [ngClass]="req.status?.toLowerCase()">{{ req.status }}</span>
                 </td>
                 <td>{{ req.createdAt | date: 'short' }}</td>
               </tr>
@@ -110,33 +99,18 @@
       </div>
 
       <!-- ========== WFH ========== -->
-      <div
-        class="card form-card"
-        style="border-radius: 18px; border: 1px solid #d7e3f3; box-shadow: 0 10px 24px rgba(15,23,42,0.08); background: rgba(255,255,255,0.95); padding: 16px;"
-      >
+      <div class="card form-card">
         <h2>Request Work From Home</h2>
 
         <form (ngSubmit)="submitWfh()">
           <div class="form-row">
             <label for="wfhFrom">From Date</label>
-            <input
-              id="wfhFrom"
-              type="date"
-              [(ngModel)]="wfhFromDate"
-              name="wfhFromDate"
-              required
-            />
+            <input id="wfhFrom" type="date" [(ngModel)]="wfhFromDate" name="wfhFromDate" required />
           </div>
 
           <div class="form-row">
             <label for="wfhTo">To Date</label>
-            <input
-              id="wfhTo"
-              type="date"
-              [(ngModel)]="wfhToDate"
-              name="wfhToDate"
-              required
-            />
+            <input id="wfhTo" type="date" [(ngModel)]="wfhToDate" name="wfhToDate" required />
           </div>
 
           <div class="form-row">
@@ -160,9 +134,7 @@
 
         <h3>My WFH Requests</h3>
 
-        <div *ngIf="loadingWfh && !wfhRequests.length">
-          Loading...
-        </div>
+        <div *ngIf="loadingWfh && !wfhRequests.length">Loading...</div>
 
         <div *ngIf="!loadingWfh && !wfhRequests.length" class="empty-state">
           <p>No WFH requests yet.</p>
@@ -185,9 +157,7 @@
                 <td>{{ req.to | date: 'mediumDate' }}</td>
                 <td>{{ req.reason || '-' }}</td>
                 <td>
-                  <span class="status" [ngClass]="req.status?.toLowerCase()">
-                    {{ req.status }}
-                  </span>
+                  <span class="status" [ngClass]="req.status?.toLowerCase()">{{ req.status }}</span>
                 </td>
                 <td>{{ req.createdAt | date: 'short' }}</td>
               </tr>

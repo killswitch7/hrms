@@ -15,6 +15,7 @@ import { AuthService } from '../../../services/auth';
 export class Login {
   email: string = '';
   password: string = '';
+  showPassword: boolean = false;
   error: string = '';
   loading: boolean = false;
 
@@ -22,6 +23,10 @@ export class Login {
     private authService: AuthService,
     private router: Router
   ) {}
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
 
   onLogin() {
     this.error = '';

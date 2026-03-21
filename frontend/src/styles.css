@@ -1,5 +1,109 @@
-/* You can add global styles to this file, and also import other style files */
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
-html, body { height: 100%; }
-body { margin: 0; font-family: "Manrope", "Helvetica Neue", sans-serif; }
+:root {
+  --bg-page: #f3f6fc;
+  --bg-surface: rgba(255, 255, 255, 0.94);
+  --text-main: #0f172a;
+  --text-soft: #475569;
+  --border-main: #d6e2f1;
+  --border-strong: #c1d2e8;
+  --brand: #2563eb;
+  --brand-dark: #1e40af;
+  --danger: #dc2626;
+  --ok: #16a34a;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.08);
+  --shadow-raise: 0 16px 32px rgba(15, 23, 42, 0.12);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Manrope", "Helvetica Neue", sans-serif;
+  font-size: 15px;
+  color: var(--text-main);
+  background:
+    radial-gradient(circle at 10% 4%, rgba(59, 130, 246, 0.16), transparent 28%),
+    radial-gradient(circle at 88% 10%, rgba(20, 184, 166, 0.1), transparent 24%),
+    linear-gradient(180deg, #f8fbff 0%, var(--bg-page) 100%);
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  min-height: 48px;
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: var(--text-main);
+  padding: 9px 12px;
+  font-size: 0.95rem;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+button {
+  border: 1px solid transparent;
+}
+
+.page-shell {
+  min-height: calc(100vh - 84px);
+  padding: 20px 14px 28px;
+}
+
+.page-wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.panel {
+  border: 1px solid var(--border-main);
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}

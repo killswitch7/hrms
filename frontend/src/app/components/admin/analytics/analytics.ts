@@ -9,21 +9,21 @@ import { ChartConfiguration } from 'chart.js';
   standalone: true,
   imports: [CommonModule, BaseChartDirective],
   templateUrl: './analytics.html',
-  styleUrls: ['./analytics.css'],
+  styleUrl: './analytics-page.css',
 })
 export class Analytics {
   data: AdminAnalytics | null = null;
   loading = false;
   error = '';
-  attendanceChartData: ChartConfiguration<'doughnut'>['data'] = {
-    labels: ['Present', 'Absent'],
+  attendanceChartData: ChartConfiguration<'pie'>['data'] = {
+    labels: ['Absent', 'Present'],
     datasets: [{ data: [0, 0] }],
   };
   leaveChartData: ChartConfiguration<'bar'>['data'] = {
-    labels: ['Pending', 'Approved', 'Rejected'],
-    datasets: [{ label: 'Leave Requests', data: [0, 0, 0] }],
+    labels: ['Pending', 'Approved'],
+    datasets: [{ label: 'Leave Requests', data: [0, 0] }],
   };
-  readonly attendanceChartOptions: ChartConfiguration<'doughnut'>['options'] = {
+  readonly attendanceChartOptions: ChartConfiguration<'pie'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { position: 'bottom' } },
@@ -60,27 +60,26 @@ export class Analytics {
     const absent = Math.max(0, total - present);
 
     this.attendanceChartData = {
-      labels: ['Present', 'Absent'],
+      labels: ['Absent', 'Present'],
       datasets: [
         {
-          data: [present, absent],
-          backgroundColor: ['#22c55e', '#ef4444'],
+          data: [absent, present],
+          backgroundColor: ['#ef4444', '#10b981'],
           borderWidth: 0,
         },
       ],
     };
 
     this.leaveChartData = {
-      labels: ['Pending', 'Approved', 'Rejected'],
+      labels: ['Pending', 'Approved'],
       datasets: [
         {
           label: 'Leave Requests',
           data: [
             this.data.leave.pending || 0,
             this.data.leave.approved || 0,
-            this.data.leave.rejected || 0,
           ],
-          backgroundColor: ['#f59e0b', '#16a34a', '#dc2626'],
+          backgroundColor: ['#f59e0b', '#2563eb'],
           borderRadius: 8,
         },
       ],

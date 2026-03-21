@@ -50,6 +50,13 @@ export class DocumentsService {
     return this.http.get<{ data: { html: string; type: string } }>(`${this.getSelfBase()}/${id}/view`);
   }
 
+  downloadMyApprovedDocument(id: string) {
+    return this.http.get(`${this.getSelfBase()}/${id}/download`, {
+      responseType: 'blob',
+      observe: 'response',
+    });
+  }
+
   getAdminRequests(params?: { status?: string; role?: string; search?: string }) {
     const qs = new URLSearchParams();
     if (params?.status) qs.set('status', params.status);
@@ -69,5 +76,12 @@ export class DocumentsService {
 
   viewApprovedDocument(id: string) {
     return this.http.get<{ data: { html: string; type: string } }>(`${this.getAdminBase()}/${id}/view`);
+  }
+
+  downloadApprovedDocument(id: string) {
+    return this.http.get(`${this.getAdminBase()}/${id}/download`, {
+      responseType: 'blob',
+      observe: 'response',
+    });
   }
 }

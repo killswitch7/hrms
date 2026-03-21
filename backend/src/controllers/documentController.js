@@ -8,6 +8,7 @@ const DocumentRequest = require('../models/DocumentRequest');
 const Employee = require('../models/Employee');
 const { getOrCreateEmployeeForUser } = require('./employeeController');
 const { renderDocumentHtml } = require('../services/pdfService');
+const { htmlToPdfBuffer } = require('../services/htmlPdfService');
 
 const allowedTypes = [
   'Experience Letter',
@@ -199,13 +200,74 @@ async function getMyApprovedDocumentHtml(req, res) {
   }
 }
 
+// Admin download generated document as PDF
+async function downloadApprovedDocumentPdf(req, res) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid request id.' });
+    }
+    const doc = await DocumentRequest.findById(id).populate(
+      'employee',
+      'employeeId firstName lastName'
+    );
+    if (!doc) return res.status(404).json({ message: 'Request not found.' });
+    if (doc.status !== 'Approved' || !doc.generatedHtml) {
+      return res.status(400).json({ message: 'Document is not generated yet.' });
+    }
+
+    const pdf = await htmlToPdfBuffer(doc.generatedHtml);
+    const safeType = String(doc.type || 'Document').replace(/[^a-zA-Z0-9]+/g, '-');
+    const safeId = doc?.employee?.employeeId || 'EMP';
+    const filename = `${safeType}-${safeId}.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.send(pdf);
+  } catch (err) {
+    console.error('downloadApprovedDocumentPdf error:', err);
+    return res.status(500).json({ message: 'Failed to generate PDF. Install puppeteer in backend.' });
+  }
+}
+
+// Employee/manager download own approved document as PDF
+async function downloadMyApprovedDocumentPdf(req, res) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid request id.' });
+    }
+
+    const employee = await getOrCreateEmployeeForUser(req.user);
+    const doc = await DocumentRequest.findOne({ _id: id, employee: employee._id });
+    if (!doc) return res.status(404).json({ message: 'Request not found.' });
+    if (doc.status !== 'Approved' || !doc.generatedHtml) {
+      return res.status(400).json({ message: 'Document is not generated yet.' });
+    }
+
+    const pdf = await htmlToPdfBuffer(doc.generatedHtml);
+    const safeType = String(doc.type || 'Document').replace(/[^a-zA-Z0-9]+/g, '-');
+    const safeId = employee?.employeeId || 'EMP';
+    const filename = `${safeType}-${safeId}.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.send(pdf);
+  } catch (err) {
+    console.error('downloadMyApprovedDocumentPdf error:', err);
+    return res.status(500).json({ message: 'Failed to generate PDF. Install puppeteer in backend.' });
+  }
+}
+
 module.exports = {
   allowedTypes,
   createMyDocumentRequest,
   getMyDocumentRequests,
   getMyApprovedDocumentHtml,
+  downloadMyApprovedDocumentPdf,
   getAdminDocumentRequests,
   approveDocumentRequest,
   rejectDocumentRequest,
   getApprovedDocumentHtml,
+  downloadApprovedDocumentPdf,
 };

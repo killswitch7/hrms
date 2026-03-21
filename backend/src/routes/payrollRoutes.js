@@ -10,6 +10,8 @@ const {
   calculatePayroll,
   getAdminPayrollHtml,
   getMyPayrollHtml,
+  downloadAdminPayrollPdf,
+  downloadMyPayrollPdf,
 } = require('../controllers/payrollController');
 
 const adminPayrollRouter = express.Router();
@@ -18,10 +20,12 @@ adminPayrollRouter.post('/', createPayroll);
 adminPayrollRouter.get('/tax-config', getTaxConfig);
 adminPayrollRouter.post('/calculate', calculatePayroll);
 adminPayrollRouter.get('/:id/html', getAdminPayrollHtml);
+adminPayrollRouter.get('/:id/download', downloadAdminPayrollPdf);
 
 const employeePayrollRouter = express.Router();
 employeePayrollRouter.get('/', getMyPayrolls);
 employeePayrollRouter.get('/:id/html', getMyPayrollHtml);
+employeePayrollRouter.get('/:id/download', downloadMyPayrollPdf);
 
 module.exports = {
   adminPayrollRouter,
