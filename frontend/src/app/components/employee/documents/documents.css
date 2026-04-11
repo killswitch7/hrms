@@ -49,6 +49,10 @@ input {
   color: #b91c1c;
 }
 
+.warning {
+  color: #b45309;
+}
+
 .success {
   color: #166534;
 }

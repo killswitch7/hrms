@@ -17,6 +17,7 @@ export class Login {
   password: string = '';
   showPassword: boolean = false;
   error: string = '';
+  warning: string = '';
   loading: boolean = false;
 
   constructor(
@@ -30,9 +31,21 @@ export class Login {
 
   onLogin() {
     this.error = '';
+    this.warning = '';
 
     if (!this.email || !this.password) {
-      this.error = 'Please enter both email and password.';
+      this.warning = 'Please enter both email and password.';
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.email.trim())) {
+      this.warning = 'Please enter a valid email address.';
+      return;
+    }
+
+    if (this.password.trim().length < 6) {
+      this.warning = 'Password must be at least 6 characters.';
       return;
     }
 

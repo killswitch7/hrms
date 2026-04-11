@@ -8,7 +8,7 @@
       </div>
     </div>
 
-    <form (ngSubmit)="onLogin()">
+    <form (ngSubmit)="onLogin()" #loginForm="ngForm">
       <div class="form-group">
         <label>Email</label>
         <input
@@ -16,6 +16,8 @@
           [(ngModel)]="email"
           name="email"
           required
+          email
+          maxlength="120"
           placeholder="Enter your email"
         />
       </div>
@@ -28,6 +30,8 @@
             [(ngModel)]="password"
             name="password"
             required
+            minlength="6"
+            maxlength="64"
             placeholder="Enter your password"
           />
           <button
@@ -42,6 +46,10 @@
         </div>
       </div>
 
+      <div class="warning" *ngIf="warning">
+        {{ warning }}
+      </div>
+
       <div class="error" *ngIf="error">
         {{ error }}
       </div>
@@ -50,7 +58,7 @@
         <a routerLink="/forgot-password">Forgot Password?</a>
       </div>
 
-      <button type="submit" class="submit-btn" [disabled]="loading">
+      <button type="submit" class="submit-btn" [disabled]="loading || !loginForm.form.valid">
         {{ loading ? 'Logging in...' : 'Login' }}
       </button>
     </form>

@@ -10,6 +10,8 @@
         type="text"
         [(ngModel)]="name"
         required
+        minlength="2"
+        maxlength="80"
         placeholder="Enter full name"
       />
     </div>
@@ -22,6 +24,8 @@
         type="email"
         [(ngModel)]="email"
         required
+        email
+        maxlength="120"
         placeholder="Enter email"
       />
     </div>
@@ -34,6 +38,8 @@
         type="password"
         [(ngModel)]="password"
         required
+        minlength="6"
+        maxlength="64"
         placeholder="Set login password"
       />
     </div>
@@ -45,6 +51,8 @@
         name="phone"
         type="text"
         [(ngModel)]="phone"
+        minlength="7"
+        maxlength="20"
         placeholder="Enter phone number"
       />
     </div>
@@ -76,6 +84,7 @@
         name="position"
         type="text"
         [(ngModel)]="position"
+        maxlength="80"
         placeholder="e.g. Software Engineer"
       />
     </div>
@@ -87,6 +96,7 @@
         name="annualSalary"
         type="number"
         [(ngModel)]="annualSalary"
+        required
         min="0"
         placeholder="Enter annual salary in NPR"
       />
@@ -105,6 +115,7 @@
     </button>
 
     <p class="success" *ngIf="success">{{ success }}</p>
+    <p class="warning" *ngIf="warning">{{ warning }}</p>
     <p class="error" *ngIf="error">{{ error }}</p>
   </form>
 

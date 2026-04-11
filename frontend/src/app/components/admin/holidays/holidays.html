@@ -1,11 +1,13 @@
 <div class="page-shell">
   <h2 class="page-title">Holiday Management</h2>
+  <p class="warning" *ngIf="warning">{{ warning }}</p>
   <p class="error" *ngIf="error">{{ error }}</p>
+  <p class="success" *ngIf="success">{{ success }}</p>
 
   <section class="panel form-panel" *ngIf="!isManager">
     <h3>Add Holiday</h3>
     <div class="form-grid">
-      <input type="text" [(ngModel)]="name" placeholder="Holiday name" />
+      <input type="text" [(ngModel)]="name" minlength="2" maxlength="80" placeholder="Holiday name" />
       <input type="date" [(ngModel)]="startDate" />
       <input type="date" [(ngModel)]="endDate" placeholder="End date (optional)" />
       <select [(ngModel)]="type">
@@ -14,7 +16,7 @@
         <option value="Optional">Optional</option>
         <option value="Festival">Festival</option>
       </select>
-      <textarea [(ngModel)]="description" rows="3" placeholder="Description (optional)"></textarea>
+      <textarea [(ngModel)]="description" maxlength="300" rows="3" placeholder="Description (optional)"></textarea>
     </div>
     <button class="btn primary" type="button" (click)="addHoliday()" [disabled]="loading">
       Add Holiday

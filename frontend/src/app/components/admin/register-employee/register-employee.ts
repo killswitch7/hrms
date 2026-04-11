@@ -26,6 +26,7 @@ export class RegisterEmployee {
   departments: DepartmentItem[] = [];
 
   error = '';
+  warning = '';
   success = '';
   loading = false;
 
@@ -52,18 +53,28 @@ export class RegisterEmployee {
 
   onSubmit() {
     this.error = '';
+    this.warning = '';
     this.success = '';
 
     if (!this.name || !this.email || !this.password) {
-      this.error = 'Name, email and password are required.';
+      this.warning = 'Name, email and password are required.';
+      return;
+    }
+    if (this.password.trim().length < 6) {
+      this.warning = 'Password must be at least 6 characters.';
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.email.trim())) {
+      this.warning = 'Please enter a valid email address.';
       return;
     }
     if (!this.department) {
-      this.error = 'Please select a department.';
+      this.warning = 'Please select a department.';
       return;
     }
     if (!Number(this.annualSalary)) {
-      this.error = 'Please enter annual salary.';
+      this.warning = 'Please enter annual salary.';
       return;
     }
 

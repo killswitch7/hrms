@@ -154,4 +154,15 @@ export class Admin {
         )
       );
   }
+
+  deleteDepartment(id: string): Observable<{ message: string }> {
+    // Same fallback logic for delete.
+    return this.http
+      .delete<{ message: string }>(`${this.apiRoot}/departments/${id}`)
+      .pipe(
+        catchError(() =>
+          this.http.delete<{ message: string }>(`${this.apiRoot}/admin/departments/${id}`)
+        )
+      );
+  }
 }

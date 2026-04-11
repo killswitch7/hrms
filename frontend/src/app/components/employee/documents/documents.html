@@ -7,9 +7,10 @@
       <select [(ngModel)]="type">
         <option *ngFor="let t of types" [value]="t">{{ t }}</option>
       </select>
-      <input [(ngModel)]="purpose" type="text" placeholder="Purpose (optional)" />
+      <input [(ngModel)]="purpose" type="text" maxlength="180" placeholder="Purpose (optional)" />
       <button class="btn" (click)="submitRequest()" [disabled]="loading">Submit</button>
     </div>
+    <p class="warning" *ngIf="warning">{{ warning }}</p>
     <p class="error" *ngIf="error">{{ error }}</p>
     <p class="success" *ngIf="success">{{ success }}</p>
   </section>

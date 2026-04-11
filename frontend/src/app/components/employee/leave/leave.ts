@@ -24,6 +24,7 @@ export class Leave implements OnInit {
   leaveRequests: LeaveRequest[] = [];
   loadingLeave: boolean = false;
   errorLeave: string = '';
+  warningLeave: string = '';
   successLeave: string = '';
 
   // WFH form model
@@ -34,6 +35,7 @@ export class Leave implements OnInit {
   wfhRequests: WfhRequest[] = [];
   loadingWfh: boolean = false;
   errorWfh: string = '';
+  warningWfh: string = '';
   successWfh: string = '';
 
   constructor(private leaveService: LeaveService) {}
@@ -82,10 +84,19 @@ export class Leave implements OnInit {
   // Submit leave form
   submitLeave() {
     this.errorLeave = '';
+    this.warningLeave = '';
     this.successLeave = '';
 
     if (!this.leaveFromDate || !this.leaveToDate) {
-      this.errorLeave = 'Please select both from and to dates for leave.';
+      this.warningLeave = 'Please select both from and to dates for leave.';
+      return;
+    }
+    if (this.leaveToDate < this.leaveFromDate) {
+      this.warningLeave = 'Leave "To Date" cannot be before "From Date".';
+      return;
+    }
+    if ((this.leaveReason || '').trim().length > 250) {
+      this.warningLeave = 'Leave reason is too long. Please keep it under 250 characters.';
       return;
     }
 
@@ -96,7 +107,7 @@ export class Leave implements OnInit {
         from: this.leaveFromDate,
         to: this.leaveToDate,
         type: this.leaveType,
-        reason: this.leaveReason,
+        reason: this.leaveReason.trim(),
       })
       .subscribe({
         next: (res) => {
@@ -123,10 +134,19 @@ export class Leave implements OnInit {
   // Submit WFH form
   submitWfh() {
     this.errorWfh = '';
+    this.warningWfh = '';
     this.successWfh = '';
 
     if (!this.wfhFromDate || !this.wfhToDate) {
-      this.errorWfh = 'Please select both from and to dates for WFH.';
+      this.warningWfh = 'Please select both from and to dates for WFH.';
+      return;
+    }
+    if (this.wfhToDate < this.wfhFromDate) {
+      this.warningWfh = 'WFH "To Date" cannot be before "From Date".';
+      return;
+    }
+    if ((this.wfhReason || '').trim().length > 250) {
+      this.warningWfh = 'WFH reason is too long. Please keep it under 250 characters.';
       return;
     }
 
@@ -136,7 +156,7 @@ export class Leave implements OnInit {
       .createWfh({
         from: this.wfhFromDate,
         to: this.wfhToDate,
-        reason: this.wfhReason,
+        reason: this.wfhReason.trim(),
       })
       .subscribe({
         next: (res) => {

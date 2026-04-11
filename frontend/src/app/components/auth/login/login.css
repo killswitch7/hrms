@@ -157,6 +157,12 @@ input:-webkit-autofill:focus {
   margin-bottom: 10px;
 }
 
+.warning {
+  color: #b45309;
+  font-size: 0.82rem;
+  margin-bottom: 10px;
+}
+
 .forgot-row {
   margin: -2px 0 12px;
   text-align: right;

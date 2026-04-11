@@ -49,6 +49,7 @@
               id="leaveReason"
               [(ngModel)]="leaveReason"
               name="leaveReason"
+              maxlength="250"
               rows="3"
               placeholder="Explain why you need leave"
             ></textarea>
@@ -58,6 +59,7 @@
             {{ loadingLeave ? 'Submitting...' : 'Submit Leave Request' }}
           </button>
 
+          <p class="warning" *ngIf="warningLeave">{{ warningLeave }}</p>
           <p class="error" *ngIf="errorLeave">{{ errorLeave }}</p>
           <p class="success" *ngIf="successLeave">{{ successLeave }}</p>
         </form>
@@ -119,6 +121,7 @@
               id="wfhReason"
               [(ngModel)]="wfhReason"
               name="wfhReason"
+              maxlength="250"
               rows="3"
               placeholder="Describe why you are requesting WFH"
             ></textarea>
@@ -128,6 +131,7 @@
             {{ loadingWfh ? 'Submitting...' : 'Submit WFH Request' }}
           </button>
 
+          <p class="warning" *ngIf="warningWfh">{{ warningWfh }}</p>
           <p class="error" *ngIf="errorWfh">{{ errorWfh }}</p>
           <p class="success" *ngIf="successWfh">{{ successWfh }}</p>
         </form>

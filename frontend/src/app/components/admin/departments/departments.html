@@ -1,6 +1,8 @@
 <div class="page-shell">
   <h1>Departments</h1>
+  <p class="warning" *ngIf="warning">{{ warning }}</p>
   <p class="error" *ngIf="error">{{ error }}</p>
+  <p class="success" *ngIf="success">{{ success }}</p>
 
   <section class="panel">
     <h2>Add Department</h2>
@@ -9,6 +11,8 @@
         class="dept-input"
         type="text"
         [(ngModel)]="name"
+        minlength="2"
+        maxlength="40"
         placeholder="Department name"
       />
       <button
@@ -27,6 +31,14 @@
     <p *ngIf="loading">Loading departments...</p>
     <div class="item" *ngFor="let d of departments">
       <strong>{{ d.name }}</strong>
+      <button
+        class="dept-delete-btn"
+        type="button"
+        (click)="deleteDepartment(d._id, d.name)"
+        [disabled]="loading"
+      >
+        Delete
+      </button>
     </div>
     <p *ngIf="!loading && !departments.length">No departments found.</p>
   </section>

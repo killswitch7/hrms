@@ -153,6 +153,18 @@ textarea:focus {
   font-weight: 500;
 }
 
+.warning {
+  margin: 0 0 10px;
+  color: #b45309;
+  font-weight: 500;
+}
+
+.success {
+  margin: 0 0 10px;
+  color: #166534;
+  font-weight: 500;
+}
+
 @media (max-width: 900px) {
   .page-shell {
     padding: 20px 14px 28px;

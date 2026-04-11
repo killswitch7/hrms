@@ -126,6 +126,10 @@ async function notifyTerminationAction({
   employeeEmail = '',
   employeeId = '-',
 }) {
+  // Simple fixed reasons written clearly for official emails.
+  const fireReason = 'This decision was made after internal policy review and repeated performance concerns.';
+  const layoffReason = 'This decision is due to organizational restructuring and current business needs.';
+
   const humanAction = action === 'fire' ? 'Termination Notice' : 'Layoff Notice';
   const subject = `[HRMS] ${humanAction} - ${employeeName}`;
   const text =
@@ -134,8 +138,8 @@ async function notifyTerminationAction({
     `Employee ID: ${employeeId}\n` +
     `Email: ${employeeEmail}\n\n` +
     (action === 'fire'
-      ? 'Your employment has been terminated effective immediately.'
-      : 'Your employment status has been changed to laid off.');
+      ? `Your employment has been terminated effective immediately.\nReason: ${fireReason}`
+      : `Your employment status has been changed to laid off.\nReason: ${layoffReason}`);
 
   const html = `
     <h3>${humanAction}</h3>
@@ -147,6 +151,7 @@ async function notifyTerminationAction({
         ? 'Your employment has been terminated effective immediately.'
         : 'Your employment status has been changed to <b>laid off</b>.'
     }</p>
+    <p><b>Reason:</b> ${action === 'fire' ? fireReason : layoffReason}</p>
   `;
 
   // Send to employee's own email.

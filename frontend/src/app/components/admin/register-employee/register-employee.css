@@ -88,6 +88,11 @@ button[disabled] {
   color: #b91c1c;
 }
 
+.warning {
+  margin: 4px 0 0;
+  color: #b45309;
+}
+
 .back-btn {
   margin-top: 14px;
   background: transparent;

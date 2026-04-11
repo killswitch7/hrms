@@ -166,6 +166,11 @@ h3 {
   color: #b91c1c;
 }
 
+.warning {
+  margin-top: 8px;
+  color: #b45309;
+}
+
 .success {
   margin-top: 8px;
   color: #166534;

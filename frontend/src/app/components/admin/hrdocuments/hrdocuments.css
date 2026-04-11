@@ -36,8 +36,10 @@ select {
 }
 
 .btn.mini {
-  padding: 6px 10px;
-  font-size: 12px;
+  padding: 7px 12px;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .btn.danger {
@@ -70,14 +72,20 @@ td {
 }
 
 .action-cell {
-  width: 120px;
+  width: 190px;
+  min-width: 190px;
 }
 
 .action-wrap {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: flex-start;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.action-wrap .btn {
+  min-width: 130px;
+  text-align: center;
 }
 
 .doc-frame {

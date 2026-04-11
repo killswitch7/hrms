@@ -26,6 +26,7 @@ import { AvatarService } from './services/avatar';
 
         <div class="actions">
           <button class="btn ghost" (click)="goToProfile()">Profile</button>
+          <button class="btn ghost" (click)="goToDashboard()">Dashboard</button>
           <button class="btn ghost" (click)="goToMain()"> {{ mainLabel }} </button>
           <button class="btn primary" (click)="logout()">Logout</button>
         </div>
@@ -83,6 +84,12 @@ export class App {
 
   goToProfile() {
     this.router.navigate([this.role === 'admin' || this.role === 'manager' ? '/admin-profile' : '/employee-profile']);
+  }
+
+  goToDashboard() {
+    if (this.role === 'admin') return this.router.navigate(['/admin-dashboard']);
+    if (this.role === 'manager') return this.router.navigate(['/manager-dashboard']);
+    return this.router.navigate(['/dashboard']);
   }
 
   goToMain() {

@@ -14,6 +14,7 @@ export class EmployeeDocuments {
   requests: DocumentRequestItem[] = [];
   loading = false;
   error = '';
+  warning = '';
   success = '';
   selectedHtml = '';
   selectedType = '';
@@ -51,10 +52,21 @@ export class EmployeeDocuments {
 
   submitRequest() {
     this.error = '';
+    this.warning = '';
     this.success = '';
+    const cleanType = String(this.type || '').trim();
+    const cleanPurpose = String(this.purpose || '').trim();
+    if (!cleanType) {
+      this.warning = 'Please select a document type.';
+      return;
+    }
+    if (cleanPurpose.length > 180) {
+      this.warning = 'Purpose is too long. Please keep it under 180 characters.';
+      return;
+    }
     this.loading = true;
     this.documentsService
-      .createMyRequest({ type: this.type, purpose: this.purpose })
+      .createMyRequest({ type: cleanType, purpose: cleanPurpose })
       .subscribe({
         next: (res) => {
           this.success = res.message || 'Request submitted';
