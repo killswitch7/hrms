@@ -35,6 +35,13 @@ export class Payroll implements OnInit {
     grossPay: 0,
     taxDeduction: 0,
     otherDeductions: 0,
+    attendanceDaysInMonth: 0,
+    presentDays: 0,
+    absentDays: 0,
+    leaveDays: 0,
+    wfhDays: 0,
+    perDaySalary: 0,
+    attendanceDeduction: 0,
     deductions: 0,
     netPay: 0,
     annualTaxableIncome: 0,
@@ -110,6 +117,13 @@ export class Payroll implements OnInit {
           this.preview.grossPay = data.grossPay || 0;
           this.preview.taxDeduction = data.taxDeduction || 0;
           this.preview.otherDeductions = data.otherDeductions || 0;
+          this.preview.attendanceDaysInMonth = data.attendanceDaysInMonth || 0;
+          this.preview.presentDays = data.presentDays || 0;
+          this.preview.absentDays = data.absentDays || 0;
+          this.preview.leaveDays = data.leaveDays || 0;
+          this.preview.wfhDays = data.wfhDays || 0;
+          this.preview.perDaySalary = data.perDaySalary || 0;
+          this.preview.attendanceDeduction = data.attendanceDeduction || 0;
           this.preview.deductions = data.deductions || 0;
           this.preview.netPay = data.netPay || 0;
           this.preview.annualTaxableIncome = data.taxMeta?.annualTaxableIncome || 0;

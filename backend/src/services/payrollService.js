@@ -109,11 +109,18 @@ function renderPayslipHtml({ employee, payroll, month }) {
     monthlyGross: formatCurrency(payroll.grossPay),
     taxDeduction: formatCurrency(payroll.taxDeduction),
     otherDeductions: formatCurrency(payroll.otherDeductions),
+    attendanceDeduction: formatCurrency(payroll.attendanceDeduction || 0),
     totalDeductions: formatCurrency(payroll.deductions),
     netPay: formatCurrency(payroll.netPay),
     filingStatus: payroll.filingStatus,
     annualTax: formatCurrency(payroll.taxMeta?.annualTax || 0),
     status: payroll.status || 'Processed',
+    daysInMonth: Number(payroll.attendanceDaysInMonth || 0),
+    presentDays: Number(payroll.presentDays || 0),
+    absentDays: Number(payroll.absentDays || 0),
+    leaveDays: Number(payroll.leaveDays || 0),
+    wfhDays: Number(payroll.wfhDays || 0),
+    perDaySalary: formatCurrency(payroll.perDaySalary || 0),
   };
 
   return replacePlaceholders(template, payload);

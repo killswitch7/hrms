@@ -18,6 +18,13 @@ const payrollSchema = new mongoose.Schema(
     deductions: { type: Number, default: 0 }, // total deductions (tax + other)
     taxDeduction: { type: Number, default: 0 },
     otherDeductions: { type: Number, default: 0 },
+    attendanceDaysInMonth: { type: Number, default: 0 },
+    presentDays: { type: Number, default: 0 },
+    absentDays: { type: Number, default: 0 },
+    leaveDays: { type: Number, default: 0 },
+    wfhDays: { type: Number, default: 0 },
+    perDaySalary: { type: Number, default: 0 },
+    attendanceDeduction: { type: Number, default: 0 },
     grossPay: { type: Number, default: 0 },
     filingStatus: {
       type: String,

@@ -38,6 +38,7 @@
           <th>Gross (Monthly)</th>
           <th>Tax</th>
           <th>Other Ded.</th>
+          <th>Absent Ded.</th>
           <th>Net Pay</th>
           <th>Status</th>
           <th>Action</th>
@@ -50,6 +51,7 @@
           <td>{{ (p.grossPay || 0) | number:'1.0-0' }}</td>
           <td>{{ (p.taxDeduction || 0) | number:'1.0-0' }}</td>
           <td>{{ (p.otherDeductions || 0) | number:'1.0-0' }}</td>
+          <td>{{ (p.attendanceDeduction || 0) | number:'1.0-0' }}</td>
           <td>{{ p.netPay | number:'1.0-0' }}</td>
           <td>
             <span class="status-chip">{{ p.status || '-' }}</span>

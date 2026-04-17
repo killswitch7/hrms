@@ -7,6 +7,7 @@
 const mongoose = require('mongoose');
 const Payroll = require('../models/Payroll');
 const Employee = require('../models/Employee');
+const Attendance = require('../models/Attendance');
 const { getOrCreateEmployeeForUser } = require('./employeeController');
 const { NEPAL_TAX_SLABS, normalizeFilingStatus, calculateMonthlyPayrollFromAnnual, renderPayslipHtml } = require('../services/payrollService');
 const { notifyPayslipDone } = require('../services/mailService');
@@ -22,13 +23,80 @@ async function getEmployeeOr404(employeeId) {
   return Employee.findById(employeeId).populate('user', 'name email role');
 }
 
-function buildPayrollFromEmployee(employee, month, filingStatus, otherDeductions, status) {
+function getMonthDateRange(month) {
+  // month format: YYYY-MM
+  const safeMonth = String(month || '').trim();
+  if (!/^\d{4}-\d{2}$/.test(safeMonth)) {
+    const now = new Date();
+    return {
+      month: now.toISOString().slice(0, 7),
+      start: new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0),
+      end: new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0),
+      daysInMonth: new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(),
+    };
+  }
+
+  const [yearStr, monthStr] = safeMonth.split('-');
+  const year = Number(yearStr);
+  const monthIndex = Number(monthStr) - 1;
+  const start = new Date(year, monthIndex, 1, 0, 0, 0, 0);
+  const end = new Date(year, monthIndex + 1, 1, 0, 0, 0, 0);
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+  return { month: safeMonth, start, end, daysInMonth };
+}
+
+async function getAttendanceSummary(employeeId, month) {
+  const { start, end, daysInMonth } = getMonthDateRange(month);
+
+  const stats = await Attendance.aggregate([
+    {
+      $match: {
+        employee: employeeId,
+        date: { $gte: start, $lt: end },
+      },
+    },
+    {
+      $group: {
+        _id: '$status',
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const summary = {
+    daysInMonth,
+    presentDays: 0,
+    absentDays: 0,
+    leaveDays: 0,
+    wfhDays: 0,
+  };
+
+  stats.forEach((row) => {
+    if (row._id === 'Present') summary.presentDays = row.count;
+    if (row._id === 'Absent') summary.absentDays = row.count;
+    if (row._id === 'Leave') summary.leaveDays = row.count;
+    if (row._id === 'WFH') summary.wfhDays = row.count;
+  });
+
+  return summary;
+}
+
+async function buildPayrollFromEmployee(employee, month, filingStatus, otherDeductions, status) {
   const annualSalaryFromProfile = Number(employee.annualSalary || 0) || Math.round(Number(employee.baseSalary || 0) * 12);
   const computed = calculateMonthlyPayrollFromAnnual({
     annualSalary: annualSalaryFromProfile,
     filingStatus: filingStatus || employee.filingStatus || 'unmarried',
     otherDeductions,
   });
+  const attendance = await getAttendanceSummary(employee._id, month);
+
+  // Student-level logic:
+  // If employee is marked absent, we cut salary for those absent days.
+  const perDaySalary = attendance.daysInMonth > 0 ? Math.round(computed.grossPay / attendance.daysInMonth) : 0;
+  const attendanceDeduction = Math.max(0, perDaySalary * attendance.absentDays);
+  const totalDeductions = computed.deductions + attendanceDeduction;
+  const netPay = Math.max(0, computed.grossPay - totalDeductions);
 
   const row = {
     employee: employee._id,
@@ -40,8 +108,15 @@ function buildPayrollFromEmployee(employee, month, filingStatus, otherDeductions
     filingStatus: computed.filingStatus,
     taxDeduction: computed.taxDeduction,
     otherDeductions: computed.otherDeductions,
-    deductions: computed.deductions,
-    netPay: computed.netPay,
+    attendanceDaysInMonth: attendance.daysInMonth,
+    presentDays: attendance.presentDays,
+    absentDays: attendance.absentDays,
+    leaveDays: attendance.leaveDays,
+    wfhDays: attendance.wfhDays,
+    perDaySalary,
+    attendanceDeduction,
+    deductions: totalDeductions,
+    netPay,
     taxMeta: computed.taxMeta,
     status: status || 'Processed',
   };
@@ -82,7 +157,7 @@ async function calculatePayroll(req, res) {
 
     const previewMonth = String(month || '').trim() || new Date().toISOString().slice(0, 7);
     const safeFiling = filingStatus ? normalizeFilingStatus(filingStatus) : employee.filingStatus || 'unmarried';
-    const payload = buildPayrollFromEmployee(
+    const payload = await buildPayrollFromEmployee(
       employee,
       previewMonth,
       safeFiling,
@@ -149,7 +224,7 @@ async function createPayroll(req, res) {
     }
 
     const safeFiling = filingStatus ? normalizeFilingStatus(filingStatus) : employee.filingStatus || 'unmarried';
-    const row = buildPayrollFromEmployee(
+    const row = await buildPayrollFromEmployee(
       employee,
       String(month).trim(),
       safeFiling,

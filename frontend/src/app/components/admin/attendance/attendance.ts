@@ -23,6 +23,8 @@ export class AdminAttendance implements OnInit {
   filterTo: string = '';
   filterEmployeeId: string = '';
   filterRole: string = '';
+  currentPage = 1;
+  pageSize = 10;
 
   constructor(private attendanceService: AttendanceService) {}
 
@@ -47,6 +49,7 @@ export class AdminAttendance implements OnInit {
       .subscribe({
         next: (res) => {
           this.records = res.data || [];
+          this.currentPage = 1; // reset page when data changes
           this.loading = false;
         },
         error: (err) => {
@@ -67,5 +70,28 @@ export class AdminAttendance implements OnInit {
     this.filterEmployeeId = '';
     this.filterRole = '';
     this.loadAttendance();
+  }
+
+  get totalPages(): number {
+    const pages = Math.ceil(this.records.length / this.pageSize);
+    return pages > 0 ? pages : 1;
+  }
+
+  get paginatedRecords(): AttendanceRecord[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.records.slice(start, end);
+  }
+
+  goToPrevPage() {
+    if (this.currentPage > 1) this.currentPage -= 1;
+  }
+
+  goToNextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage += 1;
+  }
+
+  onPageSizeChange() {
+    this.currentPage = 1;
   }
 }

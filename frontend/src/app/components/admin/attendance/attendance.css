@@ -61,6 +61,11 @@ h1 {
   background: #0f172a;
 }
 
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .attendance-table {
   width: 100%;
   border-collapse: collapse;
@@ -97,4 +102,32 @@ h1 {
 .status-pill.absent {
   background: #fee2e2;
   color: #991b1b;
+}
+
+.pagination-wrap {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pagination-left,
+.pagination-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-left label,
+.pagination-right span {
+  color: #475569;
+  font-weight: 600;
+}
+
+.pagination-left select {
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
 }

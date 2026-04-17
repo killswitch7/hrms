@@ -58,7 +58,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let r of records">
+        <tr *ngFor="let r of paginatedRecords">
           <td>{{ r.date | date: 'mediumDate' }}</td>
           <td>
             {{ r.employee?.employeeId }}<br />
@@ -79,6 +79,44 @@
         </tr>
       </tbody>
     </table>
+
+    <div class="pagination-wrap" *ngIf="!loading && records.length">
+      <div class="pagination-left">
+        <label for="pageSize">Rows per page</label>
+        <select
+          id="pageSize"
+          [(ngModel)]="pageSize"
+          (ngModelChange)="onPageSizeChange()"
+        >
+          <option [ngValue]="5">5</option>
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="20">20</option>
+          <option [ngValue]="50">50</option>
+        </select>
+      </div>
+
+      <div class="pagination-right">
+        <span>
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+        <button
+          class="btn secondary"
+          type="button"
+          (click)="goToPrevPage()"
+          [disabled]="currentPage === 1"
+        >
+          Previous
+        </button>
+        <button
+          class="btn secondary"
+          type="button"
+          (click)="goToNextPage()"
+          [disabled]="currentPage === totalPages"
+        >
+          Next
+        </button>
+      </div>
+    </div>
 
     <div *ngIf="!loading && !records.length">
       <p>No attendance logs found for the selected filters.</p>

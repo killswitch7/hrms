@@ -46,6 +46,10 @@
       <div><label>Monthly Gross</label><span>{{ preview.grossPay | number:'1.0-0' }}</span></div>
       <div><label>Monthly Tax</label><span>{{ preview.taxDeduction | number:'1.0-0' }}</span></div>
       <div><label>Other Deductions</label><span>{{ preview.otherDeductions | number:'1.0-0' }}</span></div>
+      <div><label>Days In Month</label><span>{{ preview.attendanceDaysInMonth }}</span></div>
+      <div><label>Present / Absent</label><span>{{ preview.presentDays }} / {{ preview.absentDays }}</span></div>
+      <div><label>Per Day Salary</label><span>{{ preview.perDaySalary | number:'1.0-0' }}</span></div>
+      <div><label>Absent Deduction</label><span>{{ preview.attendanceDeduction | number:'1.0-0' }}</span></div>
       <div><label>Total Deductions</label><span>{{ preview.deductions | number:'1.0-0' }}</span></div>
       <div><label>Net Pay (Monthly)</label><span>{{ preview.netPay | number:'1.0-0' }}</span></div>
       <div><label>Annual Taxable</label><span>{{ preview.annualTaxableIncome | number:'1.0-0' }}</span></div>
@@ -71,6 +75,7 @@
           <th>Monthly Gross</th>
           <th>Tax</th>
           <th>Other Ded.</th>
+          <th>Absent Ded.</th>
           <th>Net Pay</th>
           <th>Status</th>
           <th>Action</th>
@@ -84,6 +89,7 @@
           <td>{{ (p.grossPay || 0) | number:'1.0-0' }}</td>
           <td>{{ (p.taxDeduction || 0) | number:'1.0-0' }}</td>
           <td>{{ (p.otherDeductions || 0) | number:'1.0-0' }}</td>
+          <td>{{ (p.attendanceDeduction || 0) | number:'1.0-0' }}</td>
           <td>{{ (p.netPay || 0) | number:'1.0-0' }}</td>
           <td>{{ p.status }}</td>
           <td>
