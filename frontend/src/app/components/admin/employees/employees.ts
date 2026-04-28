@@ -132,6 +132,38 @@ export class Employees {
   saveEdit() {
     if (this.isManager) return;
     if (!this.editId) return;
+
+    const name = String(this.editForm.name || '').trim();
+    const email = String(this.editForm.email || '').trim().toLowerCase();
+    const phone = String(this.editForm.phone || '').trim();
+    const salary = Number(this.editForm.annualSalary);
+
+    const nameRegex = /^[A-Za-z][A-Za-z\s.'-]{1,79}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\+?[0-9]{7,15}$/;
+
+    if (!nameRegex.test(name)) {
+      this.error = 'Please enter a valid full name.';
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      this.error = 'Please enter a valid email.';
+      return;
+    }
+    if (phone && !phoneRegex.test(phone)) {
+      this.error = 'Please enter a valid phone number.';
+      return;
+    }
+    if (!Number.isFinite(salary) || salary <= 0) {
+      this.error = 'Annual salary must be greater than 0.';
+      return;
+    }
+
+    this.editForm.name = name;
+    this.editForm.email = email;
+    this.editForm.phone = phone;
+    this.editForm.annualSalary = salary;
+
     if (this.editForm.role === 'manager' && !String(this.editForm.department || '').trim()) {
       this.error = 'Manager must have a department.';
       return;

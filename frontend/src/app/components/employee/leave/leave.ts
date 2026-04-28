@@ -15,10 +15,15 @@ import { LeaveService, LeaveRequest, WfhRequest } from '../../../services/leave'
   styleUrls: ['./leave.css'],
 })
 export class Leave implements OnInit {
+  // Keep validation regex in one place
+  private readonly dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  private readonly reasonRegex = /^[A-Za-z0-9][A-Za-z0-9\s.,'()&-]{2,249}$/;
+
   // Leave form model
   leaveType: string = 'Annual';
   leaveFromDate: string = '';
   leaveToDate: string = '';
+  leaveOneDay: boolean = false;
   leaveReason: string = '';
 
   leaveRequests: LeaveRequest[] = [];
@@ -30,6 +35,7 @@ export class Leave implements OnInit {
   // WFH form model
   wfhFromDate: string = '';
   wfhToDate: string = '';
+  wfhOneDay: boolean = false;
   wfhReason: string = '';
 
   wfhRequests: WfhRequest[] = [];
@@ -87,16 +93,45 @@ export class Leave implements OnInit {
     this.warningLeave = '';
     this.successLeave = '';
 
-    if (!this.leaveFromDate || !this.leaveToDate) {
-      this.warningLeave = 'Please select both from and to dates for leave.';
+    if (!this.leaveFromDate) {
+      this.warningLeave = 'Please select from date for leave.';
       return;
     }
-    if (this.leaveToDate < this.leaveFromDate) {
+    if (!this.dateRegex.test(this.leaveFromDate)) {
+      this.warningLeave = 'From date format is invalid.';
+      return;
+    }
+    if (!['Annual', 'Sick', 'Casual', 'Other'].includes(this.leaveType)) {
+      this.warningLeave = 'Please select a valid leave type.';
+      return;
+    }
+    const finalLeaveToDate = this.leaveOneDay ? this.leaveFromDate : this.leaveToDate;
+    if (!this.leaveOneDay && !this.leaveToDate) {
+      this.warningLeave = 'Please select to date for leave.';
+      return;
+    }
+    if (!this.dateRegex.test(finalLeaveToDate)) {
+      this.warningLeave = 'To date format is invalid.';
+      return;
+    }
+    if (finalLeaveToDate < this.leaveFromDate) {
       this.warningLeave = 'Leave "To Date" cannot be before "From Date".';
+      return;
+    }
+    if (!(this.leaveReason || '').trim()) {
+      this.warningLeave = 'Please enter reason for leave.';
+      return;
+    }
+    if ((this.leaveReason || '').trim().length < 3) {
+      this.warningLeave = 'Leave reason must be at least 3 characters.';
       return;
     }
     if ((this.leaveReason || '').trim().length > 250) {
       this.warningLeave = 'Leave reason is too long. Please keep it under 250 characters.';
+      return;
+    }
+    if (!this.reasonRegex.test((this.leaveReason || '').trim())) {
+      this.warningLeave = 'Reason must use letters/numbers and basic punctuation only.';
       return;
     }
 
@@ -105,7 +140,7 @@ export class Leave implements OnInit {
     this.leaveService
       .createLeave({
         from: this.leaveFromDate,
-        to: this.leaveToDate,
+        to: finalLeaveToDate,
         type: this.leaveType,
         reason: this.leaveReason.trim(),
       })
@@ -117,6 +152,7 @@ export class Leave implements OnInit {
           // Clear form after success
           this.leaveFromDate = '';
           this.leaveToDate = '';
+          this.leaveOneDay = false;
           this.leaveReason = '';
           this.leaveType = 'Annual';
 
@@ -137,16 +173,41 @@ export class Leave implements OnInit {
     this.warningWfh = '';
     this.successWfh = '';
 
-    if (!this.wfhFromDate || !this.wfhToDate) {
-      this.warningWfh = 'Please select both from and to dates for WFH.';
+    if (!this.wfhFromDate) {
+      this.warningWfh = 'Please select from date for WFH.';
       return;
     }
-    if (this.wfhToDate < this.wfhFromDate) {
+    if (!this.dateRegex.test(this.wfhFromDate)) {
+      this.warningWfh = 'From date format is invalid.';
+      return;
+    }
+    const finalWfhToDate = this.wfhOneDay ? this.wfhFromDate : this.wfhToDate;
+    if (!this.wfhOneDay && !this.wfhToDate) {
+      this.warningWfh = 'Please select to date for WFH.';
+      return;
+    }
+    if (!this.dateRegex.test(finalWfhToDate)) {
+      this.warningWfh = 'To date format is invalid.';
+      return;
+    }
+    if (finalWfhToDate < this.wfhFromDate) {
       this.warningWfh = 'WFH "To Date" cannot be before "From Date".';
+      return;
+    }
+    if (!(this.wfhReason || '').trim()) {
+      this.warningWfh = 'Please enter reason for WFH.';
+      return;
+    }
+    if ((this.wfhReason || '').trim().length < 3) {
+      this.warningWfh = 'WFH reason must be at least 3 characters.';
       return;
     }
     if ((this.wfhReason || '').trim().length > 250) {
       this.warningWfh = 'WFH reason is too long. Please keep it under 250 characters.';
+      return;
+    }
+    if (!this.reasonRegex.test((this.wfhReason || '').trim())) {
+      this.warningWfh = 'Reason must use letters/numbers and basic punctuation only.';
       return;
     }
 
@@ -155,7 +216,7 @@ export class Leave implements OnInit {
     this.leaveService
       .createWfh({
         from: this.wfhFromDate,
-        to: this.wfhToDate,
+        to: finalWfhToDate,
         reason: this.wfhReason.trim(),
       })
       .subscribe({
@@ -166,6 +227,7 @@ export class Leave implements OnInit {
           // Clear form after success
           this.wfhFromDate = '';
           this.wfhToDate = '';
+          this.wfhOneDay = false;
           this.wfhReason = '';
 
           // Reload list
@@ -177,5 +239,17 @@ export class Leave implements OnInit {
           this.errorWfh = err.error?.message || 'Failed to submit WFH request.';
         },
       });
+  }
+
+  onLeaveOneDayChange() {
+    if (this.leaveOneDay) {
+      this.leaveToDate = this.leaveFromDate;
+    }
+  }
+
+  onWfhOneDayChange() {
+    if (this.wfhOneDay) {
+      this.wfhToDate = this.wfhFromDate;
+    }
   }
 }

@@ -15,6 +15,69 @@ function ping(req, res) {
   return res.json({ message: 'Admin route working' });
 }
 
+// ---------------- Small validation helpers ----------------
+const NAME_REGEX = /^[A-Za-z][A-Za-z\s.'-]{1,79}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^\+?[0-9]{7,15}$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
+
+function normalizeRole(inputRole = 'employee') {
+  return String(inputRole || 'employee').trim().toLowerCase();
+}
+
+function validateName(name) {
+  const value = String(name || '').trim();
+  if (!value) return 'Name is required.';
+  if (!NAME_REGEX.test(value)) return 'Name is invalid. Use letters and spaces only.';
+  return '';
+}
+
+function validateEmail(email) {
+  const value = String(email || '').trim().toLowerCase();
+  if (!value) return 'Email is required.';
+  if (!EMAIL_REGEX.test(value)) return 'Please enter a valid email.';
+  return '';
+}
+
+function validatePassword(password) {
+  const value = String(password || '');
+  if (!value) return 'Password is required.';
+  if (!PASSWORD_REGEX.test(value)) {
+    return 'Password must be 8+ chars with uppercase, lowercase and number.';
+  }
+  return '';
+}
+
+function validatePhone(phone) {
+  const value = String(phone || '').trim();
+  if (!value) return '';
+  if (!PHONE_REGEX.test(value)) return 'Phone number is invalid.';
+  return '';
+}
+
+function validateAnnualSalary(annualSalary) {
+  const n = Number(annualSalary);
+  if (!Number.isFinite(n) || n <= 0) return 'Annual salary must be greater than 0.';
+  if (n > 1000000000) return 'Annual salary is too large.';
+  return '';
+}
+
+async function findDepartmentManager(department, excludeEmployeeId = null) {
+  const dept = String(department || '').trim();
+  if (!dept) return null;
+
+  const managerUserIds = await User.find({ role: 'manager' }).distinct('_id');
+  const filter = {
+    department: dept,
+    user: { $in: managerUserIds },
+    status: { $ne: 'layoff' },
+  };
+  if (excludeEmployeeId) {
+    filter._id = { $ne: excludeEmployeeId };
+  }
+  return Employee.findOne(filter).select('_id firstName lastName email employeeId');
+}
+
 // ---------------- Employee CRUD (admin only) ----------------
 
 async function createEmployee(req, res) {
@@ -31,22 +94,35 @@ async function createEmployee(req, res) {
       annualSalary = 0,
       filingStatus = 'unmarried',
     } = req.body;
-    const normalizedRole = String(role).trim().toLowerCase();
+    const normalizedRole = normalizeRole(role);
     const safeAnnualSalary = Math.max(0, Number(annualSalary) || 0);
     const safeFilingStatus = String(filingStatus) === 'married' ? 'married' : 'unmarried';
 
     // Basic validation
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Name, email and password are required.' });
-    }
+    const nameError = validateName(name);
+    if (nameError) return res.status(400).json({ message: nameError });
+    const emailError = validateEmail(email);
+    if (emailError) return res.status(400).json({ message: emailError });
+    const passwordError = validatePassword(password);
+    if (passwordError) return res.status(400).json({ message: passwordError });
+    const phoneError = validatePhone(phone);
+    if (phoneError) return res.status(400).json({ message: phoneError });
+    const salaryError = validateAnnualSalary(annualSalary);
+    if (salaryError) return res.status(400).json({ message: salaryError });
+
     if (!['employee', 'manager'].includes(normalizedRole)) {
       return res.status(400).json({ message: 'Role must be employee or manager.' });
     }
-    if (!safeAnnualSalary) {
-      return res.status(400).json({ message: 'Annual salary is required.' });
-    }
     if (normalizedRole === 'manager' && !String(department || '').trim()) {
       return res.status(400).json({ message: 'Department is required for manager role.' });
+    }
+    if (normalizedRole === 'manager') {
+      const existingManager = await findDepartmentManager(department);
+      if (existingManager) {
+        return res.status(409).json({
+          message: 'This department already has a manager. One department can have only one manager.',
+        });
+      }
     }
 
     // Email should be unique
@@ -166,6 +242,8 @@ async function updateEmployee(req, res) {
     const { name, email, department, designation, status, phone, annualSalary, filingStatus, role } = req.body;
 
     if (name !== undefined) {
+      const nameError = validateName(name);
+      if (nameError) return res.status(400).json({ message: nameError });
       const { firstName, lastName } = splitName(name);
       employee.firstName = firstName || employee.firstName;
       employee.lastName = lastName;
@@ -174,6 +252,8 @@ async function updateEmployee(req, res) {
 
     if (email !== undefined) {
       const normalizedEmail = String(email).trim().toLowerCase();
+      const emailError = validateEmail(normalizedEmail);
+      if (emailError) return res.status(400).json({ message: emailError });
       const exists = await User.findOne({
         email: normalizedEmail,
         _id: { $ne: employee.user?._id },
@@ -185,8 +265,14 @@ async function updateEmployee(req, res) {
 
     if (department !== undefined) employee.department = String(department).trim();
     if (designation !== undefined) employee.designation = String(designation).trim();
-    if (phone !== undefined) employee.phone = String(phone).trim();
+    if (phone !== undefined) {
+      const phoneError = validatePhone(phone);
+      if (phoneError) return res.status(400).json({ message: phoneError });
+      employee.phone = String(phone).trim();
+    }
     if (annualSalary !== undefined) {
+      const salaryError = validateAnnualSalary(annualSalary);
+      if (salaryError) return res.status(400).json({ message: salaryError });
       const safeAnnualSalary = Math.max(0, Number(annualSalary) || 0);
       employee.annualSalary = safeAnnualSalary;
       employee.baseSalary = Math.round(safeAnnualSalary / 12);
@@ -202,15 +288,24 @@ async function updateEmployee(req, res) {
       employee.status = status;
     }
     if (role !== undefined) {
-      if (!['employee', 'manager'].includes(String(role))) {
+      const normalizedRole = normalizeRole(role);
+      if (!['employee', 'manager'].includes(normalizedRole)) {
         return res.status(400).json({ message: 'Role must be employee or manager.' });
       }
-      if (employee.user) employee.user.role = role;
+      if (employee.user) employee.user.role = normalizedRole;
     }
 
-    const effectiveRole = String(role !== undefined ? role : employee.user?.role || 'employee');
+    const effectiveRole = normalizeRole(role !== undefined ? role : employee.user?.role || 'employee');
     if (effectiveRole === 'manager' && !String(employee.department || '').trim()) {
       return res.status(400).json({ message: 'Manager must have a department.' });
+    }
+    if (effectiveRole === 'manager') {
+      const existingManager = await findDepartmentManager(employee.department, employee._id);
+      if (existingManager) {
+        return res.status(409).json({
+          message: 'This department already has a manager. One department can have only one manager.',
+        });
+      }
     }
 
     // Save profile + user model

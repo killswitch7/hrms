@@ -24,12 +24,18 @@ export class ForgotPassword {
   requestOtp() {
     this.error = '';
     this.success = '';
-    if (!this.email) {
+    const email = this.email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
       this.error = 'Please enter email.';
       return;
     }
+    if (!emailRegex.test(email)) {
+      this.error = 'Please enter a valid email.';
+      return;
+    }
     this.loading = true;
-    this.authService.requestForgotPasswordOtp(this.email).subscribe({
+    this.authService.requestForgotPasswordOtp(email).subscribe({
       next: (res) => {
         this.success = res.message || 'OTP sent.';
         this.loading = false;
@@ -48,12 +54,32 @@ export class ForgotPassword {
       this.error = 'Email, OTP and new password are required.';
       return;
     }
+    const email = this.email.trim().toLowerCase();
+    const otp = this.otp.trim();
+    const newPassword = this.newPassword;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const otpRegex = /^\d{6}$/;
+    const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
+
+    if (!emailRegex.test(email)) {
+      this.error = 'Please enter a valid email.';
+      return;
+    }
+    if (!otpRegex.test(otp)) {
+      this.error = 'OTP must be exactly 6 digits.';
+      return;
+    }
+    if (!strongPassword.test(newPassword)) {
+      this.error = 'Password must be 8+ chars with uppercase, lowercase and number.';
+      return;
+    }
+
     this.loading = true;
     this.authService
       .resetForgotPassword({
-        email: this.email,
-        otp: this.otp,
-        newPassword: this.newPassword,
+        email,
+        otp,
+        newPassword,
       })
       .subscribe({
         next: (res) => {

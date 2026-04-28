@@ -56,25 +56,42 @@ export class RegisterEmployee {
     this.warning = '';
     this.success = '';
 
-    if (!this.name || !this.email || !this.password) {
+    const name = this.name.trim();
+    const email = this.email.trim().toLowerCase();
+    const password = this.password;
+    const phone = this.phone.trim();
+
+    if (!name || !email || !password) {
       this.warning = 'Name, email and password are required.';
       return;
     }
-    if (this.password.trim().length < 6) {
-      this.warning = 'Password must be at least 6 characters.';
+    const nameRegex = /^[A-Za-z][A-Za-z\s.'-]{1,79}$/;
+    if (!nameRegex.test(name)) {
+      this.warning = 'Please enter a valid full name.';
+      return;
+    }
+    const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
+    if (!strongPassword.test(password)) {
+      this.warning = 'Password must be 8+ chars with uppercase, lowercase and number.';
       return;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(this.email.trim())) {
+    if (!emailRegex.test(email)) {
       this.warning = 'Please enter a valid email address.';
+      return;
+    }
+    const phoneRegex = /^\+?[0-9]{7,15}$/;
+    if (phone && !phoneRegex.test(phone)) {
+      this.warning = 'Please enter a valid phone number.';
       return;
     }
     if (!this.department) {
       this.warning = 'Please select a department.';
       return;
     }
-    if (!Number(this.annualSalary)) {
-      this.warning = 'Please enter annual salary.';
+    const salary = Number(this.annualSalary);
+    if (!Number.isFinite(salary) || salary <= 0) {
+      this.warning = 'Please enter valid annual salary greater than 0.';
       return;
     }
 
@@ -83,13 +100,13 @@ export class RegisterEmployee {
     this.employeeService
       .createEmployee({
         name: this.name,
-        email: this.email,
-        password: this.password,
-        phone: this.phone,
+        email,
+        password,
+        phone,
         role: this.role,
         department: this.department,
         position: this.position,
-        annualSalary: this.annualSalary,
+        annualSalary: salary,
         filingStatus: this.filingStatus,
       })
       .subscribe({

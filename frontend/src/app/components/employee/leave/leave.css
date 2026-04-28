@@ -59,7 +59,7 @@ label {
   font-weight: 700;
 }
 
-input,
+input:not([type='checkbox']),
 select,
 textarea {
   width: 100%;
@@ -77,6 +77,27 @@ textarea:focus {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  accent-color: #2563eb;
+}
+
+.check-row {
+  margin-bottom: 8px;
+}
+
+.inline-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 textarea {

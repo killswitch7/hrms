@@ -7,6 +7,13 @@ const { OTP_REQUIRED_EMAIL } = require('../config/mail');
 const { createAndSendOtp, verifyOtp } = require('../services/otpService');
 
 const router = express.Router();
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
+const OTP_REGEX = /^\d{6}$/;
+
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
 
 /**
  * POST /api/auth/register
@@ -23,7 +30,15 @@ router.post('/register', async (req, res) => {
         .json({ message: 'Name, email and password are required.' });
     }
 
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      return res.status(400).json({ message: 'Please enter a valid email.' });
+    }
+    if (!PASSWORD_REGEX.test(String(password || ''))) {
+      return res.status(400).json({
+        message: 'Password must be 8-64 chars with uppercase, lowercase and number.',
+      });
+    }
 
     const existing = await User.findOne({ email: normalizedEmail });
     if (existing) {
@@ -68,7 +83,10 @@ router.post('/login', async (req, res) => {
         .json({ message: 'Email and password are required.' });
     }
 
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      return res.status(400).json({ message: 'Please enter a valid email.' });
+    }
 
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
@@ -150,7 +168,13 @@ router.post('/verify-login-otp', async (req, res) => {
       return res.status(400).json({ message: 'Email, OTP and temp token are required.' });
     }
 
-    const normalizedEmail = String(email).toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      return res.status(400).json({ message: 'Please enter a valid email.' });
+    }
+    if (!OTP_REGEX.test(String(otp || ''))) {
+      return res.status(400).json({ message: 'OTP must be 6 digits.' });
+    }
     if (normalizedEmail !== OTP_REQUIRED_EMAIL) {
       return res.status(400).json({ message: 'OTP login is not enabled for this email.' });
     }
@@ -206,7 +230,10 @@ router.post('/request-login-otp', async (req, res) => {
       return res.status(400).json({ message: 'Email and temp token are required.' });
     }
 
-    const normalizedEmail = String(email).toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      return res.status(400).json({ message: 'Please enter a valid email.' });
+    }
     if (normalizedEmail !== OTP_REQUIRED_EMAIL) {
       return res.status(400).json({ message: 'OTP login is not enabled for this email.' });
     }
@@ -239,7 +266,10 @@ router.post('/forgot-password/request-otp', async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: 'Email is required.' });
 
-    const normalizedEmail = String(email).toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      return res.status(400).json({ message: 'Please enter a valid email.' });
+    }
     const user = await User.findOne({ email: normalizedEmail }).select('_id email');
 
     // Keep message generic for safety
@@ -271,11 +301,14 @@ router.post('/forgot-password/reset', async (req, res) => {
     if (!email || !otp || !newPassword) {
       return res.status(400).json({ message: 'Email, OTP and new password are required.' });
     }
-    if (String(newPassword).length < 6) {
-      return res.status(400).json({ message: 'New password must be at least 6 characters.' });
-    }
 
-    const normalizedEmail = String(email).toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      return res.status(400).json({ message: 'Please enter a valid email.' });
+    }
+    if (!OTP_REGEX.test(String(otp || ''))) {
+      return res.status(400).json({ message: 'OTP must be 6 digits.' });
+    }
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) return res.status(400).json({ message: 'Invalid email or OTP.' });
 
@@ -286,6 +319,12 @@ router.post('/forgot-password/reset', async (req, res) => {
     });
     if (!otpOk) {
       return res.status(400).json({ message: 'Invalid or expired OTP.' });
+    }
+
+    if (!PASSWORD_REGEX.test(String(newPassword || ''))) {
+      return res.status(400).json({
+        message: 'New password must be 8-64 chars with uppercase, lowercase and number.',
+      });
     }
 
     user.password = String(newPassword);

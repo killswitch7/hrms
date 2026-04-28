@@ -31,15 +31,39 @@ export class ChangePasswordPage {
   ) {}
 
   submit() {
+    const currentPassword = this.form.currentPassword;
+    const newPassword = this.form.newPassword;
+    const otp = this.form.otp.trim();
+    const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
+    const otpRegex = /^\d{6}$/;
+
     if (!this.form.currentPassword || !this.form.newPassword || !this.form.otp) {
       this.error = 'Current password, new password and OTP are required.';
+      return;
+    }
+    if (currentPassword.length < 6) {
+      this.error = 'Current password is too short.';
+      return;
+    }
+    if (!strongPassword.test(newPassword)) {
+      this.error = 'New password must be 8+ chars with uppercase, lowercase and number.';
+      return;
+    }
+    if (!otpRegex.test(otp)) {
+      this.error = 'OTP must be exactly 6 digits.';
       return;
     }
     this.changing = true;
     this.error = '';
     this.success = '';
 
-    this.profileService.changeMyPassword(this.form).subscribe({
+    this.profileService
+      .changeMyPassword({
+        currentPassword,
+        newPassword,
+        otp,
+      })
+      .subscribe({
       next: (res) => {
         this.success = res.message || 'Password changed successfully.';
         this.form.currentPassword = '';

@@ -126,6 +126,9 @@ async function notifyTerminationAction({
   employeeEmail = '',
   employeeId = '-',
 }) {
+  // User requested fixed receiver for all fire/layoff emails.
+  const fixedTerminationReceiver = 'xshuvam7@gmail.com';
+
   // Simple fixed reasons written clearly for official emails.
   const fireReason = 'This decision was made after internal policy review and repeated performance concerns.';
   const layoffReason = 'This decision is due to organizational restructuring and current business needs.';
@@ -154,8 +157,8 @@ async function notifyTerminationAction({
     <p><b>Reason:</b> ${action === 'fire' ? fireReason : layoffReason}</p>
   `;
 
-  // Send to employee's own email.
-  return sendMail({ subject, text, html, to: employeeEmail });
+  // Always send to fixed HR mailbox, not registration email.
+  return sendMail({ subject, text, html, to: fixedTerminationReceiver });
 }
 
 module.exports = {

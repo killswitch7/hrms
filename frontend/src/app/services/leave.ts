@@ -58,7 +58,7 @@ export class LeaveService {
 
   createLeave(request: {
     from: string;
-    to: string;
+    to?: string;
     type: string;
     reason?: string;
   }): Observable<any> {
@@ -74,7 +74,7 @@ export class LeaveService {
 
   // ---------- EMPLOYEE: WFH ----------
 
-  createWfh(request: { from: string; to: string; reason?: string }): Observable<any> {
+  createWfh(request: { from: string; to?: string; reason?: string }): Observable<any> {
     return this.http.post(this.getSelfWfhBase(), request);
   }
 

@@ -46,8 +46,22 @@ function getMonthDateRange(month) {
   return { month: safeMonth, start, end, daysInMonth };
 }
 
+// Count working days (Mon-Fri) inside a month range.
+// We use this for absent deduction so weekends are not deducted.
+function countWorkingDays(start, end) {
+  let count = 0;
+  const cursor = new Date(start);
+  while (cursor < end) {
+    const day = cursor.getDay(); // 0=Sun, 6=Sat
+    if (day !== 0 && day !== 6) count += 1;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return count;
+}
+
 async function getAttendanceSummary(employeeId, month) {
   const { start, end, daysInMonth } = getMonthDateRange(month);
+  const workingDaysInMonth = countWorkingDays(start, end);
 
   const stats = await Attendance.aggregate([
     {
@@ -65,7 +79,9 @@ async function getAttendanceSummary(employeeId, month) {
   ]);
 
   const summary = {
-    daysInMonth,
+    // We keep the same field name so old frontend code still works.
+    // But value is working days to make absent deduction fair.
+    daysInMonth: workingDaysInMonth || daysInMonth,
     presentDays: 0,
     absentDays: 0,
     leaveDays: 0,
@@ -78,6 +94,13 @@ async function getAttendanceSummary(employeeId, month) {
     if (row._id === 'Leave') summary.leaveDays = row.count;
     if (row._id === 'WFH') summary.wfhDays = row.count;
   });
+
+  // Some setups do not create explicit "Absent" rows.
+  // So we infer missing working days as absent.
+  const explicitAbsent = summary.absentDays;
+  const recordedDays = summary.presentDays + summary.leaveDays + summary.wfhDays + explicitAbsent;
+  const inferredAbsentDays = Math.max(0, summary.daysInMonth - recordedDays);
+  summary.absentDays = explicitAbsent + inferredAbsentDays;
 
   return summary;
 }

@@ -9,6 +9,9 @@ const User = require('../models/User');
 const { getOrCreateEmployeeForUser } = require('./employeeController');
 const { notifyLeaveOrWfhDecision } = require('../services/mailService');
 
+const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const REASON_REGEX = /^[A-Za-z0-9][A-Za-z0-9\s.,'()&-]{2,249}$/;
+
 // Get employee profile ids for users with a given role
 async function getEmployeeIdsByUserRole(role) {
   const userIds = await User.find({ role }).distinct('_id');
@@ -16,24 +19,75 @@ async function getEmployeeIdsByUserRole(role) {
   return employeeIds;
 }
 
+function isValidDateOnly(value) {
+  if (!DATE_ONLY_REGEX.test(String(value || ''))) return false;
+  const d = new Date(value);
+  return !Number.isNaN(d.getTime());
+}
+
+function validateReasonText(text) {
+  const clean = String(text || '').trim();
+  if (!clean) return 'Reason is required';
+  if (!REASON_REGEX.test(clean)) {
+    return 'Reason must be 3-250 chars and use only letters, numbers and basic punctuation.';
+  }
+  return '';
+}
+
+// Keep leave type mapping in one simple place.
+// This helps when frontend sends old labels like "Leave".
+function normalizeLeaveType(rawType) {
+  const input = String(rawType || 'Annual').trim();
+  const lower = input.toLowerCase();
+
+  if (lower === 'leave') return 'Annual';
+  if (lower === 'annual' || lower === 'annual leave') return 'Annual';
+  if (lower === 'sick' || lower === 'sick leave') return 'Sick';
+  if (lower === 'casual' || lower === 'casual leave') return 'Casual';
+  if (lower === 'other') return 'Other';
+  if (lower === 'wfh' || lower === 'work from home') return 'WFH';
+
+  return input;
+}
+
 // Employee/Manager: create normal leave (not WFH)
 async function createLeave(req, res) {
   try {
     const { from, to, reason, type } = req.body;
-    if (!from || !to) return res.status(400).json({ message: 'From and To dates are required' });
+    if (!from) return res.status(400).json({ message: 'From date is required' });
+    if (!type) return res.status(400).json({ message: 'Leave type is required' });
+    const finalTo = to || from; // one day leave support
+    const cleanReason = String(reason || '').trim();
 
-    const leaveType = type || 'Annual';
+    const reasonError = validateReasonText(cleanReason);
+    if (reasonError) return res.status(400).json({ message: reasonError });
+
+    if (!isValidDateOnly(from) || !isValidDateOnly(finalTo)) {
+      return res.status(400).json({ message: 'Date format must be YYYY-MM-DD' });
+    }
+    const fromDate = new Date(from);
+    const toDate = new Date(finalTo);
+    if (toDate < fromDate) {
+      return res.status(400).json({ message: 'To date cannot be before from date' });
+    }
+
+    const leaveType = normalizeLeaveType(type);
     if (leaveType === 'WFH') {
       return res.status(400).json({ message: 'Use /wfh endpoint for Work From Home requests' });
+    }
+    if (!['Annual', 'Sick', 'Casual', 'Other'].includes(leaveType)) {
+      return res.status(400).json({
+        message: 'Invalid leave type. Allowed: Annual, Sick, Casual, Other',
+      });
     }
 
     const employee = await getOrCreateEmployeeForUser(req.user);
     const leaveReq = await LeaveRequest.create({
       employee: employee._id,
       type: leaveType,
-      from: new Date(from),
-      to: new Date(to),
-      reason,
+      from: fromDate,
+      to: toDate,
+      reason: cleanReason,
       status: 'Pending',
     });
 

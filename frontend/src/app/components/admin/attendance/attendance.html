@@ -24,7 +24,7 @@
         />
       </div>
 
-      <div class="form-row">
+      <div class="form-row" *ngIf="!isManagerView">
         <label>Role</label>
         <select [(ngModel)]="filterRole">
           <option value="">All Roles</option>

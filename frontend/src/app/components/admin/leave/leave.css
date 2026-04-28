@@ -127,7 +127,7 @@
   gap: 12px;
   justify-content: flex-end;
   align-items: center;
-  margin-top: 4px;
+  margin-top: 8px;
   flex-wrap: wrap;
 }
 
@@ -212,13 +212,19 @@
 }
 
 .btn {
-  padding: 6px 10px;
+  padding: 8px 14px;
   border-radius: 999px;
   border: none;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
-  margin-right: 6px;
+}
+
+.request-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .btn.approve {

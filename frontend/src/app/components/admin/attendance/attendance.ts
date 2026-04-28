@@ -6,6 +6,7 @@ import {
   AttendanceService,
   AttendanceRecord,
 } from '../../../services/attendance';
+import { AuthService } from '../../../services/auth';
 
 @Component({
   selector: 'app-admin-attendance',
@@ -23,12 +24,18 @@ export class AdminAttendance implements OnInit {
   filterTo: string = '';
   filterEmployeeId: string = '';
   filterRole: string = '';
+  isManagerView = false;
   currentPage = 1;
   pageSize = 10;
 
-  constructor(private attendanceService: AttendanceService) {}
+  constructor(private attendanceService: AttendanceService, private authService: AuthService) {}
 
   ngOnInit(): void {
+    this.isManagerView = this.authService.getRole() === 'manager';
+    // Manager should not switch role in attendance page.
+    if (this.isManagerView) {
+      this.filterRole = 'employee';
+    }
     const today = new Date().toISOString().split('T')[0];
     this.filterFrom = today;
     this.filterTo = today;
@@ -44,7 +51,7 @@ export class AdminAttendance implements OnInit {
         this.filterFrom,
         this.filterTo,
         this.filterEmployeeId,
-        this.filterRole
+        this.isManagerView ? 'employee' : this.filterRole
       )
       .subscribe({
         next: (res) => {
@@ -68,7 +75,7 @@ export class AdminAttendance implements OnInit {
     this.filterFrom = '';
     this.filterTo = '';
     this.filterEmployeeId = '';
-    this.filterRole = '';
+    this.filterRole = this.isManagerView ? 'employee' : '';
     this.loadAttendance();
   }
 

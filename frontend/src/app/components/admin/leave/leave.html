@@ -99,8 +99,10 @@
             </td>
             <td>{{ req.createdAt | date: 'short' }}</td>
             <td *ngIf="req.status === 'Pending'; else noLeaveAction">
-              <button class="btn approve" (click)="approveLeave(req)">Approve</button>
-              <button class="btn reject" (click)="rejectLeave(req)">Reject</button>
+              <div class="request-actions">
+                <button class="btn approve" (click)="approveLeave(req)">Approve</button>
+                <button class="btn reject" (click)="rejectLeave(req)">Reject</button>
+              </div>
             </td>
             <ng-template #noLeaveAction>
               <td>-</td>
@@ -153,8 +155,10 @@
             </td>
             <td>{{ req.createdAt | date: 'short' }}</td>
             <td *ngIf="req.status === 'Pending'; else noWfhAction">
-              <button class="btn approve" (click)="approveWfh(req)">Approve</button>
-              <button class="btn reject" (click)="rejectWfh(req)">Reject</button>
+              <div class="request-actions">
+                <button class="btn approve" (click)="approveWfh(req)">Approve</button>
+                <button class="btn reject" (click)="rejectWfh(req)">Reject</button>
+              </div>
             </td>
             <ng-template #noWfhAction>
               <td>-</td>

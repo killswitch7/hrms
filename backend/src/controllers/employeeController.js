@@ -11,6 +11,11 @@ const Payroll = require('../models/Payroll');
 const User = require('../models/User');
 const { createAndSendOtp, verifyOtp } = require('../services/otpService');
 
+const NAME_REGEX = /^[A-Za-z][A-Za-z\s.'-]{1,79}$/;
+const PHONE_REGEX = /^\+?[0-9]{7,15}$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
+const OTP_REGEX = /^\d{6}$/;
+
 function splitName(fullName = '') {
   // Split full name into first and last name
   const trimmed = String(fullName).trim();
@@ -247,10 +252,31 @@ async function updateMyProfile(req, res) {
     const employee = await getOrCreateEmployeeForUser(req.user);
     const { firstName = '', lastName = '', phone = '', designation = '' } = req.body;
 
-    if (String(firstName).trim()) employee.firstName = String(firstName).trim();
-    employee.lastName = String(lastName || '').trim();
-    employee.phone = String(phone || '').trim();
-    employee.designation = String(designation || '').trim();
+    const cleanFirstName = String(firstName || '').trim();
+    const cleanLastName = String(lastName || '').trim();
+    const cleanPhone = String(phone || '').trim();
+    const cleanDesignation = String(designation || '').trim();
+
+    if (!cleanFirstName) {
+      return res.status(400).json({ message: 'First name is required.' });
+    }
+    if (!NAME_REGEX.test(cleanFirstName)) {
+      return res.status(400).json({ message: 'First name is invalid.' });
+    }
+    if (cleanLastName && !NAME_REGEX.test(cleanLastName)) {
+      return res.status(400).json({ message: 'Last name is invalid.' });
+    }
+    if (cleanPhone && !PHONE_REGEX.test(cleanPhone)) {
+      return res.status(400).json({ message: 'Phone number is invalid.' });
+    }
+    if (cleanDesignation.length > 100) {
+      return res.status(400).json({ message: 'Designation is too long.' });
+    }
+
+    employee.firstName = cleanFirstName;
+    employee.lastName = cleanLastName;
+    employee.phone = cleanPhone;
+    employee.designation = cleanDesignation;
 
     // Keep user name in sync with employee first/last name
     const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.trim();
@@ -273,8 +299,13 @@ async function changeMyPassword(req, res) {
     if (!currentPassword || !newPassword || !otp) {
       return res.status(400).json({ message: 'Current password, new password and OTP are required.' });
     }
-    if (String(newPassword).length < 6) {
-      return res.status(400).json({ message: 'New password must be at least 6 characters.' });
+    if (!PASSWORD_REGEX.test(String(newPassword || ''))) {
+      return res.status(400).json({
+        message: 'New password must be 8-64 chars with uppercase, lowercase and number.',
+      });
+    }
+    if (!OTP_REGEX.test(String(otp || ''))) {
+      return res.status(400).json({ message: 'OTP must be 6 digits.' });
     }
 
     const user = await User.findById(req.user._id);

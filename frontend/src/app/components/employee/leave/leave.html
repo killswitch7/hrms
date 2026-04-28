@@ -27,9 +27,17 @@
               id="leaveFrom"
               type="date"
               [(ngModel)]="leaveFromDate"
+              (ngModelChange)="leaveOneDay ? (leaveToDate = leaveFromDate) : null"
               name="leaveFromDate"
               required
             />
+          </div>
+
+          <div class="form-row check-row">
+            <label class="inline-check">
+              <input type="checkbox" [(ngModel)]="leaveOneDay" name="leaveOneDay" (change)="onLeaveOneDayChange()" />
+              One day leave
+            </label>
           </div>
 
           <div class="form-row">
@@ -39,7 +47,8 @@
               type="date"
               [(ngModel)]="leaveToDate"
               name="leaveToDate"
-              required
+              [disabled]="leaveOneDay"
+              [required]="!leaveOneDay"
             />
           </div>
 
@@ -49,7 +58,11 @@
               id="leaveReason"
               [(ngModel)]="leaveReason"
               name="leaveReason"
+              required
+              minlength="3"
               maxlength="250"
+              pattern="^[A-Za-z0-9][A-Za-z0-9\\s.,'()&-]{2,249}$"
+              title="Use 3 to 250 characters with letters, numbers and basic punctuation."
               rows="3"
               placeholder="Explain why you need leave"
             ></textarea>
@@ -107,21 +120,46 @@
         <form (ngSubmit)="submitWfh()">
           <div class="form-row">
             <label for="wfhFrom">From Date</label>
-            <input id="wfhFrom" type="date" [(ngModel)]="wfhFromDate" name="wfhFromDate" required />
+            <input
+              id="wfhFrom"
+              type="date"
+              [(ngModel)]="wfhFromDate"
+              (ngModelChange)="wfhOneDay ? (wfhToDate = wfhFromDate) : null"
+              name="wfhFromDate"
+              required
+            />
+          </div>
+
+          <div class="form-row check-row">
+            <label class="inline-check">
+              <input type="checkbox" [(ngModel)]="wfhOneDay" name="wfhOneDay" (change)="onWfhOneDayChange()" />
+              One day WFH
+            </label>
           </div>
 
           <div class="form-row">
             <label for="wfhTo">To Date</label>
-            <input id="wfhTo" type="date" [(ngModel)]="wfhToDate" name="wfhToDate" required />
+            <input
+              id="wfhTo"
+              type="date"
+              [(ngModel)]="wfhToDate"
+              name="wfhToDate"
+              [disabled]="wfhOneDay"
+              [required]="!wfhOneDay"
+            />
           </div>
 
           <div class="form-row">
-            <label for="wfhReason">Reason (optional)</label>
+            <label for="wfhReason">Reason</label>
             <textarea
               id="wfhReason"
               [(ngModel)]="wfhReason"
               name="wfhReason"
+              required
+              minlength="3"
               maxlength="250"
+              pattern="^[A-Za-z0-9][A-Za-z0-9\\s.,'()&-]{2,249}$"
+              title="Use 3 to 250 characters with letters, numbers and basic punctuation."
               rows="3"
               placeholder="Describe why you are requesting WFH"
             ></textarea>

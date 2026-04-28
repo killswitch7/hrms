@@ -8,15 +8,16 @@ const User = require('../models/User');
 const protect = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization || '';
-    const token = authHeader.startsWith('Bearer ')
-      ? authHeader.split(' ')[1]
-      : null;
+    const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
 
     if (!token) {
       return res.status(401).json({ message: 'No token, authorization denied' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret123');
+    // Some clients accidentally store token with quotes, so remove wrapping quotes.
+    const cleanToken = String(token).trim().replace(/^"|"$/g, '');
+
+    const decoded = jwt.verify(cleanToken, process.env.JWT_SECRET || 'secret123');
 
     const user = await User.findById(decoded.id).select('-password');
     if (!user) {
